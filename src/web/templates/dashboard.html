@@ -1,0 +1,2440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stremio Ascend</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] },
+                    colors: {
+                        bg: "#000000",
+                        card: "rgba(20, 20, 20, 0.6)",
+                        glass: "rgba(255, 255, 255, 0.03)",
+                        accent: {
+                            primary: "rgb(var(--accent-rgb, 99, 102, 241))", 
+                            success: "#10b981", 
+                            warning: "#f59e0b", 
+                            danger: "#f43f5e"   
+                        }
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- External CSS -->
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+
+<body class="flex flex-col md:flex-row h-screen antialiased selection:bg-indigo-500/30">
+
+    <!-- Ambient Background -->
+    <div id="ambient-glow"></div>
+    <div class="fixed inset-0 bg-black/60 z-[-1] pointer-events-none"></div> <!-- Overlay for readability -->
+    
+    <!-- Festive Snow Container (Hidden by default) -->
+    <div id="snow-container" class="fixed inset-0 pointer-events-none z-[100] overflow-hidden hidden"></div>
+
+    <!-- Desktop Sidebar / Mobile Bottom Nav -->
+    <nav id="navbar" class="glass-panel z-50 md:w-20 md:h-full md:flex-col flex-row w-full h-16 fixed md:relative bottom-0 md:bottom-auto flex items-center justify-around md:justify-start md:pt-8 md:gap-8 border-t md:border-t-0 md:border-r border-white/5 order-2 md:order-1 app-drag">
+        
+        <!-- Logo (Desktop Only) -->
+        <div class="hidden md:flex w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 items-center justify-center shadow-lg shadow-indigo-500/20 mb-4 no-drag">
+            <img src="/static/logo.png" class="w-8 h-8 object-contain" alt="Logo">
+        </div>
+
+        <!-- Nav Items -->
+        <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-item group relative p-3 rounded-xl transition-all no-drag">
+            <i data-lucide="layout-grid" class="w-6 h-6 text-slate-400 group-hover:text-indigo-400 transition-colors"></i>
+            <span class="md:hidden text-[10px] mt-1 block text-center text-slate-500">Dash</span>
+            <div class="active-indicator hidden absolute md:left-0 md:top-1/2 md:-translate-y-1/2 md:w-1 md:h-6 md:rounded-r-full top-0 left-1/2 -translate-x-1/2 w-8 h-1 rounded-b-full bg-indigo-500 shadow-[0_0_10px_#6366f1]"></div>
+        </button>
+
+        <button onclick="switchTab('integrations')" id="nav-integrations" class="nav-item group relative p-3 rounded-xl transition-all no-drag">
+            <i data-lucide="link" class="w-6 h-6 text-slate-400 group-hover:text-emerald-400 transition-colors"></i>
+            <span class="md:hidden text-[10px] mt-1 block text-center text-slate-500">Link</span>
+            <div class="active-indicator hidden absolute md:left-0 md:top-1/2 md:-translate-y-1/2 md:w-1 md:h-6 md:rounded-r-full top-0 left-1/2 -translate-x-1/2 w-8 h-1 rounded-b-full bg-emerald-500 shadow-[0_0_10px_#10b981]"></div>
+        </button>
+
+        <button onclick="switchTab('settings')" id="nav-settings" class="nav-item group relative p-3 rounded-xl transition-all no-drag">
+            <i data-lucide="settings-2" class="w-6 h-6 text-slate-400 group-hover:text-amber-400 transition-colors"></i>
+            <span class="md:hidden text-[10px] mt-1 block text-center text-slate-500">Set</span>
+            <div class="active-indicator hidden absolute md:left-0 md:top-1/2 md:-translate-y-1/2 md:w-1 md:h-6 md:rounded-r-full top-0 left-1/2 -translate-x-1/2 w-8 h-1 rounded-b-full bg-amber-500 shadow-[0_0_10px_#f59e0b]"></div>
+        </button>
+
+        <button onclick="switchTab('history')" id="nav-history" class="nav-item group relative p-3 rounded-xl transition-all no-drag">
+            <i data-lucide="history" class="w-6 h-6 text-slate-400 group-hover:text-blue-400 transition-colors"></i>
+            <span class="md:hidden text-[10px] mt-1 block text-center text-slate-500">Hist</span>
+            <div class="active-indicator hidden absolute md:left-0 md:top-1/2 md:-translate-y-1/2 md:w-1 md:h-6 md:rounded-r-full top-0 left-1/2 -translate-x-1/2 w-8 h-1 rounded-b-full bg-blue-500 shadow-[0_0_10px_#3b82f6]"></div>
+        </button>
+
+        <button onclick="switchTab('lists')" id="nav-lists" class="nav-item group relative p-3 rounded-xl transition-all no-drag">
+            <i data-lucide="library" class="w-6 h-6 text-slate-400 group-hover:text-purple-400 transition-colors"></i>
+            <span class="md:hidden text-[10px] mt-1 block text-center text-slate-500">List</span>
+            <div class="active-indicator hidden absolute md:left-0 md:top-1/2 md:-translate-y-1/2 md:w-1 md:h-6 md:rounded-r-full top-0 left-1/2 -translate-x-1/2 w-8 h-1 rounded-b-full bg-purple-500 shadow-[0_0_10px_#a855f7]"></div>
+        </button>
+
+        <button onclick="switchTab('analytics')" id="nav-analytics" class="nav-item group relative p-3 rounded-xl transition-all no-drag">
+            <i data-lucide="bar-chart-3" class="w-6 h-6 text-slate-400 group-hover:text-cyan-400 transition-colors"></i>
+            <span class="md:hidden text-[10px] mt-1 block text-center text-slate-500">Stats</span>
+            <div class="active-indicator hidden absolute md:left-0 md:top-1/2 md:-translate-y-1/2 md:w-1 md:h-6 md:rounded-r-full top-0 left-1/2 -translate-x-1/2 w-8 h-1 rounded-b-full bg-cyan-500 shadow-[0_0_10px_#06b6d4]"></div>
+        </button>
+
+        <button onclick="switchTab('debug')" id="nav-debug" class="nav-item group relative p-3 rounded-xl transition-all no-drag md:mt-auto md:mb-4">
+            <i data-lucide="terminal-square" class="w-6 h-6 text-slate-400 group-hover:text-rose-400 transition-colors"></i>
+            <span class="md:hidden text-[10px] mt-1 block text-center text-slate-500">Log</span>
+            <div class="active-indicator hidden absolute md:left-0 md:top-1/2 md:-translate-y-1/2 md:w-1 md:h-6 md:rounded-r-full top-0 left-1/2 -translate-x-1/2 w-8 h-1 rounded-b-full bg-rose-500 shadow-[0_0_10px_#f43f5e]"></div>
+        </button>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-full overflow-hidden order-1 md:order-2 pb-16 md:pb-0 relative">
+        
+        <!-- Header -->
+        <header class="h-16 flex items-center justify-between px-6 border-b border-white/5 bg-black/20 backdrop-blur-sm app-drag z-40">
+            <div>
+                <h1 id="page-title" class="text-xl font-bold text-white tracking-tight font-sans">Dashboard</h1>
+                <div class="flex items-center gap-2">
+                    <span id="device-status-dot" class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></span>
+                    <span id="device-name" class="text-[10px] text-slate-400 font-mono uppercase tracking-wider">Disconnected</span>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-3 no-drag">
+                
+                <!-- API Status Indicators -->
+                <div class="hidden md:flex items-center gap-3 mr-4 px-3 py-1.5 rounded-full bg-white/5 border border-white/5 backdrop-blur-md" id="api-status-container">
+                    <!-- ADB -->
+                    <div class="relative group cursor-help" title="ADB: Connection to Android TV">
+                        <i data-lucide="tv" class="w-4 h-4 text-red-500 transition-colors duration-300" id="status-adb"></i>
+                        <span class="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-black/90 text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">ADB</span>
+                    </div>
+                    <!-- Discord RPC -->
+                    <div class="relative group cursor-help" title="Discord RPC: Rich Presence">
+                        <i data-lucide="webhook" class="w-4 h-4 text-red-500 transition-colors duration-300" id="status-discord"></i>
+                        <span class="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-black/90 text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">RPC</span>
+                    </div>
+                     <!-- Trakt -->
+                    <div class="relative group cursor-help" title="Trakt: Live Scrobbling">
+                        <i data-lucide="calendar" class="w-4 h-4 text-red-500 transition-colors duration-300" id="status-trakt"></i>
+                        <span class="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-black/90 text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">Trakt</span>
+                    </div>
+                     <!-- Metadata -->
+                    <div class="relative group cursor-help" title="Metadata: Show/Movie Info Found">
+                        <i data-lucide="database" class="w-4 h-4 text-red-500 transition-colors duration-300" id="status-meta"></i>
+                        <span class="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-black/90 text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">Meta</span>
+                    </div>
+                </div>
+                 <!-- Global Scan Button -->
+                 <button onclick="sendCmd('scan_network')" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 transition-all text-xs font-bold uppercase tracking-wider group">
+                    <i data-lucide="radar" class="w-3 h-3 group-hover:rotate-180 transition-transform duration-700"></i>
+                    Scan
+                </button>
+                 <!-- Festive Snow Toggle -->
+                 <button onclick="toggleSnow()" id="btn-snow" title="Toggle Festive Snow ❄️" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/20 transition-all text-xs font-bold uppercase tracking-wider group">
+                    <i data-lucide="snowflake" class="w-3 h-3 group-hover:rotate-180 transition-transform duration-700"></i>
+                    ❄️
+                </button>
+                 <!-- Remote Toggle -->
+                 <button onclick="toggleRemote()" title="Open Remote 🎮" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/20 transition-all text-xs font-bold uppercase tracking-wider group">
+                    <i data-lucide="gamepad-2" class="w-3 h-3 group-hover:scale-110 transition-transform"></i>
+                    Remote
+                </button>
+            </div>
+        </header>
+
+        <!-- View Container (Scrollable) -->
+        <div id="view-container" class="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 scroll-smooth">
+            
+            <!-- DASHBOARD VIEW -->
+            <div id="view-dashboard" class="view-section grid grid-cols-1 lg:grid-cols-12 gap-6 h-full">
+                
+                <!-- Main Stats & Graph (Span 8) -->
+                <div class="lg:col-span-8 space-y-6 flex flex-col">
+                    
+                    <!-- Stats Row -->
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                        <div class="glass-panel p-4 rounded-2xl flex flex-col justify-between h-24 relative overflow-hidden group">
+                                                        <div class="absolute right-2 top-2 opacity-20 group-hover:opacity-40 transition-opacity">
+                                <img src="/static/skip_stack.png" class="w-10 h-10 object-contain" alt="Skip Icon">
+                            </div>
+
+                            <span class="text-slate-500 text-[10px] uppercase font-bold tracking-wider">Total Skips</span>
+                            <span id="stat-skips" class="text-2xl font-bold text-white font-mono">0</span>
+                        </div>
+                        
+                        <div class="glass-panel p-4 rounded-2xl flex flex-col justify-between h-24 relative overflow-hidden group">
+                            <div class="absolute right-2 top-2 opacity-10 group-hover:opacity-20 transition-opacity"><i data-lucide="clock" class="w-8 h-8 text-emerald-400"></i></div>
+                            <span class="text-slate-500 text-[10px] uppercase font-bold tracking-wider">Time Saved</span>
+                            <span id="stat-saved" class="text-2xl font-bold text-emerald-400 font-mono">0m</span>
+                        </div>
+
+                        <div class="glass-panel p-4 rounded-2xl flex flex-col justify-between h-24 relative overflow-hidden group">
+                            <div class="absolute right-2 top-2 opacity-10 group-hover:opacity-20 transition-opacity"><i data-lucide="layers" class="w-8 h-8 text-rose-400"></i></div>
+                            <span class="text-slate-500 text-[10px] uppercase font-bold tracking-wider">Trakt Syncs</span>
+                            <span id="stat-syncs" class="text-2xl font-bold text-white font-mono">0</span>
+                        </div>
+
+                        <div class="glass-panel p-4 rounded-2xl flex flex-col justify-between h-24 relative overflow-hidden group">
+                             <!-- Mini Chart Container -->
+                             <div class="absolute inset-0 opacity-30">
+                                <canvas id="mini-chart"></canvas>
+                             </div>
+                             <span class="text-slate-500 text-[10px] uppercase font-bold tracking-wider relative z-10">Activity</span>
+                             <span class="text-xs text-slate-400 relative z-10">Live</span>
+                        </div>
+                    </div>
+
+                    <!-- Active Media (Hero) -->
+                    <div class="glass-panel rounded-3xl p-6 flex-1 flex flex-col relative overflow-hidden group">
+                         <!-- Hero Background Image (Blurred) -->
+                         <div class="absolute inset-0">
+                             <img id="hero-backdrop" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="Backdrop" class="w-full h-full object-cover opacity-20 blur-xl transition-all duration-1000 transform scale-110 group-hover:scale-100">
+                             <div class="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent"></div>
+                         </div>
+                         
+                         <div class="relative z-10 flex flex-col md:flex-row gap-6 h-full items-center md:items-end">
+                             <!-- Poster Container -->
+                             <div class="shrink-0 relative">
+                                 <!-- Dynamic Glow behind poster -->
+                                 <div id="poster-glow" class="absolute inset-4 rounded-full blur-[60px] opacity-60 z-[-1] transition-all duration-1000" style="background: var(--accent-primary);"></div>
+<div id="poster-container" class="w-64 md:w-80 rounded-2xl overflow-hidden shadow-2xl border border-white/10 relative group-hover:-translate-y-4 transition-all duration-700 ease-out bg-slate-900">
+                                     <img id="main-poster" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="Poster" class="w-full h-auto block transition-opacity duration-500">
+                                     <!-- Play Button Overlay -->
+                                      <div id="play-overlay" class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-white" onclick="sendCmd('play_pause')">
+                                          <i data-lucide="play-circle" class="w-12 h-12"></i>
+                                      </div>
+                                      
+                                      <div id="skip-hud" class="absolute top-4 left-4 flex items-center gap-2 px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full hidden">
+                                        <i data-lucide="zap" class="w-3 h-3 text-emerald-400"></i>
+                                        <span id="skip-status-msg" class="text-[10px] font-bold text-emerald-400 uppercase tracking-widest">Pipeline Active</span>
+                                      </div>
+                                 </div>
+                                 
+                                 <!-- DYNAMIC SKIP BUTTON (Manual Mode) -->
+                                 <button id="btn-manual-skip" onclick="triggerManualSkip()" class="hidden group relative flex items-center justify-center gap-3 px-8 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl shadow-lg shadow-emerald-900/20 transition-all active:scale-95 mt-4 w-full">
+                                     <div class="absolute -inset-1 bg-emerald-400/20 blur opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl"></div>
+                                     <i data-lucide="skip-forward" class="w-5 h-5"></i>
+                                     <span id="txt-manual-skip" class="text-sm font-black uppercase tracking-wider">Skip Intro</span>
+                                 </button>
+
+                             </div>
+
+                             <!-- Info -->
+                             <div class="flex-1 text-center md:text-left space-y-2 w-full">
+                                 <div class="inline-flex items-center gap-2 px-2 py-1 rounded-full bg-white/5 border border-white/10">
+                                     <span id="status-dot" class="w-1.5 h-1.5 rounded-full bg-accent-primary animate-pulse"></span>
+                                     <span id="status-text" class="text-[10px] font-bold uppercase tracking-wider text-accent-primary">Ready</span>
+                                 </div>
+                                 
+                                 <h2 id="main-title" class="text-2xl md:text-4xl font-bold text-white leading-tight font-sans clamp-2">Waiting for Stremio...</h2>
+                                 <p id="main-subtitle" class="text-sm text-slate-400 font-mono">Idle</p>
+
+                                 <!-- Progress -->
+                                 <div class="mt-4 pt-4">
+                                     <div class="h-1 bg-white/10 rounded-full overflow-hidden w-full">
+                                         <div id="progress-bar" class="h-full bg-accent-primary w-0 transition-all duration-1000 ease-linear shadow-[0_0_15px_rgba(var(--accent-rgb),0.5)]"></div>
+                                     </div>
+                                     <div class="flex justify-between text-[10px] text-slate-500 mt-1 font-mono">
+                                         <span id="time-current">00:00</span>
+                                         <span id="time-total">00:00</span>
+                                     </div>
+                                 </div>
+                                 
+                                 <!-- Controls Row -->
+                                 <div class="flex items-center justify-center md:justify-start gap-4 mt-6">
+                                     <button onclick="sendCmd('prev')" aria-label="Previous Track" class="p-3 rounded-full bg-white/5 hover:bg-white/10 text-white transition-all hover:scale-110"><i data-lucide="skip-back" class="w-5 h-5"></i></button>
+                                     <button onclick="sendCmd('play_pause')" aria-label="Play Pause" class="p-4 rounded-full bg-white text-black hover:bg-accent-primary hover:text-white transition-all hover:scale-110 shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:shadow-[0_0_20px_var(--accent-primary)]"><i data-lucide="play" class="w-6 h-6 fill-current"></i></button>
+                                     <button onclick="sendCmd('next')" aria-label="Next Track" class="p-3 rounded-full bg-white/5 hover:bg-white/10 text-white transition-all hover:scale-110"><i data-lucide="skip-forward" class="w-5 h-5"></i></button>
+                                     
+                                     <div class="w-px h-8 bg-white/10 mx-2"></div>
+                                     
+                                     <!-- Toggle Auto Skip -->
+                                     <div class="flex items-center gap-2 cursor-pointer group/chk" onclick="document.getElementById('chk-skip').click()">
+                                        <div class="relative">
+                                            <input type="checkbox" id="chk-skip" aria-label="Toggle Auto Skip" onchange="toggleSetting('skip')" class="peer sr-only">
+                                            <div class="w-9 h-5 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
+                                        </div>
+                                        <span class="text-[10px] font-bold text-slate-500 peer-checked:text-indigo-400">AUTO</span>
+                                     </div>
+                                 </div>
+                             </div>
+                         </div>
+                    </div>
+                </div>
+
+                <!-- Right Sidebar (Controls & ADB) (Span 4) -->
+                <div class="lg:col-span-4 space-y-6 flex flex-col">
+                    
+                    <!-- Persistent Skip Button -->
+                    <div class="glass-panel p-1 rounded-2xl relative overflow-hidden">
+                        <button id="btn-skip-persistent" onclick="skipTo(0)" disabled aria-label="Skip Content"
+                            class="w-full h-16 rounded-xl bg-rose-500/10 text-rose-500/50 border border-rose-500/20 font-bold tracking-widest text-sm flex items-center justify-center gap-2 transition-all duration-300
+                            disabled:cursor-not-allowed disabled:opacity-50
+                            enabled:bg-emerald-500 enabled:text-white enabled:shadow-[0_0_30px_#10b981] enabled:opacity-100 enabled:hover:scale-[1.02] enabled:animate-pulse">
+                            <i data-lucide="fast-forward" class="w-5 h-5"></i>
+                            <span id="skip-label">SKIP INTRO</span>
+                        </button>
+                        <!-- Skip Status Message -->
+                        <div class="mt-2 text-center">
+                            <span id="skip-status-text" class="text-[10px] font-mono tracking-wider text-slate-500 uppercase">System Ready</span>
+                        </div>
+                    </div>
+
+                    <!-- ADB Connection -->
+                    <div class="glass-panel p-6 rounded-2xl space-y-4">
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                            <i data-lucide="smartphone" class="w-4 h-4"></i> ADB Bridge
+                        </h3>
+                        
+                        <div class="space-y-2">
+                             <div class="relative">
+                                 <!-- Manual Input -->
+                                 <input type="text" id="adb-ip" placeholder="192.168.1.x" aria-label="ADB Device IP"
+                                    class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:border-indigo-500 focus:shadow-[0_0_15px_rgba(99,102,241,0.2)] outline-none font-mono transition-all">
+                                 
+                                 <!-- Dropdown (Hidden by default) -->
+                                 <select id="adb-dropdown" aria-label="Select ADB Device" onchange="selectAdbDevice(this.value)" 
+                                    class="hidden w-full bg-black/90 border border-emerald-500 text-emerald-400 rounded-lg px-4 py-3 outline-none appearance-none font-mono">
+                                     <option value="" disabled selected>Select Device from Scan...</option>
+                                 </select>
+                                 <div id="adb-dropdown-arrow" class="hidden absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-emerald-400">
+                                     <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                                 </div>
+                             </div>
+                             
+                             <div class="flex gap-2">
+                                 <button onclick="connectAdb()" class="flex-1 py-3 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs uppercase tracking-wider shadow-lg shadow-indigo-500/20 transition-all hover:scale-[1.02]">
+                                     Connect
+                                 </button>
+                                 <button id="btn-manual-toggle" onclick="toggleManualInput()" aria-label="Toggle Manual Input" class="hidden px-3 py-3 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 transition-all font-mono text-xs">
+                                     <i data-lucide="edit-3" class="w-4 h-4"></i>
+                                 </button>
+                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Log -->
+                    <div class="glass-panel p-4 rounded-2xl flex-1 flex flex-col min-h-[200px]">
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Live Log</h3>
+                        <div id="quick-log" class="flex-1 max-h-[300px] overflow-y-auto font-mono text-[10px] text-emerald-400/80 space-y-1 p-2 bg-black/40 rounded-lg">
+                            <div>&gt; System Initialized</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- INTEGRATIONS VIEW -->
+            <div id="view-integrations" class="view-section hidden grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- TMDB -->
+                <div class="glass-panel p-6 rounded-2xl space-y-4">
+                    <div class="flex items-center gap-3"><i data-lucide="film" class="text-blue-400 w-6 h-6"></i><h3 class="font-bold text-lg">TMDB</h3></div>
+                    <div>
+                        <label for="inp-tmdb" class="sr-only">TMDB API Key</label>
+                        <input type="password" id="inp-tmdb" placeholder="API Key" aria-label="TMDB API Key" class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-blue-500 outline-none transition-colors">
+                    </div>
+                    <button onclick="saveIntegration('tmdb')" class="w-full py-2 bg-blue-600/20 text-blue-400 rounded-lg font-bold text-xs hover:bg-blue-600/30 transition-colors">SAVE</button>
+                </div>
+                
+                <!-- MyAnimeList -->
+                <div class="glass-panel p-6 rounded-2xl space-y-4">
+                    <div class="flex items-center gap-3"><i data-lucide="tv" class="text-purple-400 w-6 h-6"></i><h3 class="font-bold text-lg">MyAnimeList</h3></div>
+                    <div class="flex items-center justify-between py-2 border-b border-white/5 pb-4">
+                        <div>
+                            <span class="text-white text-sm">Enable MAL Metadata</span>
+                            <p class="text-[10px] text-slate-500 mt-1">Fetch scores & titles from MyAnimeList</p>
+                        </div>
+                        <div class="relative">
+                            <input type="checkbox" id="chk-mal-metadata" aria-label="Toggle MAL Metadata" onchange="updateConfig('mal_metadata_enabled', this.checked)" class="peer sr-only">
+                            <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600 cursor-pointer" onclick="document.getElementById('chk-mal-metadata').click()"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <label for="inp-mal" class="sr-only">MAL Client ID</label>
+                        <input type="password" id="inp-mal" placeholder="Client ID" aria-label="MAL Client ID" class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-purple-500 outline-none transition-colors">
+                    </div>
+                    <button onclick="saveIntegration('mal')" class="w-full py-2 bg-purple-600/20 text-purple-400 rounded-lg font-bold text-xs hover:bg-purple-600/30 transition-colors">SAVE</button>
+                </div>
+                
+                <!-- Trakt -->
+                <div class="glass-panel p-6 rounded-2xl space-y-4">
+                    <div class="flex items-center gap-3"><i data-lucide="layers" class="text-rose-400 w-6 h-6"></i><h3 class="font-bold text-lg">Trakt</h3></div>
+                    <div>
+                        <label for="inp-trakt" class="sr-only">Trakt Client ID</label>
+                        <input type="password" id="inp-trakt" placeholder="Client ID" aria-label="Trakt Client ID" class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-rose-500 outline-none transition-colors">
+                        <label for="inp-trakt-secret" class="sr-only">Trakt Client Secret</label>
+                        <input type="password" id="inp-trakt-secret" placeholder="Client Secret" aria-label="Trakt Client Secret" class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-rose-500 outline-none transition-colors mt-2">
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="saveIntegration('trakt')" class="flex-1 py-2 bg-rose-600/20 text-rose-400 rounded-lg font-bold text-xs hover:bg-rose-600/30 transition-colors">SAVE</button>
+                        <button onclick="startTraktAuth()" class="flex-1 py-2 bg-emerald-600/20 text-emerald-400 rounded-lg font-bold text-xs hover:bg-emerald-600/30 transition-colors">LOGIN</button>
+                    </div>
+                </div>
+
+                <!-- Discord (New) -->
+                <div class="glass-panel p-6 rounded-2xl space-y-4">
+                    <div class="flex items-center gap-3"><i data-lucide="gamepad-2" class="text-indigo-400 w-6 h-6"></i><h3 class="font-bold text-lg">Discord RPC</h3></div>
+                    <div>
+                        <label for="inp-discord" class="sr-only">Stremio Discord App ID</label>
+                        <input type="password" id="inp-discord" placeholder="Stremio App ID (Optional)" aria-label="Stremio Discord App ID" class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-indigo-500 outline-none transition-colors mb-2">
+                        
+                        <label for="inp-discord-wako" class="sr-only">Wako Discord App ID</label>
+                        <input type="password" id="inp-discord-wako" placeholder="Wako App ID (Optional)" aria-label="Wako Discord App ID" class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-indigo-500 outline-none transition-colors">
+                    </div>
+                    <button onclick="saveIntegration('discord')" class="w-full py-2 bg-indigo-600/20 text-indigo-400 rounded-lg font-bold text-xs hover:bg-indigo-600/30 transition-colors">SAVE</button>
+                </div>
+
+                <!-- Skip Sources (NEW) -->
+                <div class="glass-panel p-6 rounded-2xl space-y-4 md:col-span-2">
+                    <div class="flex items-center gap-3"><i data-lucide="fast-forward" class="text-emerald-400 w-6 h-6"></i><h3 class="font-bold text-lg">Skip Sources</h3></div>
+                    <p class="text-xs text-slate-400">Configure where to fetch intro skip data. Manual IDs override automatic detection.</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Manual ID Inputs -->
+                        <div class="space-y-3">
+                            <div>
+                                <label for="inp-skip-tmdb" class="text-[10px] text-slate-500 uppercase font-bold block mb-1">Manual TMDB ID (for IntroDB)</label>
+                                <input type="text" id="inp-skip-tmdb" placeholder="e.g. 60735" aria-label="Manual TMDB ID" class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-2 text-sm focus:border-emerald-500 outline-none transition-colors font-mono">
+                            </div>
+                            <div>
+                                <label for="inp-skip-mal" class="text-[10px] text-slate-500 uppercase font-bold block mb-1">Manual MAL ID (for AniSkip)</label>
+                                <input type="text" id="inp-skip-mal" placeholder="e.g. 21 (One Punch Man)" aria-label="Manual MAL ID" class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-2 text-sm focus:border-purple-500 outline-none transition-colors font-mono">
+                            </div>
+                            <div>
+                                <label for="inp-tidb-key" class="text-[10px] text-slate-500 uppercase font-bold block mb-1">TheIntroDB (TIDB) API Key</label>
+                                <input type="password" id="inp-tidb-key" placeholder="Enter API Key for unverified skips" aria-label="TIDB API Key" class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-2 text-sm focus:border-indigo-500 outline-none transition-colors font-mono">
+                            </div>
+                        </div>
+                        
+                        <!-- Source Toggles -->
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between py-2 px-3 bg-black/20 rounded-lg">
+                                <span class="text-sm">IntroDB (API)</span>
+                                <div class="relative">
+                                    <input type="checkbox" id="chk-introdb" aria-label="Toggle IntroDB" checked onchange="updateConfig('introdb_enabled', this.checked)" class="peer sr-only">
+                                    <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600 cursor-pointer" onclick="document.getElementById('chk-introdb').click()"></div>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between py-2 px-3 bg-black/20 rounded-lg">
+                                <span class="text-sm">AniSkip (Anime)</span>
+                                <div class="relative">
+                                    <input type="checkbox" id="chk-aniskip" aria-label="Toggle AniSkip" checked onchange="updateConfig('aniskip_fallback', this.checked)" class="peer sr-only">
+                                    <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600 cursor-pointer" onclick="document.getElementById('chk-aniskip').click()"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button onclick="saveIntegration('skip')" class="w-full py-2 bg-emerald-600/20 text-emerald-400 rounded-lg font-bold text-xs hover:bg-emerald-600/30 transition-colors">SAVE SKIP CONFIG</button>
+                </div>
+                <div id="skip-sandbox" class="glass-panel p-6 rounded-2xl border-emerald-500/10 border bg-emerald-500/5">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-bold text-emerald-400">Pipeline Sandbox</h3>
+                        <div id="sandbox-loader" class="hidden animate-spin rounded-full h-4 w-4 border-2 border-emerald-400 border-t-transparent"></div>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="relative">
+                            <label class="text-[10px] text-slate-500 uppercase font-bold block mb-1">Smart Search (e.g. "Stranger Things S1E1" or "Interstellar")</label>
+                            <input type="text" id="sb-title" placeholder="Try: Game of Thrones S1E1" class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-emerald-500 outline-none transition-colors font-medium">
+                        </div>
+                        
+                        <button onclick="runPipelineTest()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold transition-all flex items-center justify-center gap-2">
+                            <i data-lucide="play" class="w-4 h-4"></i>
+                            RUN PIPELINE TEST
+                        </button>
+                        
+                        <div id="sb-results" class="mt-4 space-y-2 max-h-60 overflow-y-auto hidden">
+                            <!-- Results will be injected here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SETTINGS VIEW -->
+            <div id="view-settings" class="view-section hidden max-w-2xl mx-auto space-y-6">
+                <!-- Appearance & Behavior -->
+                <div class="glass-panel p-6 rounded-2xl">
+                    <h3 class="text-lg font-bold mb-4 border-b border-white/10 pb-2">Appearance & Behavior</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between py-2">
+                            <span>Show Device Name</span>
+                            <div class="relative">
+                                <input type="checkbox" id="chk-show-device" aria-label="Toggle Show Device Name" onchange="updateConfig('show_device_name', this.checked)" class="peer sr-only">
+                                <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600 cursor-pointer" onclick="document.getElementById('chk-show-device').click()"></div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between py-2">
+                            <span>Profanity Filter</span>
+                            <div class="relative">
+                                <input type="checkbox" id="chk-profanity" aria-label="Toggle Profanity Filter" onchange="updateConfig('profanity_filter', this.checked)" class="peer sr-only">
+                                <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-rose-600 cursor-pointer" onclick="document.getElementById('chk-profanity').click()"></div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between py-2 border-t border-white/5 mt-2 pt-4">
+                            <div>
+                                <span class="text-white">Wako Telemetry Mode</span>
+                                <p class="text-[10px] text-slate-500 mt-1">Extract metadata from Wako's ExoPlayer via ADB UI automation</p>
+                            </div>
+                            <div class="relative">
+                                <input type="checkbox" id="chk-wako" aria-label="Toggle Wako Mode" onchange="updateConfig('wako_mode', this.checked)" class="peer sr-only">
+                                <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-600 cursor-pointer" onclick="document.getElementById('chk-wako').click()"></div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between py-2 border-b border-white/5 pb-4">
+                            <div>
+                                <span class="text-indigo-400 font-bold">Wako Player-Only</span>
+                                <p class="text-[10px] text-slate-500 mt-1">Only show RPC while inside the player (Hides catalogs/details)</p>
+                            </div>
+                            <div class="relative">
+                                <input type="checkbox" id="chk-wako-player-only" aria-label="Toggle Wako Player Only" onchange="updateConfig('wako_player_only', this.checked)" class="peer sr-only">
+                                <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600 cursor-pointer" onclick="document.getElementById('chk-wako-player-only').click()"></div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between py-2 border-b border-white/5 pb-4">
+                            <div>
+                                <span class="text-amber-400 font-bold">Keep Wako Awake</span>
+                                <p class="text-[10px] text-slate-500 mt-1">Keeps the Wako player from sleeping while paused</p>
+                            </div>
+                            <div class="relative">
+                                <input type="checkbox" id="chk-wako-stay-awake" aria-label="Toggle Stay Awake" onchange="updateConfig('wako_stay_awake_on_pause', this.checked)" class="peer sr-only">
+                                <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600 cursor-pointer" onclick="document.getElementById('chk-wako-stay-awake').click()"></div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between py-2 border-b border-white/5 pb-4">
+                            <div>
+                                <span class="text-rose-400 font-bold">Auto-Return to Wako</span>
+                                <p class="text-[10px] text-slate-500 mt-1">Reopens Wako if another app steals focus during playback</p>
+                            </div>
+                            <div class="relative">
+                                <input type="checkbox" id="chk-wako-focus-lock" aria-label="Toggle Focus Lock" onchange="updateConfig('wako_focus_lock', this.checked)" class="peer sr-only">
+                                <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-rose-600 cursor-pointer" onclick="document.getElementById('chk-wako-focus-lock').click()"></div>
+                            </div>
+                        </div>
+                        <div class="border border-cyan-500/20 bg-cyan-500/5 rounded-xl p-4 space-y-3">
+                            <div class="flex items-center justify-between gap-3">
+                                <div>
+                                    <span class="text-cyan-300 font-bold">Wako Mapper</span>
+                                    <p class="text-[10px] text-slate-500 mt-1">Read-only capture to wako_mapper; no clicks or key presses</p>
+                                </div>
+                                <button onclick="mapWakoUi()" class="px-3 py-2 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/20 text-xs font-bold uppercase tracking-wider">
+                                    Map Screen
+                                </button>
+                            </div>
+                            <input id="inp-wako-map-label" type="text" placeholder="Optional label: player hidden, details, trailer..." class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs focus:border-cyan-500 outline-none transition-colors">
+                            <pre id="wako-map-output" class="hidden max-h-56 overflow-y-auto whitespace-pre-wrap break-words bg-black/50 border border-white/10 rounded-lg p-3 text-[10px] text-cyan-100 font-mono"></pre>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RPC Customization -->
+                <div class="glass-panel p-6 rounded-2xl">
+                    <h3 class="text-lg font-bold mb-4 border-b border-white/10 pb-2 flex items-center gap-2"><i data-lucide="gamepad-2" class="w-5 h-5 text-indigo-400"></i> RPC Customization</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between py-2">
+                            <div>
+                                <span class="text-white">Interactive Buttons</span>
+                                <p class="text-[10px] text-slate-500 mt-1">Add TMDB and Trailer buttons to profile</p>
+                            </div>
+                            <div class="relative">
+                                <input type="checkbox" id="chk-rpc-buttons" aria-label="Toggle RPC Buttons" onchange="updateConfig('rpc_buttons_enabled', this.checked)" class="peer sr-only">
+                                <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600 cursor-pointer" onclick="document.getElementById('chk-rpc-buttons').click()"></div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between py-2">
+                            <div>
+                                <span class="text-white">Streaming Mode</span>
+                                <p class="text-[10px] text-slate-500 mt-1">Show "Streaming on [Platform]"</p>
+                            </div>
+                            <div class="relative">
+                                <input type="checkbox" id="chk-rpc-streaming" aria-label="Toggle Streaming Mode" onchange="updateConfig('rpc_streaming_mode', this.checked)" class="peer sr-only">
+                                <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600 cursor-pointer" onclick="document.getElementById('chk-rpc-streaming').click()"></div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between py-2">
+                             <div>
+                                <span class="text-white">Artwork Priority</span>
+                                <p class="text-[10px] text-slate-500 mt-1">Pick your preferred poster tier</p>
+                            </div>
+                            <select id="sel-rpc-large-image" onchange="updateConfig('rpc_large_image', this.value)" class="bg-black/40 border border-white/10 rounded-lg px-2 py-1 text-xs outline-none focus:border-indigo-500 transition-colors">
+                                <option id="opt-rpc-large-season" value="season">Season Poster</option>
+                                <option id="opt-rpc-large-episode" value="episode">Episode Still</option>
+                                <option id="opt-rpc-large-show" value="show">Series Poster</option>
+                            </select>
+                        </div>
+                        <div class="flex items-center justify-between py-2">
+                            <div>
+                                <span class="text-white">Artwork Provider</span>
+                                <p class="text-[10px] text-slate-500 mt-1">Choose ratings source or legacy TMDB art</p>
+                            </div>
+                            <select id="sel-artwork-provider" onchange="updateConfig('artwork_provider', this.value); updateArtworkProviderVisibility(this.value)" class="bg-black/40 border border-white/10 rounded-lg px-2 py-1 text-xs outline-none focus:border-indigo-500 transition-colors">
+                                <option value="legacy">Legacy</option>
+                                <option value="top_posters">Top Posters</option>
+                                <option value="erdb">ERDB</option>
+                            </select>
+                        </div>
+                        <div id="top-posters-settings" class="border border-white/10 bg-black/20 rounded-xl p-4 space-y-3">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <span class="text-white">Top Posters</span>
+                                    <p class="text-[10px] text-slate-500 mt-1">Ratings artwork for Discord large image</p>
+                                </div>
+                            </div>
+                            <input type="password" id="inp-top-posters-key" placeholder="Top Posters API key" onblur="updateConfig('top_posters_api_key', this.value.trim())" class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-2 text-sm focus:border-indigo-500 outline-none transition-colors">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div class="flex flex-col gap-2">
+                                    <label for="sel-top-posters-size" class="text-xs text-slate-400 uppercase font-bold">Badge Size</label>
+                                    <select id="sel-top-posters-size" onchange="updateConfig('top_posters_badge_size', this.value)" class="bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs outline-none focus:border-indigo-500 transition-colors">
+                                        <option value="small">Small</option>
+                                        <option value="medium">Medium</option>
+                                        <option value="large">Large</option>
+                                    </select>
+                                </div>
+                                <div class="flex flex-col gap-2">
+                                    <label for="sel-top-posters-position" class="text-xs text-slate-400 uppercase font-bold">Badge Position</label>
+                                    <select id="sel-top-posters-position" onchange="updateConfig('top_posters_badge_position', this.value)" class="bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs outline-none focus:border-indigo-500 transition-colors">
+                                        <option value="top-right">Top Right</option>
+                                        <option value="top-left">Top Left</option>
+                                        <option value="top-center">Top Center</option>
+                                        <option value="bottom-right">Bottom Right</option>
+                                        <option value="bottom-left">Bottom Left</option>
+                                        <option value="bottom-center">Bottom Center</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div class="flex flex-col gap-2">
+                                    <label for="sel-top-posters-style" class="text-xs text-slate-400 uppercase font-bold">Poster Style</label>
+                                    <select id="sel-top-posters-style" onchange="updateConfig('top_posters_style', this.value)" class="bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs outline-none focus:border-indigo-500 transition-colors">
+                                        <option value="modern">Modern</option>
+                                        <option value="rpdb">RPDB</option>
+                                    </select>
+                                </div>
+                                <div class="flex items-center justify-between py-2">
+                                    <div>
+                                        <span class="text-white text-sm">Blur Episode Art</span>
+                                        <p class="text-[10px] text-slate-500 mt-1">Episode thumbnail mode only</p>
+                                    </div>
+                                    <div class="relative">
+                                        <input type="checkbox" id="chk-top-posters-blur" aria-label="Toggle Top Posters Blur" onchange="updateConfig('top_posters_blur', this.checked)" class="peer sr-only">
+                                        <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-600 cursor-pointer" onclick="document.getElementById('chk-top-posters-blur').click()"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                        <div id="erdb-settings" class="border border-white/10 bg-black/20 rounded-xl p-4 space-y-3 hidden">
+                            <div>
+                                <span class="text-white">ERDB</span>
+                                <p class="text-[10px] text-slate-500 mt-1">Token renderer for posters, thumbnails, logos, and backdrops</p>
+                            </div>
+                            <input type="password" id="inp-erdb-token" placeholder="ERDB token" onblur="updateConfig('erdb_token', this.value.trim())" class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-2 text-sm focus:border-indigo-500 outline-none transition-colors">
+                            <input type="text" id="inp-erdb-base-url" placeholder="https://easyratingsdb.com" onblur="updateConfig('erdb_base_url', this.value.trim())" class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-2 text-sm focus:border-indigo-500 outline-none transition-colors">
+                            <div class="flex flex-col gap-2">
+                                <label for="sel-erdb-episode-id-mode" class="text-xs text-slate-400 uppercase font-bold">Episode ID Mode</label>
+                                <select id="sel-erdb-episode-id-mode" onchange="updateConfig('erdb_episode_id_mode', this.value)" class="bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs outline-none focus:border-indigo-500 transition-colors">
+                                    <option value="realimdb">Real IMDb TV bridge (realimdb:tt...:S:E)</option>
+                                    <option value="imdb">Series IMDb (tt...:S:E)</option>
+                                </select>
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <label class="flex items-center justify-between gap-3 text-sm text-slate-300 bg-black/20 border border-white/10 rounded-lg px-3 py-2">
+                                    Posters
+                                    <input type="checkbox" id="chk-erdb-posters" onchange="updateConfig('erdb_posters_enabled', this.checked)">
+                                </label>
+                                <label class="flex items-center justify-between gap-3 text-sm text-slate-300 bg-black/20 border border-white/10 rounded-lg px-3 py-2">
+                                    Thumbnails
+                                    <input type="checkbox" id="chk-erdb-thumbnails" onchange="updateConfig('erdb_thumbnails_enabled', this.checked)">
+                                </label>
+                                <label class="flex items-center justify-between gap-3 text-sm text-slate-300 bg-black/20 border border-white/10 rounded-lg px-3 py-2">
+                                    Backdrops
+                                    <input type="checkbox" id="chk-erdb-backdrops" onchange="updateConfig('erdb_backdrops_enabled', this.checked)">
+                                </label>
+                                <label class="flex items-center justify-between gap-3 text-sm text-slate-300 bg-black/20 border border-white/10 rounded-lg px-3 py-2">
+                                    Logos
+                                    <input type="checkbox" id="chk-erdb-logos" onchange="updateConfig('erdb_logos_enabled', this.checked)">
+                                </label>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between py-2 border-t border-white/5 pt-4">
+                            <div>
+                                <span class="text-white font-bold text-fuchsia-400">Enable Status Effects</span>
+                                <p class="text-[10px] text-slate-500 mt-1">Master switch for insane RPC dynamics</p>
+                            </div>
+                            <div class="relative">
+                                <input type="checkbox" id="chk-rpc-effects" aria-label="Toggle Status Effects" onchange="updateConfig('rpc_status_effects', this.checked)" class="peer sr-only">
+                                <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-fuchsia-600 cursor-pointer" onclick="document.getElementById('chk-rpc-effects').click()"></div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between py-2">
+                            <div>
+                                <span class="text-white">Status Cycling</span>
+                                <p class="text-[10px] text-slate-500 mt-1">Cycle Cast / Ratings every 15s</p>
+                            </div>
+                            <div class="relative">
+                                <input type="checkbox" id="chk-rpc-cycling" aria-label="Toggle Cycling" onchange="updateConfig('rpc_status_cycling', this.checked)" class="peer sr-only">
+                                <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600 cursor-pointer" onclick="document.getElementById('chk-rpc-cycling').click()"></div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between py-2">
+                             <div>
+                                <span class="text-white">Rating Badges</span>
+                                <p class="text-[10px] text-slate-500 mt-1">Show scores in presence</p>
+                            </div>
+                            <div class="relative">
+                                <input type="checkbox" id="chk-rpc-ratings" aria-label="Toggle Ratings" onchange="updateConfig('rpc_rating_badges', this.checked)" class="peer sr-only">
+                                <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600 cursor-pointer" onclick="document.getElementById('chk-rpc-ratings').click()"></div>
+                            </div>
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <label for="sel-rpc-small-icon" class="text-xs text-slate-400 uppercase font-bold">Small Icon (Badge) Mode</label>
+                            <select id="sel-rpc-small-icon" onchange="updateConfig('rpc_small_icon_mode', this.value)" class="bg-black/40 border border-white/10 rounded-lg px-4 py-2 outline-none focus:border-indigo-500 transition-colors">
+                                <option value="play_status">Playback Status (Play/Pause)</option>
+                                <option value="stremio">Stremio Logo</option>
+                                <option value="wako">Wako Icon</option>
+                                <option value="device">Generic Device (Network)</option>
+                                <option value="streaming_service">Streaming App (Netflix, VLC, etc.)</option>
+                                <option value="content_network">Network Logo (with Device Name)</option>
+                                <option value="content_network_gif">Network GIF (Nuvio Popular)</option>
+                                <option value="content_network_full">Network Logo + Name (Full Info)</option>
+                            </select>
+                        </div>
+                        <div class="border border-cyan-500/20 bg-cyan-500/5 rounded-xl p-4 space-y-3">
+                            <div class="flex items-center justify-between gap-3">
+                                <div>
+                                    <span class="text-cyan-300 font-bold">Nuvio Network GIFs</span>
+                                    <p class="text-[10px] text-slate-500 mt-1">Uses popular Nuvio GIF covers for the Discord small icon, then falls back to network logos</p>
+                                </div>
+                                <input type="checkbox" id="chk-nuvio-covers" onchange="updateConfig('nuvio_covers_enabled', this.checked)">
+                            </div>
+                            <div class="space-y-3">
+                                <div class="space-y-1">
+                                    <label class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Account Email</label>
+                                    <input type="email" id="inp-nuvio-email" placeholder="email@example.com" onblur="updateConfig('nuvio_covers_email', this.value.trim())" 
+                                           class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs focus:border-cyan-500/50 outline-none transition-all">
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Account Password</label>
+                                    <input type="password" id="inp-nuvio-pass" placeholder="••••••••" onfocus="prepareSecretInput(this)" onblur="updateSecretConfig('nuvio_covers_password', this)" 
+                                           class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs focus:border-cyan-500/50 outline-none transition-all">
+                                    <p id="txt-nuvio-pass-status" class="text-[9px] text-slate-500">Not saved</p>
+                                </div>
+                            </div>
+                            <input type="text" id="inp-nuvio-base-url" placeholder="https://nuvioapp.space" onblur="updateConfig('nuvio_covers_base_url', this.value.trim())" class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-2 text-sm focus:border-cyan-500 outline-none transition-colors">
+                            <select id="sel-nuvio-orientation" onchange="updateConfig('nuvio_covers_orientation', this.value)" class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-2 outline-none focus:border-cyan-500 transition-colors">
+                                <option value="all">Any Orientation</option>
+                                <option value="landscape">Landscape GIFs</option>
+                                <option value="portrait">Portrait GIFs</option>
+                            </select>
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <label for="sel-rpc-time" class="text-xs text-slate-400 uppercase font-bold">Time Display</label>
+                            <select id="sel-rpc-time" onchange="updateConfig('rpc_time_display', this.value)" class="bg-black/40 border border-white/10 rounded-lg px-4 py-2 outline-none focus:border-indigo-500 transition-colors">
+                                <option value="remaining">Time Remaining (Countdown)</option>
+                                <option value="elapsed">Time Elapsed (Timer)</option>
+                            </select>
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <label for="inp-rpc-status" class="text-xs text-slate-400 uppercase font-bold">Custom Tagline</label>
+                            <input type="text" id="inp-rpc-status" placeholder="e.g. Vibing to this..." onblur="updateConfig('rpc_custom_status', this.value)" class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-2 text-sm focus:border-indigo-500 outline-none transition-colors">
+                        </div>
+                    </div>
+                </div>
+
+                 <!-- Advanced Logic -->
+                 <div class="glass-panel p-6 rounded-2xl">
+                    <h3 class="text-lg font-bold mb-4 border-b border-white/10 pb-2">Advanced Logic</h3>
+                    <div class="space-y-4">
+                        <div class="flex flex-col gap-2">
+                            <label for="sel-skip-mode" class="text-xs text-slate-400 uppercase font-bold">Skip Mode</label>
+                            <select id="sel-skip-mode" onchange="updateConfig('skip_mode', this.value)" class="bg-black/40 border border-white/10 rounded-lg px-4 py-2 outline-none focus:border-indigo-500 transition-colors">
+                                <option value="auto">Auto Skip (Immediate)</option>
+                                <option value="button">Manual (Show Button)</option>
+                                <option value="off">Off (Disable)</option>
+                            </select>
+                        </div>
+                         
+                    </div>
+                 </div>
+
+                 <!-- Skip Providers & Sources -->
+                 <div class="glass-panel p-6 rounded-2xl col-span-1 lg:col-span-2 relative">
+                    <h3 class="text-lg font-bold mb-4 border-b border-white/10 pb-2 flex justify-between items-center">
+                        Skip Providers & Sources
+                        <div class="text-xs text-slate-400 font-normal py-1 px-3 bg-black/40 rounded-full">Drag to Reorder Priority</div>
+                    </h3>
+                    
+                    <div id="skip-providers-container" class="space-y-2">
+                        <!-- Provider items injected via JS -->
+                    </div>
+
+                    <div class="mt-6 border-t border-white/10 pt-4">
+                        <label class="text-xs text-slate-400 uppercase font-bold block mb-2">Remote JSON Source URL (Optional)</label>
+                        <input type="text" id="inp-remote-json" placeholder="https://example.com/skips.json" class="w-full bg-black/30 border border-white/5 rounded-lg px-4 py-2 text-sm text-white font-mono placeholder:text-slate-600 focus:outline-none focus:border-indigo-500 transition-colors" onblur="updateConfig('remote_json_url', this.value)">
+                    </div>
+                </div>
+                </div>
+
+
+
+
+
+
+            </div>            <!-- HISTORY VIEW -->
+            <div id="view-history" class="view-section hidden h-full flex flex-col space-y-4">
+                <!-- Search Bar -->
+                <div class="glass-panel p-4 rounded-xl flex items-center gap-4 sticky top-0 z-20 backdrop-blur-md">
+                    <i data-lucide="search" class="text-slate-400 w-5 h-5"></i>
+                    <input type="text" id="history-search" oninput="renderHistory()" placeholder="Search skipped items..." class="bg-transparent w-full text-white outline-none font-sans placeholder:text-slate-600">
+                </div>
+                
+                <!-- Grid -->
+                <div id="history-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pb-20">
+                    <!-- Cards injected via JS -->
+                    <div class="col-span-full text-center text-slate-500 py-10 font-mono text-sm">Loading History...</div>
+                </div>
+            </div>
+
+            <!-- LISTS VIEW -->
+            <div id="view-lists" class="view-section hidden h-full flex flex-col relative">
+                <!-- Breadcrumbs / Back -->
+                <div id="lists-nav" class="flex items-center gap-4 p-4 glass-panel rounded-xl mb-4 hidden">
+                    <button onclick="showListsRoot()" class="p-2 hover:bg-white/10 rounded-lg transition-colors">
+                        <i data-lucide="arrow-left" class="w-5 h-5"></i>
+                    </button>
+                    <h2 id="lists-title" class="font-bold text-lg text-white">My Lists</h2>
+                </div>
+
+                <!-- Content Container -->
+                <div id="lists-container" class="flex-1 overflow-y-auto pb-20">
+                    <!-- Grid for Lists or Items -->
+                    <div id="lists-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                        <!-- Injected JS -->
+                    </div>
+                </div>
+
+                <!-- Detail Modal (Overlay) -->
+                <div id="detail-modal" class="absolute inset-0 bg-slate-950 z-50 rounded-xl overflow-y-auto hidden">
+                    <button onclick="closeDetailModal()" class="absolute top-4 right-4 p-2 bg-black/50 rounded-full hover:bg-white/10 z-50">
+                        <i data-lucide="x" class="w-6 h-6 text-white"></i>
+                    </button>
+                    
+                    <div class="relative w-full h-64 md:h-96">
+                        <img id="detail-hero" src="" class="w-full h-full object-cover opacity-50">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent"></div>
+                        <div class="absolute bottom-6 left-6 right-6">
+                            <h1 id="detail-title" class="text-3xl md:text-5xl font-bold text-white mb-2 font-sans text-shadow">Title</h1>
+                            <div class="flex gap-3 text-xs font-mono text-slate-300">
+                                <span id="detail-year">YEAR</span>
+                                <span id="detail-rating" class="text-yellow-400">★ 0.0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-6 space-y-8">
+                        <p id="detail-overview" class="text-slate-300 leading-relaxed max-w-3xl"></p>
+                        
+                        <!-- Actions -->
+                        <div id="detail-actions" class="flex gap-4">
+                            <!-- Helper for Movie Launch -->
+                        </div>
+
+                        <!-- Seasons (For Shows) -->
+                        <div id="detail-seasons" class="space-y-4 hidden">
+                            <h3 class="text-xl font-bold text-white border-b border-white/10 pb-2">Seasons</h3>
+                            <div id="seasons-list" class="space-y-2"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ANALYTICS VIEW -->
+            <div id="view-analytics" class="view-section hidden space-y-6">
+                <!-- Lifetime Stats Cards -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="glass-panel p-4 rounded-2xl flex flex-col justify-between h-24 relative overflow-hidden group">
+                        <div class="absolute right-2 top-2 opacity-10 group-hover:opacity-20 transition-opacity"><i data-lucide="eye" class="w-8 h-8 text-cyan-400"></i></div>
+                        <span class="text-slate-500 text-[10px] uppercase font-bold tracking-wider">Total Sessions</span>
+                        <span id="analytics-sessions" class="text-2xl font-bold text-white font-mono">0</span>
+                    </div>
+                    <div class="glass-panel p-4 rounded-2xl flex flex-col justify-between h-24 relative overflow-hidden group">
+                        <div class="absolute right-2 top-2 opacity-10 group-hover:opacity-20 transition-opacity"><i data-lucide="timer" class="w-8 h-8 text-emerald-400"></i></div>
+                        <span class="text-slate-500 text-[10px] uppercase font-bold tracking-wider">Watch Hours</span>
+                        <span id="analytics-hours" class="text-2xl font-bold text-emerald-400 font-mono">0h</span>
+                    </div>
+                    <div class="glass-panel p-4 rounded-2xl flex flex-col justify-between h-24 relative overflow-hidden group">
+                        <div class="absolute right-2 top-2 opacity-10 group-hover:opacity-20 transition-opacity"><i data-lucide="check-circle" class="w-8 h-8 text-indigo-400"></i></div>
+                        <span class="text-slate-500 text-[10px] uppercase font-bold tracking-wider">Completed</span>
+                        <span id="analytics-completed" class="text-2xl font-bold text-white font-mono">0</span>
+                    </div>
+                    <div class="glass-panel p-4 rounded-2xl flex flex-col justify-between h-24 relative overflow-hidden group">
+                        <div class="absolute right-2 top-2 opacity-10 group-hover:opacity-20 transition-opacity"><i data-lucide="trophy" class="w-8 h-8 text-amber-400"></i></div>
+                        <span class="text-slate-500 text-[10px] uppercase font-bold tracking-wider">Most Watched</span>
+                        <span id="analytics-top" class="text-sm font-bold text-white truncate">—</span>
+                    </div>
+                </div>
+
+                <!-- Daily Chart -->
+                <div class="glass-panel p-6 rounded-2xl">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+                        <i data-lucide="bar-chart-3" class="w-4 h-4"></i> Daily Watch Time (Last 7 Days)
+                    </h3>
+                    <div class="h-48">
+                        <canvas id="analytics-chart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Recent Sessions -->
+                <div class="glass-panel p-6 rounded-2xl">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+                        <i data-lucide="clock" class="w-4 h-4"></i> Recent Sessions
+                    </h3>
+                    <div id="analytics-sessions-list" class="space-y-2 max-h-[400px] overflow-y-auto">
+                        <div class="text-sm text-slate-500 font-mono text-center py-4">Loading...</div>
+                    </div>
+                </div>
+            </div>
+
+             <!-- DEBUG VIEW -->
+            <div id="view-debug" class="view-section hidden h-full">
+                <div id="console-output" class="w-full h-full bg-black/80 font-mono text-xs text-green-400 p-4 rounded-xl overflow-y-auto border border-white/10">
+                    <div>&gt; Debug console ready.</div>
+                </div>
+            </div>
+
+            <!-- AUTH MODAL -->
+            <div id="auth-modal" class="hidden fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-6 backdrop-blur-sm">
+                <div class="glass-panel p-8 rounded-2xl max-w-md w-full text-center space-y-6 border border-rose-500/30 shadow-[0_0_50px_rgba(244,63,94,0.15)]">
+                    <div class="w-16 h-16 bg-rose-500/20 rounded-full flex items-center justify-center mx-auto text-rose-400">
+                        <i data-lucide="lock" class="w-8 h-8"></i>
+                    </div>
+                    
+                    <h3 class="text-2xl font-bold bg-gradient-to-r from-rose-400 to-amber-200 bg-clip-text text-transparent">Authenticate Trakt</h3>
+                    
+                    <div class="space-y-4">
+                        <p class="text-slate-400 text-sm">Please visit the link below and enter the code to verify this device.</p>
+                        
+                        <div class="bg-black/40 p-4 rounded-xl border border-white/5 space-y-2">
+                            <a id="auth-url" href="#" target="_blank" class="text-blue-400 underline text-sm break-all font-mono">...</a>
+                            <div id="auth-code" class="text-3xl font-mono font-bold text-emerald-400 tracking-widest select-all">...</div>
+                        </div>
+                    </div>
+
+                    <button onclick="document.getElementById('auth-modal').classList.add('hidden')" class="w-full py-3 bg-white/10 hover:bg-white/20 rounded-xl font-bold transition-all">Close</button>
+                </div>
+            </div>
+
+        <!-- END CONTAINER -->
+        
+        <script>
+            async function triggerManualSkip() {
+                try {
+                    await fetch('/api/command/manual_skip', {method: 'POST'});
+                    const btn = document.getElementById('btn-manual-skip');
+                    btn.classList.add('hidden');
+                } catch(e) { console.error("Skip error:", e); }
+            }
+
+            async function runPipelineTest() {
+                let query = document.getElementById('sb-title').value.trim();
+                const loader = document.getElementById('sandbox-loader');
+                const resultsCont = document.getElementById('sb-results');
+                
+                if(!query) return alert("Enter a title");
+                
+                // Smart Parsing: Support "Title S01E01", "Title 1x01", "Title S1 E1", "Title 1.1"
+                let title = query;
+                let s = 0;
+                let e = 0;
+                let is_movie = true;
+                
+                // Regex matches: 
+                // 1. "Show S01E01" or "Show S1 E1" (Standard)
+                // 2. "Show 01x01" (Cross)
+                // 3. "Show 1.1" (Dot - common in torrents)
+                const showMatch = query.match(/(.+?)\s+(?:s|season\s*)?(\d+)\s*(?:e|x|episode\s*|\.)\s*(\d+)/i);
+                if (showMatch) {
+                    title = showMatch[1].trim();
+                    s = parseInt(showMatch[2]);
+                    e = parseInt(showMatch[3]);
+                    is_movie = query.toLowerCase().includes('movie') ? true : false;
+                    console.log(`Parsed Show: ${title} S${s}E${e}`);
+                } else {
+                    console.log(`Parsed Movie: ${title}`);
+                }
+                
+                loader.classList.remove('hidden');
+                resultsCont.classList.add('hidden');
+                
+                try {
+                    const resp = await fetch('/api/test/skip_pipeline', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({title, season: s, episode: e, is_movie})
+                    });
+                    const data = await resp.json();
+                    
+                    resultsCont.innerHTML = '';
+                    if(data.results && data.results.length > 0) {
+                        data.results.forEach(res => {
+                            const div = document.createElement('div');
+                            div.className = "p-3 bg-white/5 border border-white/5 rounded-lg flex items-center justify-between";
+                            div.innerHTML = `
+                                <div class="flex flex-col">
+                                    <span class="text-[10px] text-emerald-400 font-bold uppercase">${res.source}</span>
+                                    <span class="text-xs font-medium">${res.label}</span>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-[10px] text-slate-500 block">TIME (SEC)</span>
+                                    <span class="text-xs font-mono">${res.start.toFixed(1)} -> ${res.end.toFixed(1)}</span>
+                                </div>
+                            `;
+                            resultsCont.appendChild(div);
+                        });
+                        resultsCont.classList.remove('hidden');
+                    } else {
+                        resultsCont.innerHTML = '<div class="p-4 text-center text-slate-500 italic text-sm">No timestamps found for this query.</div>';
+                        resultsCont.classList.remove('hidden');
+                    }
+                } catch(err) {
+                    console.error("Test failed:", err);
+                } finally {
+                    loader.classList.add('hidden');
+                    lucide.createIcons();
+                }
+            }
+
+            // Add Trakt Auth Function
+            async function startTraktAuth() {
+                 try {
+                     const res = await fetch('/api/command', {
+                         method: 'POST',
+                         headers: {'Content-Type': 'application/json'},
+                         body: JSON.stringify({ command: 'trakt_auth' })
+                     });
+                     const data = await res.json();
+                     if (data.error) {
+                         alert("Error: " + data.error);
+                         return;
+                     }
+                     
+                     document.getElementById('auth-url').href = data.verification_url;
+                     document.getElementById('auth-url').innerText = data.verification_url;
+                     document.getElementById('auth-code').innerText = data.user_code;
+                     
+                     document.getElementById('auth-modal').classList.remove('hidden');
+                 } catch (e) {
+                     alert("Request Failed: " + e);
+                 }
+            }
+        </script>
+    </main>
+
+    <script>
+        // --- INIT & UTILS ---
+        lucide.createIcons();
+        let currentState = {};
+        
+        // Chart JS Mini
+        const ctx = document.getElementById('mini-chart').getContext('2d');
+        window.miniChart = new Chart(ctx, {
+            type: 'line',
+            data: { labels: [1,2,3,4,5], datasets: [{ data: [10, 15, 8, 20, 25], borderColor: 'rgb(var(--accent-rgb, 99, 102, 241))', tension: 0.4, borderWidth: 2, pointRadius: 0 }] },
+            options: { plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false } }, responsive: true, maintainAspectRatio: false }
+        });
+
+        // Background Animation (Anime.js)
+        // Nothing needed here, CSS handling the ambient glow transition.
+
+        // Dynamic Theming Engine
+        async function updateDynamicTheme(imageUrl) {
+            if (!imageUrl) return;
+            const img = new Image();
+            img.crossOrigin = "Anonymous";
+            img.src = imageUrl;
+            
+            img.onload = () => {
+                const ratio = img.naturalWidth / img.naturalHeight;
+                const container = document.getElementById('poster-container');
+                
+                // Adjust width based on aspect ratio
+                if (ratio > 1.2) { 
+                    // Landscape (Episode Stills)
+                    container.classList.remove('md:w-80');
+                    container.classList.add('md:w-[480px]');
+                } else {
+                    // Portrait (Movie/Show Posters)
+                    container.classList.remove('md:w-[480px]');
+                    container.classList.add('md:w-80');
+                }
+
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = 1;
+                canvas.height = 1;
+                
+                ctx.drawImage(img, 0, 0, 1, 1);
+                const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
+                
+                // Check if color is too dark, if so, brighten it for UI accents
+                let [tr, tg, tb] = [r, g, b];
+                const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+                if (brightness < 40) {
+                    tr = Math.min(255, r + 60);
+                    tg = Math.min(255, g + 60);
+                    tb = Math.min(255, b + 60);
+                }
+
+                // Set CSS variables
+                document.documentElement.style.setProperty('--accent-rgb', `${tr}, ${tg}, ${tb}`);
+                
+                // Update Poster Glow explicitly
+                const glow = document.getElementById('poster-glow');
+                if(glow) glow.style.background = `rgb(${tr}, ${tg}, ${tb})`;
+                
+                // Update mini-chart color
+                if(window.miniChart) {
+                    window.miniChart.data.datasets[0].borderColor = `rgb(${tr}, ${tg}, ${tb})`;
+                    window.miniChart.update();
+                }
+            };
+        }
+        
+        // Tab Switching
+        function switchTab(tab) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
+            document.getElementById('view-' + tab).classList.remove('hidden');
+            
+            // Nav Active State
+            document.querySelectorAll('.nav-item .active-indicator').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.nav-item i').forEach(el => el.classList.remove('text-indigo-400','text-emerald-400','text-amber-400','text-rose-400'));
+            
+            const btn = document.getElementById('nav-' + tab);
+            btn.querySelector('.active-indicator').classList.remove('hidden');
+            
+            // Trigger Anime.js entry
+            anime({
+                targets: '#view-' + tab + ' .glass-panel',
+                translateY: [20, 0],
+                opacity: [0, 1],
+                delay: anime.stagger(100),
+                easing: 'easeOutExpo'
+            });
+            
+            const titles = { dashboard: "Dashboard", integrations: "Connections", settings: "Preferences", debug: "System Logs", history: "Skipped History", lists: "My Lists", analytics: "Analytics" };
+            document.getElementById('page-title').innerText = titles[tab];
+            
+            if (tab === 'lists') {
+                if (!window.listsLoaded) { loadLists(); window.listsLoaded = true; }
+            }
+            if (tab === 'analytics') {
+                loadAnalytics();
+            }
+        }
+
+        // --- CORE LOGIC ---
+        function updateState() {
+            fetch('/api/state').then(r => r.json()).then(data => {
+                currentState = data;
+                window.lastState = data;
+
+                // 1. Title/Status
+                document.getElementById('main-title').innerText = data.title || "Ready";
+                document.getElementById('main-subtitle').innerText = data.subtitle || "Idle";
+                document.getElementById('status-text').innerText = data.is_playing ? "PLAYING" : "PAUSED";
+                document.getElementById('device-name').innerText = data.device || "DISCONNECTED";
+                if(data.connected) {
+                    document.getElementById('device-status-dot').classList.replace('bg-rose-500', 'bg-emerald-500');
+                    document.getElementById('device-name').classList.replace('text-slate-400', 'text-emerald-400');
+                }
+
+                // 2. Ambient Poster System
+                if (data.image_url) {
+                    const poster = document.getElementById('main-poster');
+                    const backdrop = document.getElementById('hero-backdrop');
+                    const glue = document.getElementById('ambient-glow');
+                    const fallbackImage = data.image_url_fallback || '';
+                    const applyArtwork = (url) => {
+                         poster.src = url;
+                         backdrop.src = url;
+                         glue.style.backgroundImage = `url(${url})`;
+                         updateDynamicTheme(url);
+                    };
+
+                    poster.onerror = () => {
+                         if (fallbackImage && poster.src !== fallbackImage) {
+                              poster.onerror = null;
+                              applyArtwork(fallbackImage);
+                         }
+                    };
+                    
+                    if (poster.src !== data.image_url) {
+                         applyArtwork(data.image_url);
+                    }
+                }
+
+                // 3. Stats & Graph
+                if (data.stats) {
+                    // Animate numbers if changed (simplified)
+                    document.getElementById('stat-skips').innerText = data.stats.skips;
+                    document.getElementById('stat-saved').innerText = Math.round(data.stats.saved || 0) + 'm';
+                    document.getElementById('stat-syncs').innerText = data.stats.syncs;
+                }
+
+                // 4. Update Skip HUD & Manual Button
+                const skipHud = document.getElementById('skip-hud');
+                const btnManualSkip = document.getElementById('btn-manual-skip');
+                const txtManualSkip = document.getElementById('txt-manual-skip');
+                
+                if (data.skip_status && data.skip_status.msg) {
+                    skipHud.classList.remove('hidden');
+                    document.getElementById('skip-status-msg').innerText = data.skip_status.msg;
+                    
+                    // Apply dynamic colors
+                    const color = data.skip_status.color || 'emerald';
+                    const msgEl = document.getElementById('skip-status-msg');
+                    const zapIcon = skipHud.querySelector('i');
+                    
+                    // Reset classes
+                    skipHud.className = 'absolute top-4 left-4 flex items-center gap-2 px-3 py-1 rounded-full border transition-all duration-300';
+                    msgEl.className = 'text-[10px] font-bold uppercase tracking-widest';
+                    
+                    if (color === 'emerald' || color === 'green') {
+                        skipHud.classList.add('bg-emerald-500/10', 'border-emerald-500/20');
+                        msgEl.classList.add('text-emerald-400');
+                        if(zapIcon) zapIcon.className = 'w-3 h-3 text-emerald-400';
+                    } else if (color === 'blue' || color === 'indigo') {
+                        skipHud.classList.add('bg-indigo-500/10', 'border-indigo-500/20');
+                        msgEl.classList.add('text-indigo-400');
+                        if(zapIcon) zapIcon.className = 'w-3 h-3 text-indigo-400';
+                    } else if (color === 'rose' || color === 'red') {
+                        skipHud.classList.add('bg-rose-500/10', 'border-rose-500/20');
+                        msgEl.classList.add('text-rose-400');
+                        if(zapIcon) zapIcon.className = 'w-3 h-3 text-rose-400';
+                    } else {
+                        skipHud.classList.add('bg-slate-500/10', 'border-slate-500/20');
+                        msgEl.classList.add('text-slate-400');
+                        if(zapIcon) zapIcon.className = 'w-3 h-3 text-slate-400';
+                    }
+                } else {
+                    skipHud.classList.add('hidden');
+                }
+                
+                if (data.next_skip && data.config.skip_mode === 'manual') {
+                    btnManualSkip.classList.remove('hidden');
+                    txtManualSkip.innerText = data.next_skip.label || 'SKIP';
+                } else {
+                    btnManualSkip.classList.add('hidden');
+                }
+
+                // 5. Skip Button Persistent
+                const skipBtn = document.getElementById('btn-skip-persistent');
+                const skipLabel = document.getElementById('skip-label');
+                
+                if (data.skip_button && data.skip_button.visible) {
+                    skipBtn.disabled = false;
+                    skipLabel.innerText = data.skip_button.label || "SKIP INTRO";
+                    skipBtn.onclick = () => skipTo(data.skip_button.target);
+                    // Active (Green)
+                    skipBtn.className = "w-full h-16 rounded-xl bg-emerald-500 text-white shadow-[0_0_30px_#10b981] font-bold tracking-widest text-sm flex items-center justify-center gap-2 transition-all duration-300 hover:scale-[1.02] animate-pulse";
+                } else {
+                    skipBtn.disabled = true;
+                    skipLabel.innerText = "SKIP INTRO";
+                    skipBtn.onclick = null;
+                    // Inactive (Red)
+                    skipBtn.className = "w-full h-16 rounded-xl bg-rose-500/10 text-rose-500/50 border border-rose-500/20 font-bold tracking-widest text-sm flex items-center justify-center gap-2 transition-all duration-300 cursor-not-allowed opacity-50";
+                }
+                
+                // ADB Scan Results
+                if (data.scan_results && data.scan_results.length > 0) {
+                     const apiInput = document.getElementById('adb-ip');
+                     // If dropdown doesn't exist, create/show it? Or simpler: replace input with datalist or just populate if empty
+                     // Let's check if we have a dropdown container
+                     const dropdown = document.getElementById('adb-dropdown');
+                     if(dropdown.classList.contains('hidden')) {
+                         dropdown.classList.remove('hidden');
+                         dropdown.innerHTML = '<option value="" disabled selected>Select Device</option>';
+                         data.scan_results.forEach(ip => {
+                             const opt = document.createElement('option');
+                             opt.value = ip;
+                             opt.innerText = ip;
+                             dropdown.appendChild(opt);
+                         });
+                         // Hide manual input or keep it? Let's keep manual input too but show dropdown below
+                     }
+                }
+                
+                // 5. Progress and Time Display
+                if(data.duration > 0) {
+                     const pct = (data.position / data.duration) * 100;
+                     document.getElementById('progress-bar').style.width = pct + "%";
+                     
+                     // Format time as HH:MM:SS or MM:SS
+                     const formatTime = (ms) => {
+                         const totalSec = Math.floor(ms / 1000);
+                         const hours = Math.floor(totalSec / 3600);
+                         const mins = Math.floor((totalSec % 3600) / 60);
+                         const secs = totalSec % 60;
+                         if (hours > 0) {
+                             return `${hours}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                         }
+                         return `${mins}:${secs.toString().padStart(2, '0')}`;
+                     };
+                     
+                     document.getElementById('time-current').innerText = formatTime(data.position);
+                     document.getElementById('time-total').innerText = formatTime(data.duration);
+                }
+
+                // 6. Live Log
+                const log = document.getElementById('quick-log');
+                if(data.skip_status && data.skip_status.msg && log && log.lastElementChild && log.lastElementChild.innerText !== `> ${data.skip_status.msg}`) {
+                     const div = document.createElement('div');
+                     div.innerText = `> ${data.skip_status.msg}`;
+                     if(data.skip_status.color === "emerald" || data.skip_status.color === "green") div.classList.add('text-emerald-400');
+                     log.appendChild(div);
+                     log.scrollTop = log.scrollHeight;
+                }
+
+                // 7. Config Sync (Toggles & Inputs)
+                if (data.config) {
+                    const focused = document.activeElement;
+                    
+                    // Checkboxes & selects are always safe to sync
+                    document.getElementById('chk-skip').checked = data.auto_skip;
+                    document.getElementById('chk-show-device').checked = data.config.show_device;
+                    document.getElementById('chk-profanity').checked = data.config.profanity;
+                    document.getElementById('sel-skip-mode').value = data.config.skip_mode;
+                    if(document.getElementById('chk-wako')) document.getElementById('chk-wako').checked = data.config.wako_mode || false;
+                    if(document.getElementById('chk-wako-player-only')) document.getElementById('chk-wako-player-only').checked = data.config.wako_player_only || false;
+                    if(document.getElementById('chk-wako-stay-awake')) document.getElementById('chk-wako-stay-awake').checked = data.config.wako_stay_awake_on_pause || false;
+                    if(document.getElementById('chk-wako-focus-lock')) document.getElementById('chk-wako-focus-lock').checked = data.config.wako_focus_lock || false;
+                    if(document.getElementById('chk-mal-metadata')) document.getElementById('chk-mal-metadata').checked = data.config.mal_metadata_enabled || false;
+                    
+                    // RPC Enhancements Sync
+                    if(document.getElementById('chk-rpc-buttons')) document.getElementById('chk-rpc-buttons').checked = data.config.rpc_buttons;
+                    if(document.getElementById('chk-rpc-streaming')) document.getElementById('chk-rpc-streaming').checked = data.config.rpc_streaming;
+                    if(document.getElementById('sel-rpc-time')) document.getElementById('sel-rpc-time').value = data.config.rpc_time || "remaining";
+                    if(document.getElementById('sel-rpc-small-icon')) document.getElementById('sel-rpc-small-icon').value = data.config.rpc_small_icon || "play_status";
+                    if(document.getElementById('chk-nuvio-covers')) document.getElementById('chk-nuvio-covers').checked = data.config.nuvio_covers_enabled || false;
+                    if(document.getElementById('inp-nuvio-base-url')) {
+                        const baseUrlInput = document.getElementById('inp-nuvio-base-url');
+                        if (document.activeElement !== baseUrlInput) {
+                            baseUrlInput.value = data.config.nuvio_covers_base_url || "https://nuvioapp.space";
+                        }
+                    }
+                    if(document.getElementById('inp-nuvio-email')) {
+                        const emailInput = document.getElementById('inp-nuvio-email');
+                        if (document.activeElement !== emailInput) {
+                            emailInput.value = data.config.nuvio_covers_email || "";
+                        }
+                    }
+                    
+                    if(document.getElementById('inp-nuvio-pass')) {
+                        const nuvioPassInput = document.getElementById('inp-nuvio-pass');
+                        const nuvioPassSaved = !!data.config.nuvio_covers_password_saved;
+                        if (document.activeElement !== nuvioPassInput) {
+                            nuvioPassInput.dataset.saved = nuvioPassSaved ? "true" : "false";
+                            nuvioPassInput.value = nuvioPassSaved ? "••••••••••••••••" : "";
+                            nuvioPassInput.placeholder = nuvioPassSaved ? "Saved (hidden)" : "Nuvio account password";
+                        }
+                        if(document.getElementById('txt-nuvio-pass-status')) {
+                            document.getElementById('txt-nuvio-pass-status').textContent = nuvioPassSaved ? "Password saved and hidden" : "No password saved";
+                            document.getElementById('txt-nuvio-pass-status').className = "text-[9px] " + (nuvioPassSaved ? "text-cyan-300" : "text-slate-500");
+                        }
+                    }
+
+                    if(document.getElementById('sel-nuvio-orientation')) document.getElementById('sel-nuvio-orientation').value = data.config.nuvio_covers_orientation || "all";
+                    if(document.getElementById('sel-rpc-large-image')) document.getElementById('sel-rpc-large-image').value = data.config.rpc_large_image || "season";
+                    if(document.getElementById('sel-artwork-provider')) document.getElementById('sel-artwork-provider').value = data.config.artwork_provider || "legacy";
+                    if(document.getElementById('chk-rpc-effects')) document.getElementById('chk-rpc-effects').checked = data.config.rpc_status_effects || false;
+                    if(document.getElementById('chk-rpc-cycling')) document.getElementById('chk-rpc-cycling').checked = data.config.rpc_status_cycling || false;
+                    if(document.getElementById('chk-rpc-ratings')) document.getElementById('chk-rpc-ratings').checked = data.config.rpc_rating_badges || false;
+                    if(document.getElementById('chk-top-posters')) document.getElementById('chk-top-posters').checked = data.config.top_posters_enabled || false;
+                    if(document.getElementById('sel-top-posters-size')) document.getElementById('sel-top-posters-size').value = data.config.top_posters_badge_size || "medium";
+                    if(document.getElementById('sel-top-posters-position')) document.getElementById('sel-top-posters-position').value = data.config.top_posters_badge_position || "top-right";
+                    if(document.getElementById('sel-top-posters-style')) document.getElementById('sel-top-posters-style').value = data.config.top_posters_style || "modern";
+                    if(document.getElementById('chk-top-posters-blur')) document.getElementById('chk-top-posters-blur').checked = data.config.top_posters_blur || false;
+                    if(document.getElementById('chk-erdb-posters')) document.getElementById('chk-erdb-posters').checked = data.config.erdb_posters_enabled !== false;
+                    if(document.getElementById('chk-erdb-thumbnails')) document.getElementById('chk-erdb-thumbnails').checked = data.config.erdb_thumbnails_enabled !== false;
+                    if(document.getElementById('chk-erdb-backdrops')) document.getElementById('chk-erdb-backdrops').checked = data.config.erdb_backdrops_enabled !== false;
+                    if(document.getElementById('chk-erdb-logos')) document.getElementById('chk-erdb-logos').checked = data.config.erdb_logos_enabled !== false;
+                    if(document.getElementById('sel-erdb-episode-id-mode')) document.getElementById('sel-erdb-episode-id-mode').value = data.config.erdb_episode_id_mode || "realimdb";
+                    updateArtworkProviderVisibility(data.config.artwork_provider || "legacy");
+                    
+                    // Render Skip Providers if available
+                    if (data.config.skip_priority_order) {
+                        renderSkipProviders(data.config);
+                    }
+
+                    // Text inputs: ONLY update if the user is NOT currently typing in them
+                    const safeSet = (id, val) => {
+                        const el = document.getElementById(id);
+                        if (el && el !== focused) el.value = val || "";
+                    };
+                    
+                    safeSet('inp-tmdb', data.config.tmdb_key);
+                    safeSet('inp-mal', data.config.mal_id);
+                    safeSet('inp-trakt', data.config.trakt_id);
+                    safeSet('inp-trakt-secret', data.config.trakt_secret);
+                    safeSet('inp-discord', data.config.discord_id);
+                    safeSet('inp-discord-wako', data.config.discord_wako_id);
+                    safeSet('inp-remote-json', data.config.remote_json_url);
+                    safeSet('inp-tidb-key', data.config.tidb_api_key);
+                    safeSet('inp-rpc-status', data.config.rpc_status);
+                    safeSet('inp-top-posters-key', data.config.top_posters_api_key);
+                    safeSet('inp-erdb-token', data.config.erdb_token);
+                    safeSet('inp-erdb-base-url', data.config.erdb_base_url);
+                     
+                    // Expose Keys globally for Frontend API calls
+                    window.tmdbKey = data.config.tmdb_key;
+                    const adbEl = document.getElementById('adb-ip');
+                    if(adbEl && adbEl !== focused && !adbEl.dataset.manualOverride && data.config.adb_host) {
+                        adbEl.value = data.config.adb_host;
+                    }
+                }
+                
+                // 8. ADB Scan Results - Toggle Dropdown vs Input
+                if (data.scan_results && data.scan_results.length > 0) {
+                     const dropdown = document.getElementById('adb-dropdown');
+                     const input = document.getElementById('adb-ip');
+                     const arrow = document.getElementById('adb-dropdown-arrow');
+                     const manualBtn = document.getElementById('btn-manual-toggle');
+                     
+                     // Only initialize ONCE to avoid resetting user selection
+                     if (dropdown.classList.contains('hidden') && !input.dataset.manualOverride) {
+                         input.classList.add('hidden');
+                         dropdown.classList.remove('hidden');
+                         arrow.classList.remove('hidden');
+                         manualBtn.classList.remove('hidden');
+                         lucide.createIcons(); // Refresh icons for the new button
+                         
+                         // Populate
+                         dropdown.innerHTML = '<option value="" disabled selected>Select Device</option>';
+                         data.scan_results.forEach(ip => {
+                             const opt = document.createElement('option');
+                             opt.value = ip;
+                             opt.innerText = ip;
+                             dropdown.appendChild(opt);
+                         });
+                         
+                         // Add "Manual Entry" option at bottom
+                         const manualOpt = document.createElement('option');
+                         manualOpt.value = "manual";
+                         manualOpt.innerText = "-- Manual Entry --";
+                         dropdown.appendChild(manualOpt);
+                     }
+                }
+
+                // 9. API Status Updates
+                if (data.api_status) {
+                    const setStatus = (id, active) => {
+                        const el = document.getElementById(id);
+                        if(active) {
+                            el.classList.remove('text-red-500', 'opacity-50');
+                            el.classList.add('text-emerald-400', 'opacity-100');
+                        } else {
+                            el.classList.remove('text-emerald-400', 'opacity-100');
+                            el.classList.add('text-red-500', 'opacity-50');
+                        }
+                    };
+                    
+                    setStatus('status-adb', data.api_status.adb);
+                    setStatus('status-discord', data.api_status.discord);
+                    setStatus('status-adb', data.api_status.adb);
+                    setStatus('status-discord', data.api_status.discord);
+                    setStatus('status-trakt', data.api_status.trakt);
+                    
+                    // Trakt Auto-Close Logic
+                    const authModal = document.getElementById('auth-modal');
+                    if (data.api_status.trakt && !authModal.classList.contains('hidden') && !authModal.dataset.closing) {
+                        authModal.dataset.closing = "true";
+                        const codeEl = document.getElementById('auth-code');
+                        codeEl.innerText = "SUCCESS!";
+                        codeEl.classList.replace('text-emerald-400', 'text-green-500');
+                        document.querySelector('#auth-modal h3').innerText = "Authenticated!";
+                        
+                        setTimeout(() => {
+                            authModal.classList.add('hidden');
+                            authModal.dataset.closing = ""; // Reset
+                        }, 1500);
+                    }
+                    
+                    // Metadata is special: It might be "Active" (Found) or "Inactive" (Searching/Generic)
+                    // Use a different color (Amber/Blue) if disconnected vs just missing
+                    const metaEl = document.getElementById('status-meta');
+                    if (data.api_status.metadata) {
+                        metaEl.classList.remove('text-red-500', 'opacity-50');
+                        metaEl.classList.add('text-indigo-400', 'opacity-100'); // Indigo for Meta
+                    } else {
+                        metaEl.classList.remove('text-indigo-400', 'opacity-100');
+                        metaEl.classList.add('text-red-500', 'opacity-50');
+                    }
+                }
+
+                // 10. Update Skip Status Text
+                if (data.skip_status) {
+                    const statusText = document.getElementById('skip-status-text');
+                    if (statusText) {
+                        statusText.innerText = data.skip_status.msg;
+                        // Map color names to Tailwind colors locally to avoid raw CSS injection
+                        let colorClass = 'text-slate-500';
+                        if (data.skip_status.color === 'green') colorClass = 'text-emerald-400';
+                        if (data.skip_status.color === 'yellow') colorClass = 'text-amber-400';
+                        if (data.skip_status.color === 'red') colorClass = 'text-rose-400';
+                        
+                        // Reset and apply
+                        statusText.className = `text-[10px] font-mono tracking-wider uppercase transition-colors ${colorClass}`;
+                    }
+                }
+
+                // 11. Update Live Log
+                if (data.logs && Array.isArray(data.logs)) {
+                    const logContainer = document.getElementById('quick-log');
+                    if (logContainer) {
+                        logContainer.innerHTML = data.logs.map(line => `<div>${line}</div>`).join('');
+                        logContainer.scrollTop = logContainer.scrollHeight;
+                    }
+                }
+
+                // 12. Render History
+                if (data.history) {
+                    window.historyData = data.history;
+                    // Only re-render if we are on the tab (optimization) or if it's the first load
+                    if (!document.getElementById('view-history').classList.contains('hidden') || !window.historyRendered) {
+                        renderHistory();
+                        window.historyRendered = true;
+                    }
+                }
+
+
+            }).catch(e => console.error(e));
+        }
+
+        // --- ADB Toggle Logic ---
+        function selectAdbDevice(val) {
+            if (val === "manual") {
+                toggleManualInput();
+                document.getElementById('adb-dropdown').selectedIndex = 0; // Reset
+            } else {
+                document.getElementById('adb-ip').value = val;
+                connectAdb();
+            }
+        }
+        
+
+
+        function renderHistory() {
+            if (!window.historyData) return;
+            
+            const grid = document.getElementById('history-grid');
+            const search = document.getElementById('history-search').value.toLowerCase();
+            
+            const filtered = window.historyData.filter(item => {
+                const q = search;
+                return (item.title && item.title.toLowerCase().includes(q)) || 
+                       (item.subtitle && item.subtitle.toLowerCase().includes(q));
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `<div class="col-span-full text-center text-slate-500 py-10 font-mono text-sm">No items found.</div>`;
+                return;
+            }
+
+            // Simple diff check could go here, but for now just rebuild since 100 items is fast
+            // To prevent flickering input, we rely on the fact that 'search' comes from the DOM that isn't replaced.
+            
+            grid.innerHTML = filtered.map(item => {
+                const date = new Date(item.timestamp * 1000).toLocaleDateString();
+                const timeStr = new Date(item.timestamp * 1000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                const poster = item.image_url || 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='; // Placeholder
+                
+                return `
+                <div class="glass-panel p-3 rounded-xl flex gap-4 hover:bg-white/5 transition-colors group">
+                    <img src="${poster}" class="w-16 h-24 object-cover rounded-lg bg-slate-900 shadow-lg border border-white/10" loading="lazy">
+                    <div class="flex-1 min-w-0 flex flex-col justify-center">
+                        <div class="flex justify-between items-start">
+                            <h4 class="font-bold text-white truncate pr-2 text-sm" title="${item.title}">${item.title}</h4>
+                            <span class="text-[10px] bg-white/10 px-1.5 py-0.5 rounded text-slate-300 font-mono">${item.saved_str}</span>
+                        </div>
+                        <p class="text-xs text-slate-400 truncate font-mono mt-0.5">${item.subtitle}</p>
+                        
+                        <div class="mt-3 flex items-center justify-between">
+                            <span class="text-[10px] uppercase font-bold tracking-wider ${item.type === 'intro' ? 'text-emerald-400' : 'text-purple-400'}">
+                                ${item.type === 'intro' ? 'Intro Skipped' : 'Outro Skipped'}
+                            </span>
+                            <span class="text-[10px] text-slate-600 font-mono">${date}</span>
+                        </div>
+                    </div>
+                </div>
+                `;
+            }).join('');
+            
+            lucide.createIcons();
+        }
+
+        // --- LISTS LOGIC ---
+        function showListsRoot() {
+             document.getElementById('lists-nav').classList.add('hidden');
+             document.getElementById('lists-title').innerText = "My Lists";
+             loadLists();
+        }
+
+        async function loadLists() {
+            const grid = document.getElementById('lists-grid');
+            grid.innerHTML = '<div class="col-span-full text-center text-slate-500 font-mono">Loading Lists...</div>';
+            
+            try {
+                const res = await fetch('/api/trakt/lists');
+                const lists = await res.json();
+                
+                if(!lists || lists.length === 0) {
+                    grid.innerHTML = '<div class="col-span-full text-center text-slate-500 font-mono">No lists found. Check Trakt connection.</div>';
+                    return;
+                }
+                
+                grid.innerHTML = lists.map(l => {
+                    let icon = "list";
+                    if(l.type === 'watchlist') icon = "bookmark";
+                    if(l.type === 'liked') icon = "heart";
+                    
+                    const count = l.item_count !== undefined ? l.item_count : '?';
+                    // Check ID structure. Watchlist is special.
+                    const id = l.ids.slug || l.ids.trakt; 
+                    const user = l.user ? l.user.username : 'me';
+                    
+                    return `
+                    <div onclick="openList('${id}', '${l.name.replace(/'/g, "\\'")}', '${user}')" class="glass-panel aspect-square flex flex-col items-center justify-center gap-4 hover:bg-white/10 transition-all cursor-pointer group rounded-2xl border border-white/5 hover:border-indigo-500/50">
+                        <div class="p-4 rounded-full bg-white/5 text-slate-400 group-hover:text-indigo-400 group-hover:scale-110 transition-all">
+                            <i data-lucide="${icon}" class="w-10 h-10"></i>
+                        </div>
+                        <div class="text-center px-4">
+                            <h3 class="font-bold text-white group-hover:text-indigo-300 transition-colors line-clamp-1">${l.name}</h3>
+                            <span class="text-xs text-slate-500 font-mono italic">${count} Items</span>
+                        </div>
+                    </div>
+                    `;
+                }).join('');
+                lucide.createIcons();
+            } catch(e) {
+                grid.innerHTML = `<div class="col-span-full text-center text-red-500 font-mono">Error: ${e}</div>`;
+            }
+        }
+
+        async function openList(id, name, user) {
+            const grid = document.getElementById('lists-grid');
+            
+            // UI Update
+            document.getElementById('lists-nav').classList.remove('hidden');
+            document.getElementById('lists-title').innerText = name;
+            grid.innerHTML = '<div class="col-span-full text-center text-slate-500 font-mono">Loading Items...</div>';
+            
+            try {
+                const res = await fetch(`/api/trakt/list_items?id=${id}&user=${user}`);
+                const items = await res.json();
+                
+                if(!items || items.length === 0) {
+                     grid.innerHTML = '<div class="col-span-full text-center text-slate-500 font-mono">List is empty.</div>';
+                     return;
+                }
+                
+                grid.innerHTML = items.map(entry => {
+                    const type = entry.type;
+                    const data = entry[type]; // movie or show object
+                    if(!data) return '';
+                    
+                    const title = data.title;
+                    const year = data.year || '????';
+                    
+                    return `
+                    <div onclick='openDetail(${JSON.stringify(entry).replace(/'/g, "&#39;")})' class="relative group aspect-[2/3] bg-slate-900 rounded-xl overflow-hidden cursor-pointer shadow-lg hover:-translate-y-2 transition-transform duration-300">
+                        <div class="absolute inset-0 flex items-center justify-center text-slate-700 bg-black/20">
+                            <i data-lucide="${type === 'movie' ? 'film' : 'tv'}" class="w-12 h-12 opacity-20"></i>
+                        </div>
+                        
+                        <!-- Poster Overlay -->
+                         ${data.ids.tmdb ? `<img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-tmdb-id="${data.ids.tmdb}" data-type="${type}" onload="loadPoster(this)" class="absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-500">` : ''}
+                        
+                        <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80"></div>
+                        
+                        <div class="absolute bottom-0 left-0 right-0 p-4">
+                            <h4 class="font-bold text-white text-sm line-clamp-2">${title}</h4>
+                            <span class="text-[10px] bg-indigo-500/20 text-indigo-300 px-1.5 py-0.5 rounded font-mono border border-indigo-500/20">${year}</span>
+                        </div>
+                    </div>
+                    `;
+                }).join('');
+                lucide.createIcons();
+            } catch(e) {
+                 grid.innerHTML = `<div class="col-span-full text-center text-red-500 font-mono">Error: ${e}</div>`;
+            }
+        }
+        
+        function loadPoster(img) {
+            // Lazy load poster from TMDB using client key
+            if (!window.tmdbKey) return;
+            const id = img.dataset.tmdbId;
+            const type = img.dataset.type;
+            const apiType = type === 'show' ? 'tv' : type;
+            
+            const url = `https://api.themoviedb.org/3/${apiType}/${id}?api_key=${window.tmdbKey}&language=en-US`;
+            
+            fetch(url).then(r => r.json()).then(d => {
+                if(d.poster_path) {
+                    img.src = `https://image.tmdb.org/t/p/w500${d.poster_path}`;
+                    img.classList.remove('opacity-0');
+                }
+            }).catch(() => {});
+        }
+
+        async function openDetail(item) {
+            const modal = document.getElementById('detail-modal');
+            const data = item[item.type];
+            const type = item.type; // movie, show
+            const apiType = type === 'show' ? 'tv' : type;
+            
+            if(!data) return;
+            
+            // Set Basics
+            document.getElementById('detail-title').innerText = data.title;
+            document.getElementById('detail-year').innerText = data.year;
+            document.getElementById('detail-overview').innerText = "Loading Metadata...";
+            document.getElementById('detail-hero').src = "";
+            document.getElementById('seasons-list').innerHTML = "";
+            document.getElementById('detail-seasons').classList.add('hidden');
+            
+            const actions = document.getElementById('detail-actions');
+            actions.innerHTML = ''; // Clear buttons
+            
+            modal.classList.remove('hidden');
+            
+            // Fetch Rich Metadata
+            if (window.tmdbKey && data.ids.tmdb) {
+                try {
+                    const r = await fetch(`https://api.themoviedb.org/3/${apiType}/${data.ids.tmdb}?api_key=${window.tmdbKey}&language=en-US`);
+                    const meta = await r.json();
+                    
+                    document.getElementById('detail-overview').innerText = meta.overview || "No overview available.";
+                    document.getElementById('detail-rating').innerText = `★ ${meta.vote_average ? meta.vote_average.toFixed(1) : '?'}`;
+                    if(meta.backdrop_path) {
+                        document.getElementById('detail-hero').src = `https://image.tmdb.org/t/p/original${meta.backdrop_path}`;
+                    }
+                    
+                    // Launch Button (Movie)
+                    if (type === 'movie') {
+                        const btn = document.createElement('button');
+                        btn.className = "px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-lg shadow-lg shadow-indigo-600/20 transition-all flex items-center gap-2";
+                        btn.innerHTML = '<i data-lucide="play-circle"></i> PLAY ON TV';
+                        btn.onclick = () => launchContent('movie', data.ids.imdb || data.ids.slug);
+                        actions.appendChild(btn);
+                    } 
+                    // Seasons (Show)
+                    else if (type === 'show') {
+                         document.getElementById('detail-seasons').classList.remove('hidden');
+                         renderSeasons(data.ids.tmdb, data.ids.imdb, meta.number_of_seasons);
+                    }
+                    
+                    lucide.createIcons();
+                } catch(e) { console.error(e); }
+            }
+        }
+        
+async function renderSeasons(tmdbId, imdbId, totalSeasons) {
+            const container = document.getElementById('seasons-list');
+            container.innerHTML = '<div class="text-slate-500 text-xs">Loading Seasons...</div>';
+            
+            const r = await fetch(`https://api.themoviedb.org/3/tv/${tmdbId}?api_key=${window.tmdbKey}&language=en-US`);
+            const meta = await r.json();
+            
+            if(!meta.seasons) { container.innerHTML = "No seasons info."; return; }
+            
+            container.innerHTML = meta.seasons.map(s => {
+                const safeImdb = (imdbId || "").replace(/'/g, "\\'");
+                
+                return `
+                <div class="border border-white/5 rounded-lg overflow-hidden bg-slate-900/50">
+                    <button onclick="toggleSeason(this, ${tmdbId}, ${s.season_number}, '${safeImdb}')" class="w-full flex items-center justify-between p-4 hover:bg-white/5 transition-colors text-left group">
+                        <span class="font-bold text-white group-hover:text-indigo-300 transition-colors">${s.name} <span class="text-slate-500 text-xs ml-2 font-mono">${s.episode_count} eps</span></span>
+                        <i data-lucide="chevron-down" class="chevron-icon w-4 h-4 text-slate-500 transition-transform duration-300"></i>
+                    </button>
+                    <div class="episodes-container hidden bg-black/40 p-2 space-y-1" data-loaded="false">
+                        <!-- Content injected here -->
+                    </div>
+                </div>
+                `;
+            }).join('');
+            lucide.createIcons();
+        }
+        
+async function toggleSeason(btn, tmdbId, seasonNum, showImdb) {
+            console.log("Toggle Season:", tmdbId, seasonNum, showImdb);
+            // Robust selection: Find container in the same parent card
+            const container = btn.parentElement.querySelector('.episodes-container');
+            if(!container) { console.error("Container not found"); return; }
+            
+            // Lucide replaces <i> with <svg>, but preserves classes.
+            const icon = btn.querySelector('.chevron-icon') || btn.querySelector('svg');
+            
+            if(!container.classList.contains('hidden')) {
+                container.classList.add('hidden');
+                if(icon) icon.style.transform = 'rotate(0deg)';
+                return;
+            }
+            
+            container.classList.remove('hidden');
+            if(icon) icon.style.transform = 'rotate(180deg)';
+            
+            console.log("Container Loaded Status:", container.dataset.loaded);
+            
+            if(container.dataset.loaded === "false") {
+                 container.innerHTML = '<div class="text-xs text-center text-slate-500 py-2"><i class="animate-spin inline-block w-3 h-3 mr-2" data-lucide="loader-2"></i>Loading Episodes...</div>';
+                 lucide.createIcons();
+                 
+                 try {
+                     const url = `https://api.themoviedb.org/3/tv/${tmdbId}/season/${seasonNum}?api_key=${window.tmdbKey}&language=en-US`;
+                     console.log("Fetching Episodes:", url);
+                     
+                     const r = await fetch(url);
+                     const data = await r.json();
+                     console.log("Episodes Data:", data);
+                     
+                     if (data.status_message) {
+                         const msg = `TMDB Error: ${data.status_message}`;
+                         container.innerHTML = `<div class="text-red-400 text-xs p-2 text-center">${msg}</div>`;
+                         alert(msg); // FORCE USER TO SEE
+                         return;
+                     }
+                     
+                     if (data.episodes && data.episodes.length > 0) {
+                         // alert(`Loaded ${data.episodes.length} episodes!`);
+                         container.innerHTML = data.episodes.map(ep => {
+                             const still = ep.still_path ? `https://image.tmdb.org/t/p/w300${ep.still_path}` : 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
+                             return `
+                             <div class="flex items-center gap-3 p-2 rounded hover:bg-white/10 transition-colors group">
+                                 <img src="${still}" class="w-24 h-14 object-cover rounded bg-slate-800 shadow-sm">
+                                 <div class="flex-1 min-w-0">
+                                     <h5 class="text-xs font-bold text-white truncate">${ep.episode_number}. ${ep.name}</h5>
+                                     <p class="text-[10px] text-slate-500 truncate text-gray-400">${ep.overview ? ep.overview.substring(0,60)+'...' : ''}</p>
+                                 </div>
+                                 <button onclick="launchContent('show', '${showImdb}', ${seasonNum}, ${ep.episode_number})" class="p-2 bg-emerald-600/20 text-emerald-400 rounded-lg hover:bg-emerald-600 hover:text-white transition-colors">
+                                     <i data-lucide="play" class="w-4 h-4"></i>
+                                 </button>
+                             </div>
+                             `;
+                         }).join('');
+                         container.dataset.loaded = "true";
+                         lucide.createIcons();
+                     } else {
+                         const msg = `No episodes found (ID:${tmdbId} S:${seasonNum})`;
+                         container.innerHTML = `<div class="text-slate-500 text-xs p-2 text-center">${msg}</div>`;
+                         alert(msg);
+                     }
+                 } catch(e) {
+                     const msg = `JS Error: ${e.message}`;
+                     container.innerHTML = `<div class="text-red-500 text-xs p-2 text-center">${msg}</div>`;
+                     alert(msg);
+                     console.error(e);
+                 }
+            }
+        }
+
+        function closeDetailModal() {
+            document.getElementById('detail-modal').classList.add('hidden');
+        }
+
+        async function launchContent(type, id, season, episode) {
+             // Visual Feedback
+             const btn = event.currentTarget;
+             const original = btn.innerHTML;
+             btn.innerHTML = '<i class="animate-spin" data-lucide="loader-2"></i>';
+             lucide.createIcons();
+             
+             try {
+                 const res = await fetch('/api/launch', {
+                     method: 'POST',
+                     headers: {'Content-Type': 'application/json'},
+                     body: JSON.stringify({ type, id, season, episode })
+                 });
+                 const d = await res.json();
+                 if(d.success) {
+                     // Maybe show toast?
+                     setTimeout(() => btn.innerHTML = '<i data-lucide="check"></i> SENT', 500);
+                     setTimeout(() => { btn.innerHTML = original; lucide.createIcons(); }, 2000);
+                     // Close modal? No, maybe they want to play another.
+                 } else {
+                     alert("Launch Failed");
+                     btn.innerHTML = original;
+                 }
+             } catch(e) {
+                 alert("Error: " + e);
+                 btn.innerHTML = original;
+             }
+             lucide.createIcons();
+        }
+
+        function renderHistory() {
+            if (!window.historyData) return;
+            const input = document.getElementById('adb-ip');
+            const dropdown = document.getElementById('adb-dropdown');
+            const arrow = document.getElementById('adb-dropdown-arrow');
+            
+            // Switch to INPUT
+            input.classList.remove('hidden');
+            dropdown.classList.add('hidden');
+            arrow.classList.add('hidden');
+            input.dataset.manualOverride = "true"; // Prevent auto-hiding again immediately
+            input.focus();
+        }
+
+        function skipTo(target) {
+            fetch('/api/command', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({command: 'seek_to', target}) });
+        }
+        function sendCmd(cmd) {
+            fetch('/api/command', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({command: cmd}) });
+        }
+        function mapWakoUi() {
+             const output = document.getElementById('wako-map-output');
+             const labelEl = document.getElementById('inp-wako-map-label');
+             if (output) {
+                 output.classList.remove('hidden');
+                 output.textContent = 'Mapping current Wako screen...';
+             }
+             fetch('/api/wako/map', {
+                 method: 'POST',
+                 headers: {'Content-Type': 'application/json'},
+                 body: JSON.stringify({label: labelEl ? labelEl.value.trim() : ''})
+             })
+             .then(async r => {
+                 const data = await r.json().catch(() => ({error: 'Mapper returned non-JSON response'}));
+                 data.http_status = r.status;
+                 return data;
+             })
+             .then(data => {
+                 if (!output) return;
+                 const summary = {
+                     error: data.error || '',
+                     label: data.label || (labelEl ? labelEl.value.trim() : ''),
+                     http_status: data.http_status,
+                     classification: data.classification,
+                     heist_allowed: data.heist_allowed,
+                     focus: data.focus,
+                     xml_hash: data.xml_hash,
+                     xml_length: data.xml_length,
+                     saved_json: data.capture ? data.capture.json_path : '',
+                     saved_xml: data.capture ? data.capture.xml_path : '',
+                     saved_image: data.capture ? data.capture.image_path : '',
+                     screenshot: data.capture ? data.capture.screenshot : {},
+                     capture_quality: data.capture ? data.capture.capture_quality : '',
+                     adb_errors: data.capture ? data.capture.adb_errors : [],
+                     error_log: data.capture ? data.capture.error_path : '',
+                     capture_dir: data.capture ? data.capture.capture_dir : '',
+                     xml_dir: data.capture ? data.capture.xml_dir : '',
+                     json_dir: data.capture ? data.capture.json_dir : '',
+                     image_dir: data.capture ? data.capture.image_dir : '',
+                     error_dir: data.capture ? data.capture.error_dir : '',
+                     dump_attempts: data.dump_attempts || [],
+                     diagnostics: data.diagnostics || {},
+                     player_markers: data.player_markers || [],
+                     blocker_markers: data.blocker_markers || [],
+                     control_markers: data.control_markers || [],
+                     time_pairs: data.time_pairs || [],
+                     split_times: data.split_times || [],
+                     metadata_candidate: data.metadata_candidate || {},
+                     progress_candidate: data.progress_candidate || {},
+                     text_samples: data.text_samples || [],
+                     focused_nodes: data.node_summary ? data.node_summary.focused_nodes : [],
+                     clickable_nodes: data.node_summary ? data.node_summary.clickable_nodes : [],
+                     text_nodes: data.node_summary ? data.node_summary.text_nodes : [],
+                     content_desc_nodes: data.node_summary ? data.node_summary.content_desc_nodes : [],
+                     resource_ids: data.node_summary ? data.node_summary.resource_ids : [],
+                     packages: data.node_summary ? data.node_summary.packages : {},
+                     classes: data.node_summary ? data.node_summary.classes : {},
+                     raw: data.error ? data : undefined
+                 };
+                 output.textContent = JSON.stringify(summary, null, 2);
+             })
+             .catch(err => {
+                 if (output) output.textContent = 'Mapper failed: ' + err;
+             });
+        }
+        function connectAdb() {
+            const ip = document.getElementById('adb-ip').value;
+             fetch('/api/settings', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({action: 'connect', adb_host: ip}) });
+        }
+        function updateConfig(key, val) {
+             fetch('/api/settings', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({action: 'update', [key]: val}) });
+        }
+
+        function updateSecretConfig(key, input) {
+             const val = (input.value || "").trim();
+             if (!val || /^•+$/.test(val)) {
+                 if (input.dataset.saved === "true") input.value = "••••••••••••••••";
+                 return;
+             }
+             updateConfig(key, val);
+             input.dataset.saved = "true";
+             input.value = "••••••••••••••••";
+             
+             // Update status text if it exists
+             let statusId = "";
+             if (key === "nuvio_covers_token") statusId = "txt-nuvio-token-status";
+             else if (key === "nuvio_covers_password") statusId = "txt-nuvio-pass-status";
+             
+             if (statusId) {
+                 const status = document.getElementById(statusId);
+                 if (status) {
+                     status.textContent = (key.includes("pass") ? "Password" : "Token") + " saved and hidden";
+                     status.className = "text-[9px] text-cyan-300";
+                 }
+             }
+        }
+
+        function prepareSecretInput(input) {
+             if (input.dataset.saved === "true" && /^•+$/.test(input.value || "")) {
+                 input.value = "";
+                 input.placeholder = "Paste new token to replace saved token";
+             }
+        }
+
+        function updateArtworkProviderVisibility(provider) {
+             const topPosters = document.getElementById('top-posters-settings');
+             const erdb = document.getElementById('erdb-settings');
+             if (topPosters) topPosters.classList.toggle('hidden', provider !== 'top_posters');
+             if (erdb) erdb.classList.toggle('hidden', provider !== 'erdb');
+             const show = document.getElementById('opt-rpc-large-show');
+             const season = document.getElementById('opt-rpc-large-season');
+             const episode = document.getElementById('opt-rpc-large-episode');
+             if (provider === 'erdb') {
+                 if (show) show.textContent = 'Series Poster (ERDB poster)';
+                 if (season) season.textContent = 'Season Art (ERDB backdrop)';
+                 if (episode) episode.textContent = 'Episode Art (ERDB thumbnail)';
+             } else if (provider === 'top_posters') {
+                 if (show) show.textContent = 'Series Poster (Top Posters poster)';
+                 if (season) season.textContent = 'Season Poster (masked Top Posters)';
+                 if (episode) episode.textContent = 'Episode Still (Top Posters thumbnail)';
+             } else {
+                 if (show) show.textContent = 'Series Poster';
+                 if (season) season.textContent = 'Season Poster';
+                 if (episode) episode.textContent = 'Episode Still';
+             }
+        }
+
+        let skipPriorityRendered = false;
+        function renderSkipProviders(config) {
+            if(skipPriorityRendered) return; // Only build once to avoid disrupting drag
+            const container = document.getElementById('skip-providers-container');
+            if(!container || !config.skip_priority_order) return;
+            
+            skipPriorityRendered = true;
+            
+            const displayNames = {
+                'introdb': 'IntroDB.app',
+                'tidb': 'TheIntroDB.org',
+                'remote_json': 'Remote JSON',
+                'videoskip': 'VideoSkip.org (Mature)',
+                'notscare_major': 'NotScare.me (Major)',
+                'notscare_minor': 'NotScare.me (Minor)',
+                'aniskip': 'AniSkip',
+                'skipme': 'SkipMe.db'
+            };
+            
+            const displayIcons = {
+                'introdb': 'database',
+                'tidb': 'layers',
+                'remote_json': 'cloud-download',
+                'videoskip': 'shield-alert',
+                'notscare_major': 'skull',
+                'notscare_minor': 'ghost',
+                'aniskip': 'zap',
+                'skipme': 'fast-forward'
+            };
+
+            const displayColors = {
+                'introdb': 'text-blue-400',
+                'tidb': 'text-indigo-400',
+                'remote_json': 'text-emerald-400',
+                'videoskip': 'text-rose-400',
+                'notscare_major': 'text-orange-500',
+                'notscare_minor': 'text-yellow-400',
+                'aniskip': 'text-purple-400',
+                'skipme': 'text-cyan-400'
+            };
+            
+            const toggleKeys = {
+                'introdb': 'introdb_enabled',
+                'tidb': 'tidb_enabled',
+                'remote_json': 'remote_json_enabled',
+                'videoskip': 'videoskip_enabled',
+                'notscare_major': 'notscare_major_enabled',
+                'notscare_minor': 'notscare_minor_enabled',
+                'aniskip': 'aniskip_fallback',
+                'skipme': 'skipme_enabled'
+            };
+
+            container.innerHTML = '';
+            
+            config.skip_priority_order.forEach((provider, index) => {
+                const isEnabled = config[toggleKeys[provider]];
+                const div = document.createElement('div');
+                div.className = "flex items-center justify-between p-3 bg-black/40 border border-white/5 rounded-xl group";
+                div.dataset.provider = provider;
+                
+                div.innerHTML = `
+                    <div class="flex items-center gap-4">
+                        <div class="flex flex-col gap-1 opacity-20 hover:opacity-100 cursor-pointer transition-opacity">
+                            <i data-lucide="chevron-up" class="w-3 h-3" onclick="moveProvider('${provider}', -1)"></i>
+                            <i data-lucide="chevron-down" class="w-3 h-3" onclick="moveProvider('${provider}', 1)"></i>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div class="p-2 rounded-lg bg-white/5 border border-white/5 ${displayColors[provider] || 'text-slate-400'}">
+                                <i data-lucide="${displayIcons[provider] || 'box'}" class="w-4 h-4"></i>
+                            </div>
+                            <span class="font-bold text-sm text-slate-200">#${index + 1} ${displayNames[provider] || provider}</span>
+                        </div>
+                    </div>
+                    <div class="relative">
+                        <input type="checkbox" id="chk-pr-${provider}" ${isEnabled ? 'checked' : ''} onchange="updateConfig('${toggleKeys[provider]}', this.checked)" class="peer sr-only">
+                        <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600 cursor-pointer" onclick="document.getElementById('chk-pr-${provider}').click()"></div>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+            lucide.createIcons();
+        }
+
+        function moveProvider(providerId, dir) {
+            const container = document.getElementById('skip-providers-container');
+            const items = Array.from(container.children);
+            const index = items.findIndex(el => el.dataset.provider === providerId);
+            if(index < 0) return;
+            
+            const newIndex = index + dir;
+            if(newIndex < 0 || newIndex >= items.length) return;
+            
+            // Swap in array
+            const temp = items[index];
+            items[index] = items[newIndex];
+            items[newIndex] = temp;
+            
+            // Update Priority List
+            const newOrder = items.map(el => el.dataset.provider);
+            updateConfig('skip_priority_order', newOrder);
+            
+            // Re-render
+            skipPriorityRendered = false; // Allow re-render
+            // Need to mock config object to re-render locally immediately
+            const mockConfig = { skip_priority_order: newOrder };
+            newOrder.forEach(p => {
+                const toggleKeys = {'introdb':'introdb_enabled','tidb':'tidb_enabled','remote_json':'remote_json_enabled','videoskip':'videoskip_enabled','notscare_major':'notscare_major_enabled','notscare_minor':'notscare_minor_enabled','aniskip':'aniskip_fallback'};
+                const isChecked = document.getElementById('chk-pr-' + p).checked;
+                mockConfig[toggleKeys[p]] = isChecked;
+            });
+            renderSkipProviders(mockConfig);
+        }
+        function saveIntegration(type) {
+             if (type === 'skip') {
+                 // Skip config has multiple inputs
+                 const data = {
+                     action: 'update',
+                     skip_tmdb: document.getElementById('inp-skip-tmdb').value.trim(),
+                     skip_mal: document.getElementById('inp-skip-mal').value.trim(),
+                     tidb_api_key: document.getElementById('inp-tidb-key').value.trim()
+                 };
+                 fetch('/api/settings', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) })
+                     .then(() => { alert('Skip config saved!'); });
+             } else if (type === 'trakt') {
+                 // Trakt needs BOTH client_id and client_secret
+                 const data = {
+                     action: 'update',
+                     trakt: document.getElementById('inp-trakt').value.trim(),
+                     trakt_secret: document.getElementById('inp-trakt-secret').value.trim()
+                 };
+                 fetch('/api/settings', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) })
+                     .then(() => { alert('Trakt credentials saved!'); });
+             } else if (type === 'discord') {
+                 const data = {
+                     action: 'update',
+                     discord: document.getElementById('inp-discord').value.trim(),
+                     discord_wako: document.getElementById('inp-discord-wako').value.trim()
+                 };
+                 fetch('/api/settings', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) })
+                     .then(() => { alert('Discord credentials saved!'); });
+             } else {
+                 const val = document.getElementById('inp-' + type).value;
+                 fetch('/api/settings', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({action: 'update', [type]: val}) })
+                     .then(() => { alert(type.toUpperCase() + ' saved!'); });
+             }
+        }
+        function toggleSetting(type) {
+             sendCmd('toggle_skip');
+        }
+        
+        // Festive Snow Effect
+        let snowEnabled = false;
+        let snowInterval = null;
+        
+        function toggleSnow() {
+            const container = document.getElementById('snow-container');
+            const btn = document.getElementById('btn-snow');
+            snowEnabled = !snowEnabled;
+            
+            if (snowEnabled) {
+                container.classList.remove('hidden');
+                btn.classList.add('bg-cyan-500/30', 'text-white');
+                btn.classList.remove('bg-cyan-500/10', 'text-cyan-400');
+                
+                // Create initial batch of snowflakes
+                for (let i = 0; i < 30; i++) {
+                    setTimeout(() => createSnowflake(), i * 100);
+                }
+                
+                // Keep generating snowflakes
+                snowInterval = setInterval(createSnowflake, 300);
+            } else {
+                container.classList.add('hidden');
+                btn.classList.remove('bg-cyan-500/30', 'text-white');
+                btn.classList.add('bg-cyan-500/10', 'text-cyan-400');
+                
+                // Clear interval and remove existing snowflakes
+                if (snowInterval) clearInterval(snowInterval);
+                container.innerHTML = '';
+            }
+        }
+        
+        function createSnowflake() {
+            const container = document.getElementById('snow-container');
+            if (!container || container.classList.contains('hidden')) return;
+            
+            const snowflake = document.createElement('div');
+            const size = Math.random() * 8 + 4; // 4-12px
+            const startX = Math.random() * 100;
+            const duration = Math.random() * 5 + 5; // 5-10 seconds
+            const drift = Math.random() * 100 - 50; // -50 to 50px horizontal drift
+            
+            // Use various Unicode snowflake/star characters for variety
+            const snowChars = ['❄', '❅', '❆', '✻', '✼', '❋', '✺', '*', '•'];
+            snowflake.innerHTML = snowChars[Math.floor(Math.random() * snowChars.length)];
+            snowflake.style.cssText = `
+                position: absolute;
+                top: -20px;
+                left: ${startX}%;
+                font-size: ${size}px;
+                color: white;
+                opacity: ${Math.random() * 0.5 + 0.5};
+                text-shadow: 0 0 5px rgba(255,255,255,0.8);
+                animation: snowfall ${duration}s linear forwards;
+                pointer-events: none;
+            `;
+            
+            // Create unique animation for this snowflake
+            const animId = 'snow_' + Math.random().toString(36).substr(2, 9);
+            const keyframes = `
+                @keyframes ${animId} {
+                    0% { transform: translateY(0) translateX(0) rotate(0deg); }
+                    100% { transform: translateY(100vh) translateX(${drift}px) rotate(360deg); }
+                }
+            `;
+            
+            // Inject keyframes
+            const style = document.createElement('style');
+            style.textContent = keyframes;
+            document.head.appendChild(style);
+            snowflake.style.animation = `${animId} ${duration}s linear forwards`;
+            
+            container.appendChild(snowflake);
+            
+            // Remove after animation completes
+            setTimeout(() => {
+                snowflake.remove();
+                style.remove();
+            }, duration * 1000 + 100);
+        }
+
+        // Loop
+        setInterval(updateState, 1000);
+        
+        // Remote Control Logic
+        function toggleRemote() {
+            const el = document.getElementById('remote-overlay');
+            if (el.classList.contains('hidden')) {
+                el.classList.remove('hidden');
+                // Allow refs to update for transition
+                requestAnimationFrame(() => {
+                   el.classList.remove('opacity-0');
+                   el.firstElementChild.classList.remove('scale-95');
+                });
+            } else {
+                el.classList.add('opacity-0');
+                el.firstElementChild.classList.add('scale-95');
+                setTimeout(() => el.classList.add('hidden'), 300);
+            }
+        }
+        
+        function sendRemote(key) {
+            if (navigator.vibrate) navigator.vibrate(30);
+            fetch('/api/remote/' + key, { method: 'POST' });
+        }
+        
+        // Initial Anime
+        anime({
+            targets: '#navbar, header',
+            opacity: [0, 1],
+            duration: 1000,
+            easing: 'easeOutQuad'
+        });
+        switchTab('dashboard');
+
+        // --- ANALYTICS ---
+        let analyticsChart = null;
+        
+        async function loadAnalytics() {
+            try {
+                // Load stats
+                const statsRes = await fetch('/api/analytics/stats');
+                const stats = await statsRes.json();
+                document.getElementById('analytics-sessions').innerText = stats.total_sessions || 0;
+                document.getElementById('analytics-hours').innerText = (stats.total_hours || 0) + 'h';
+                document.getElementById('analytics-completed').innerText = stats.completed_count || 0;
+                if (stats.top_titles && stats.top_titles.length > 0) {
+                    document.getElementById('analytics-top').innerText = stats.top_titles[0].title;
+                }
+
+                // Load daily chart
+                const dailyRes = await fetch('/api/analytics/daily?days=7');
+                const daily = await dailyRes.json();
+                
+                const labels = daily.map(d => d.date.substring(5)); // MM-DD
+                const watchData = daily.map(d => Math.round(d.total_watch_minutes || 0));
+                
+                if (analyticsChart) analyticsChart.destroy();
+                const ctx2 = document.getElementById('analytics-chart').getContext('2d');
+                analyticsChart = new Chart(ctx2, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Minutes',
+                            data: watchData,
+                            backgroundColor: 'rgba(6, 182, 212, 0.5)',
+                            borderColor: '#06b6d4',
+                            borderWidth: 1,
+                            borderRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: { grid: { display: false, color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b', font: { size: 10 } } },
+                            y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b', font: { size: 10 } } }
+                        }
+                    }
+                });
+
+                // Load recent sessions
+                const sessRes = await fetch('/api/analytics/sessions?limit=20');
+                const sessions = await sessRes.json();
+                const list = document.getElementById('analytics-sessions-list');
+                
+                if (!sessions || sessions.length === 0) {
+                    list.innerHTML = '<div class="text-slate-500 font-mono text-sm text-center py-4">No watch sessions recorded yet.</div>';
+                    return;
+                }
+
+                list.innerHTML = sessions.map(s => {
+                    const date = new Date(s.started_at * 1000);
+                    const dur = Math.round((s.duration_watched_ms || 0) / 60000);
+                    const poster = s.image_url || '';
+                    return `
+                    <div class="flex items-center gap-3 p-3 bg-black/30 rounded-xl hover:bg-white/5 transition-colors">
+                        ${poster ? `<img src="${poster}" class="w-10 h-14 rounded object-cover bg-slate-900">` : '<div class="w-10 h-14 rounded bg-slate-800 flex items-center justify-center"><i data-lucide="film" class="w-4 h-4 text-slate-600"></i></div>'}
+                        <div class="flex-1 min-w-0">
+                            <h4 class="text-sm font-bold text-white truncate">${s.title}</h4>
+                            <p class="text-[10px] text-slate-400 font-mono">${s.subtitle} • ${dur}m watched</p>
+                        </div>
+                        <span class="text-[10px] text-slate-600 font-mono">${date.toLocaleDateString()}</span>
+                    </div>`;
+                }).join('');
+                lucide.createIcons();
+            } catch (e) {
+                console.error('Analytics load error:', e);
+            }
+        }
+
+        // --- WATCH PARTY ---
+
+
+    </script>
+    <!-- Remote Control Overlay -->
+    <div id="remote-overlay" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] hidden flex items-center justify-center transition-all duration-300 opacity-0" onclick="toggleRemote()">
+        <div class="bg-gray-900/90 border border-white/10 rounded-3xl p-8 shadow-2xl transform scale-95 transition-all duration-300" onclick="event.stopPropagation()">
+            <div class="text-center text-white/50 text-xs font-mono mb-4 tracking-widest uppercase">Remote Control</div>
+            <div class="grid grid-cols-3 gap-4 mb-6">
+                <!-- Row 1 -->
+                <div></div>
+                <button onclick="sendRemote('up')" aria-label="Up" class="w-16 h-16 rounded-2xl bg-white/5 hover:bg-white/10 active:bg-white/20 active:scale-95 flex items-center justify-center transition-all border border-white/5">
+                    <i data-lucide="chevron-up" class="w-8 h-8 text-white"></i>
+                </button>
+                <div></div>
+                
+                <!-- Row 2 -->
+                <button onclick="sendRemote('left')" aria-label="Left" class="w-16 h-16 rounded-2xl bg-white/5 hover:bg-white/10 active:bg-white/20 active:scale-95 flex items-center justify-center transition-all border border-white/5">
+                    <i data-lucide="chevron-left" class="w-8 h-8 text-white"></i>
+                </button>
+                <button onclick="sendRemote('center')" aria-label="Select" class="w-16 h-16 rounded-full bg-indigo-500/20 hover:bg-indigo-500/40 active:bg-indigo-500/60 active:scale-90 border border-indigo-500/50 flex items-center justify-center transition-all shadow-[0_0_15px_rgba(99,102,241,0.3)]">
+                    <div class="w-4 h-4 rounded-full bg-indigo-400 shadow-inner"></div>
+                </button>
+                <button onclick="sendRemote('right')" aria-label="Right" class="w-16 h-16 rounded-2xl bg-white/5 hover:bg-white/10 active:bg-white/20 active:scale-95 flex items-center justify-center transition-all border border-white/5">
+                    <i data-lucide="chevron-right" class="w-8 h-8 text-white"></i>
+                </button>
+                
+                <!-- Row 3 -->
+                <div></div>
+                <button onclick="sendRemote('down')" aria-label="Down" class="w-16 h-16 rounded-2xl bg-white/5 hover:bg-white/10 active:bg-white/20 active:scale-95 flex items-center justify-center transition-all border border-white/5">
+                    <i data-lucide="chevron-down" class="w-8 h-8 text-white"></i>
+                </button>
+                <div></div>
+            </div>
+            
+            <!-- Volume Row -->
+            <div class="flex justify-between gap-3 mb-4">
+                <button onclick="sendRemote('vol_down')" aria-label="Volume Down" class="flex-1 py-3 px-4 rounded-xl bg-blue-500/10 hover:bg-blue-500/20 active:bg-blue-500/30 text-blue-400 border border-blue-500/20 font-bold uppercase tracking-wider text-xs flex items-center justify-center gap-2 transition-all active:scale-95">
+                    <i data-lucide="volume-1" class="w-4 h-4"></i> Vol−
+                </button>
+                <button onclick="sendRemote('mute')" aria-label="Mute" class="py-3 px-4 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 active:bg-amber-500/30 text-amber-400 border border-amber-500/20 font-bold uppercase tracking-wider text-xs flex items-center justify-center gap-2 transition-all active:scale-95">
+                    <i data-lucide="volume-x" class="w-4 h-4"></i>
+                </button>
+                <button onclick="sendRemote('vol_up')" aria-label="Volume Up" class="flex-1 py-3 px-4 rounded-xl bg-blue-500/10 hover:bg-blue-500/20 active:bg-blue-500/30 text-blue-400 border border-blue-500/20 font-bold uppercase tracking-wider text-xs flex items-center justify-center gap-2 transition-all active:scale-95">
+                    <i data-lucide="volume-2" class="w-4 h-4"></i> Vol+
+                </button>
+            </div>
+            
+            <div class="flex justify-between gap-4">
+                <button onclick="sendRemote('back')" aria-label="Back" class="flex-1 py-3 px-4 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 active:bg-rose-500/30 text-rose-400 border border-rose-500/20 font-bold uppercase tracking-wider text-xs flex items-center justify-center gap-2 transition-all active:scale-95">
+                    <i data-lucide="arrow-left" class="w-4 h-4"></i> Back
+                </button>
+                <button onclick="sendRemote('home')" aria-label="Home" class="flex-1 py-3 px-4 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 active:bg-emerald-500/30 text-emerald-400 border border-emerald-500/20 font-bold uppercase tracking-wider text-xs flex items-center justify-center gap-2 transition-all active:scale-95">
+                    <i data-lucide="home" class="w-4 h-4"></i> Home
+                </button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

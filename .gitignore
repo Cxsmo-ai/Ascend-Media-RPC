@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+
+# Build artifacts
+build/
+dist/
+*.exe
+*.dist/
+*.build/
+
+# Config & Sensitive
+config.json
+security.key
+push_to_github.bat
+REDDIT_POST.md
+GITHUB_TOPICS.txt
+*.log
+*.mp4
+erdb_artwork_cache/
+top_posters_cache/
+
+# VS Code / IDE
+.vscode/
+.idea/
+.vs/
