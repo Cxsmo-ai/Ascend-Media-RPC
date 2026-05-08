@@ -161,10 +161,7 @@ Allow per-category enable/disable toggles.
 - Weekly/monthly time-saved reports with shareable summary images.
 - "Time saved" milestone achievements (e.g., "You've saved 10 hours!").
 
-### 4.5 SponsorBlock Integration
-**Suggestion:** Add [SponsorBlock](https://sponsor.ajay.app/) as a skip provider for YouTube content played through Stremio. SponsorBlock has a well-documented public API and could skip sponsor segments, self-promotion, and interaction reminders.
-
-### 4.6 Skip Segment Caching
+### 4.5 Skip Segment Caching
 **Current:** Skip segments are fetched live from providers each time.
 **Suggestion:** Cache skip segments locally keyed by IMDb ID + season + episode. Invalidate cache after a configurable TTL (e.g., 7 days) to pick up newly submitted segments.
 
@@ -523,7 +520,6 @@ Output logs to stdout, expose only the Flask API, and skip GUI initialization.
 | Plugin/extension system | High | High | P2 |
 | Onboarding wizard | Medium | Medium | P2 |
 | AniList integration | Medium | Medium | P3 |
-| SponsorBlock integration | Medium | Medium | P3 |
 | Letterboxd integration | Low | Medium | P3 |
 | Async architecture migration | High | High | P3 |
 | Year-in-review stats | Low | Medium | P3 |
@@ -541,7 +537,6 @@ Output logs to stdout, expose only the Flask API, and skip GUI initialization.
 | Simkl | https://simkl.docs.apiary.io/ | Client ID |
 | Kitsu | https://kitsu.docs.apiary.io/ | OAuth 2.0 |
 | FanArt.tv | https://fanart.tv/api-docs/ | API Key |
-| SponsorBlock | https://wiki.sponsor.ajay.app/w/API_Docs | None |
 | Last.fm | https://www.last.fm/api | API Key |
 | OpenSubtitles | https://opensubtitles.stoplight.io/ | API Key |
 | JustWatch | https://www.justwatch.com/ | Unofficial |
