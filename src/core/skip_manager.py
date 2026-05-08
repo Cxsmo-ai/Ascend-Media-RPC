@@ -36,6 +36,13 @@ class SkipManager:
         
         self.cache = {}
         self.mal_cache = {}
+
+        # TTL-based persistent cache
+        from src.core.skip_cache import SkipSegmentCache
+        self._ttl_cache = SkipSegmentCache(
+            ttl=config.get("skip_cache_ttl", 3600),
+            max_size=config.get("skip_cache_max_size", 500),
+        )
         
         self.enabled = (config.get("skip_mode", "off") != "off")
         
@@ -96,6 +103,14 @@ class SkipManager:
         
         key = f"{imdb_id}-{tmdb_id}-{title}-{season}-{episode}-{is_movie}-{year}"
         if key in self.cache: return self.cache[key]
+
+        # Check TTL cache first
+        cached = self._ttl_cache.get(imdb_id or "", season, episode,
+                                     tmdb_id=tmdb_id, title=title,
+                                     is_movie=is_movie, year=year)
+        if cached is not None:
+            self.cache[key] = cached
+            return cached
             
         all_segments = []
         mal_id = None
@@ -196,7 +211,20 @@ class SkipManager:
             s.pop("_cat", None)
             
         self.cache[key] = resolved_segments
+        # Store in TTL cache for persistence across in-memory cache clears
+        self._ttl_cache.put(imdb_id or "", season, episode, resolved_segments,
+                           tmdb_id=tmdb_id, title=title,
+                           is_movie=is_movie, year=year)
         return resolved_segments
+
+    def get_cache_stats(self) -> Dict:
+        """Return cache statistics."""
+        return self._ttl_cache.stats()
+
+    def clear_cache(self):
+        """Clear both in-memory and TTL caches."""
+        self.cache.clear()
+        self._ttl_cache.invalidate()
 
     def _fetch_tidb(self, imdb_id: str, season: int, episode: int, tmdb_id: Optional[int] = None) -> Optional[List[Dict]]:
         try:

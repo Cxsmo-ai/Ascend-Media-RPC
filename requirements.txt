@@ -8,3 +8,5 @@ pycryptodome>=3.19.0
 flask>=3.0.0
 pywebview>=4.4.1
 colorama>=0.4.6
+guessit>=3.8.0
+anitopy>=2.1.1

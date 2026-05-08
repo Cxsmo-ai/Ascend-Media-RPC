@@ -1,0 +1,28 @@
+version: "3.8"
+
+services:
+  ascend-rpc:
+    build: .
+    container_name: ascend-media-rpc
+    restart: unless-stopped
+    ports:
+      - "${DASHBOARD_PORT:-5466}:5466"
+    volumes:
+      - ./config.json:/app/config.json
+      - ./data:/app/data
+      - ./rpc_artwork_cache:/app/rpc_artwork_cache
+    environment:
+      - HEADLESS=1
+      - GUI_MODE=browser
+      - ADB_HOST=${ADB_HOST:-}
+      - ADB_PORT=${ADB_PORT:-5555}
+      - TMDB_API_KEY=${TMDB_API_KEY:-}
+      - DISCORD_CLIENT_ID=${DISCORD_CLIENT_ID:-1451010126495617106}
+      - DASHBOARD_PORT=${DASHBOARD_PORT:-5466}
+    network_mode: host  # Required for ADB and Discord IPC
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; r = requests.get('http://localhost:5466/api/health'); exit(0 if r.status_code == 200 else 1)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s

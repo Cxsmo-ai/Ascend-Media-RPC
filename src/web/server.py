@@ -1,5 +1,5 @@
 
-from flask import Flask, render_template, jsonify, request, send_file, abort
+from flask import Flask, render_template, jsonify, request, send_file, abort, Response, make_response
 import logging
 import threading
 import time
@@ -7,9 +7,14 @@ import sys
 import os
 import json
 import re
+import queue
+import functools
+import hashlib
 from datetime import datetime
+from collections import defaultdict
+from typing import Optional
 
-from src.core.config import get_config_path
+from src.core.config import get_config_path, validate_config, export_config, import_config, DEFAULT_CONFIG
 
 # Disable Flask Banner
 import flask.cli
@@ -22,6 +27,75 @@ logger = logging.getLogger("stremio-rpc")
 app = Flask(__name__)
 app.config['TEMPLATES_AUTO_RELOAD'] = True
 gui_app = None # Reference to the main GUI App instance
+
+# --- Rate Limiting ---
+_rate_limit_store = defaultdict(list)
+_rate_limit_lock = threading.Lock()
+
+
+def _check_rate_limit(key: str, max_calls: int = 60, period: int = 60) -> bool:
+    now = time.time()
+    with _rate_limit_lock:
+        calls = _rate_limit_store[key]
+        _rate_limit_store[key] = [t for t in calls if now - t < period]
+        if len(_rate_limit_store[key]) >= max_calls:
+            return False
+        _rate_limit_store[key].append(now)
+        return True
+
+
+def rate_limit(max_calls=60, period=60):
+    def decorator(f):
+        @functools.wraps(f)
+        def wrapper(*args, **kwargs):
+            if gui_app and not gui_app.config.get("rate_limit_enabled", True):
+                return f(*args, **kwargs)
+            client_ip = request.remote_addr or "unknown"
+            key = f"{client_ip}:{f.__name__}"
+            if not _check_rate_limit(key, max_calls, period):
+                return jsonify({"error": "Rate limit exceeded"}), 429
+            return f(*args, **kwargs)
+        return wrapper
+    return decorator
+
+
+# --- Dashboard Authentication ---
+def require_auth(f):
+    @functools.wraps(f)
+    def wrapper(*args, **kwargs):
+        if not gui_app:
+            return f(*args, **kwargs)
+        if not gui_app.config.get("dashboard_auth_enabled", False):
+            return f(*args, **kwargs)
+        pin = gui_app.config.get("dashboard_auth_pin", "")
+        if not pin:
+            return f(*args, **kwargs)
+        auth_header = request.headers.get("X-Dashboard-Pin", "")
+        auth_cookie = request.cookies.get("dashboard_pin", "")
+        if auth_header == pin or auth_cookie == pin:
+            return f(*args, **kwargs)
+        if request.path == "/" or request.path.startswith("/api/auth"):
+            return f(*args, **kwargs)
+        return jsonify({"error": "Authentication required"}), 401
+    return wrapper
+
+
+# --- SSE (Server-Sent Events) ---
+_sse_clients = []
+_sse_lock = threading.Lock()
+
+
+def _broadcast_sse(event: str, data: dict):
+    msg = f"event: {event}\ndata: {json.dumps(data)}\n\n"
+    with _sse_lock:
+        dead = []
+        for q in _sse_clients:
+            try:
+                q.put_nowait(msg)
+            except Exception:
+                dead.append(q)
+        for q in dead:
+            _sse_clients.remove(q)
 skip_config_keys = {
     "skip_mode",
     "skip_tmdb_id",
@@ -145,9 +219,17 @@ def _save_wako_map_capture(report, label=None, controller=None):
 def run_server(main_app_instance):
     global gui_app
     gui_app = main_app_instance
+    port = int(os.environ.get("ASCEND_PORT", gui_app.config.get("dashboard_port", 5466)))
     try:
-        # Run on 0.0.0.0 to allow access from local network
-        app.run(host="0.0.0.0", port=5466, debug=False, use_reloader=False)
+        use_https = gui_app.config.get("dashboard_https_enabled", False)
+        ssl_ctx = None
+        if use_https:
+            cert = gui_app.config.get("dashboard_cert_path", "")
+            key = gui_app.config.get("dashboard_key_path", "")
+            if cert and key and os.path.exists(cert) and os.path.exists(key):
+                ssl_ctx = (cert, key)
+                logger.info(f"Dashboard HTTPS enabled with cert={cert}")
+        app.run(host="0.0.0.0", port=port, debug=False, use_reloader=False, ssl_context=ssl_ctx)
     except Exception as e:
         print(f"Web Server Failed: {e}")
         traceback.print_exc()
@@ -592,70 +674,313 @@ def launch_content():
         
     return jsonify({"error": "Invalid Content Type"}), 400
 
-# --- Phase 3: Analytics API ---
+# --- Analytics API ---
 @app.route("/api/analytics/stats")
+@require_auth
 def get_analytics_stats():
     if not gui_app: return jsonify({"error": "No App"}), 500
     return jsonify(gui_app.analytics.get_total_stats())
 
 @app.route("/api/analytics/daily")
+@require_auth
 def get_analytics_daily():
     if not gui_app: return jsonify({"error": "No App"}), 500
     days = request.args.get("days", 7, type=int)
     return jsonify(gui_app.analytics.get_daily_stats(days))
 
 @app.route("/api/analytics/sessions")
+@require_auth
 def get_analytics_sessions():
     if not gui_app: return jsonify({"error": "No App"}), 500
     limit = request.args.get("limit", 50, type=int)
     return jsonify(gui_app.analytics.get_recent_sessions(limit))
 
-# --- Phase 4: Watch Party API ---
-@app.route("/api/party/host", methods=["POST"])
-def party_host():
+@app.route("/api/analytics/advanced")
+@require_auth
+def get_analytics_advanced():
     if not gui_app: return jsonify({"error": "No App"}), 500
-    gui_app.config["watch_party_enabled"] = True
-    gui_app.config["watch_party_mode"] = "host"
-    gui_app.watch_party.enabled = True
-    gui_app.watch_party.mode = "host"
-    gui_app.watch_party.start()
-    gui_app.save_settings()
-    return jsonify({"status": "hosting", "port": gui_app.watch_party.port})
+    return jsonify(gui_app.analytics.get_advanced_stats())
 
-@app.route("/api/party/join", methods=["POST"])
-def party_join():
+@app.route("/api/analytics/search")
+@require_auth
+def search_analytics():
     if not gui_app: return jsonify({"error": "No App"}), 500
-    data = request.json
-    host_ip = data.get("host_ip", "")
-    if not host_ip: return jsonify({"error": "No host IP"}), 400
-    
-    gui_app.config["watch_party_enabled"] = True
-    gui_app.config["watch_party_mode"] = "client"
-    gui_app.config["watch_party_host_ip"] = host_ip
-    gui_app.watch_party.enabled = True
-    gui_app.watch_party.mode = "client"
-    gui_app.watch_party.host_ip = host_ip
-    gui_app.watch_party.start()
-    gui_app.save_settings()
-    return jsonify({"status": "joined", "host": host_ip})
+    q = request.args.get("q", "")
+    limit = request.args.get("limit", 50, type=int)
+    return jsonify(gui_app.analytics.search_history(q, limit))
 
-@app.route("/api/party/leave", methods=["POST"])
-def party_leave():
-    if not gui_app: return jsonify({"error": "No App"}), 500
-    gui_app.watch_party.stop()
-    gui_app.config["watch_party_enabled"] = False
-    gui_app.config["watch_party_mode"] = "off"
-    gui_app.watch_party.enabled = False
-    gui_app.watch_party.mode = "off"
-    gui_app.save_settings()
-    return jsonify({"status": "left"})
 
-@app.route("/api/party/status")
-def party_status():
-    if not gui_app: return jsonify({"error": "No App"}), 500
+# --- Health Check ---
+@app.route("/api/health")
+def health_check():
+    if not gui_app:
+        return jsonify({"status": "starting"}), 503
+    s = gui_app.shared_state
     return jsonify({
-        "enabled": gui_app.watch_party.enabled,
-        "mode": gui_app.watch_party.mode,
-        "peers": gui_app.watch_party.peer_count
+        "status": "ok",
+        "uptime": int(time.time() - getattr(gui_app, '_start_time', time.time())),
+        "adb_connected": s.get("connected", False),
+        "discord_connected": getattr(gui_app.rpc, 'connected', False),
+        "device": _safe_text(s.get("device"), "Disconnected"),
+        "is_playing": s.get("is_playing", False),
     })
+
+
+# --- Authentication ---
+@app.route("/api/auth/login", methods=["POST"])
+def auth_login():
+    if not gui_app: return jsonify({"error": "No App"}), 500
+    if not gui_app.config.get("dashboard_auth_enabled", False):
+        return jsonify({"status": "ok", "message": "Auth not enabled"})
+    data = request.json or {}
+    pin = data.get("pin", "")
+    if pin == gui_app.config.get("dashboard_auth_pin", ""):
+        resp = make_response(jsonify({"status": "ok"}))
+        resp.set_cookie("dashboard_pin", pin, max_age=86400, httponly=True)
+        if hasattr(gui_app, 'audit_log'):
+            gui_app.audit_log.log("auth", "login_success", {"ip": request.remote_addr})
+        return resp
+    if hasattr(gui_app, 'audit_log'):
+        gui_app.audit_log.log("auth", "login_failed", {"ip": request.remote_addr})
+    return jsonify({"error": "Invalid PIN"}), 401
+
+@app.route("/api/auth/status")
+def auth_status():
+    if not gui_app: return jsonify({"enabled": False})
+    enabled = gui_app.config.get("dashboard_auth_enabled", False)
+    pin = gui_app.config.get("dashboard_auth_pin", "")
+    if not enabled or not pin:
+        return jsonify({"enabled": False, "authenticated": True})
+    auth_cookie = request.cookies.get("dashboard_pin", "")
+    return jsonify({"enabled": True, "authenticated": auth_cookie == pin})
+
+
+# --- SSE Endpoint ---
+@app.route("/api/events")
+def sse_stream():
+    def generate():
+        q = queue.Queue(maxsize=50)
+        with _sse_lock:
+            _sse_clients.append(q)
+        try:
+            while True:
+                try:
+                    msg = q.get(timeout=30)
+                    yield msg
+                except queue.Empty:
+                    yield ":\n\n"  # keepalive
+        except GeneratorExit:
+            pass
+        finally:
+            with _sse_lock:
+                if q in _sse_clients:
+                    _sse_clients.remove(q)
+    return Response(generate(), mimetype="text/event-stream",
+                    headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
+
+
+# --- Config Import/Export ---
+@app.route("/api/config/export")
+@require_auth
+def config_export():
+    if not gui_app: return jsonify({"error": "No App"}), 500
+    return jsonify({"config": json.loads(export_config(gui_app.config))})
+
+@app.route("/api/config/import", methods=["POST"])
+@require_auth
+def config_import():
+    if not gui_app: return jsonify({"error": "No App"}), 500
+    data = request.json or {}
+    config_json = data.get("config")
+    if not config_json:
+        return jsonify({"error": "No config data"}), 400
+    try:
+        merged = import_config(json.dumps(config_json), gui_app.config)
+        warnings = validate_config(merged)
+        gui_app.config.update(merged)
+        gui_app.save_settings()
+        if hasattr(gui_app, 'audit_log'):
+            gui_app.audit_log.log("config", "import", {"keys": len(config_json)})
+        return jsonify({"status": "ok", "warnings": warnings})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
+@app.route("/api/config/validate", methods=["POST"])
+@require_auth
+def config_validate():
+    if not gui_app: return jsonify({"error": "No App"}), 500
+    warnings = validate_config(gui_app.config)
+    return jsonify({"valid": len(warnings) == 0, "warnings": warnings})
+
+@app.route("/api/config/schema")
+def config_schema():
+    schema = {}
+    for key, default_val in DEFAULT_CONFIG.items():
+        schema[key] = {
+            "type": type(default_val).__name__,
+            "default": default_val,
+        }
+    return jsonify(schema)
+
+
+# --- Audit Log ---
+@app.route("/api/audit")
+@require_auth
+def get_audit_log():
+    if not gui_app: return jsonify({"error": "No App"}), 500
+    if not hasattr(gui_app, 'audit_log'):
+        return jsonify([])
+    limit = request.args.get("limit", 100, type=int)
+    category = request.args.get("category", None)
+    entries = gui_app.audit_log.get_entries(limit=limit, category=category)
+    return jsonify(entries)
+
+
+# --- RPC History ---
+@app.route("/api/rpc/history")
+@require_auth
+def get_rpc_history():
+    if not gui_app: return jsonify({"error": "No App"}), 500
+    if not hasattr(gui_app, 'rpc_history'):
+        return jsonify([])
+    return jsonify(gui_app.rpc_history.get_all())
+
+
+# --- Skip Cache Stats ---
+@app.route("/api/skip/cache")
+@require_auth
+def get_skip_cache_stats():
+    if not gui_app: return jsonify({"error": "No App"}), 500
+    return jsonify(gui_app.skip_manager.get_cache_stats())
+
+@app.route("/api/skip/cache/clear", methods=["POST"])
+@require_auth
+def clear_skip_cache():
+    if not gui_app: return jsonify({"error": "No App"}), 500
+    gui_app.skip_manager.clear_cache()
+    return jsonify({"status": "ok"})
+
+
+# --- API Key Validation ---
+@app.route("/api/validate/keys", methods=["POST"])
+@require_auth
+@rate_limit(max_calls=5, period=60)
+def validate_api_keys():
+    if not gui_app: return jsonify({"error": "No App"}), 500
+    from src.core.api_validator import APIKeyValidator
+    results = APIKeyValidator.validate_all(gui_app.config)
+    return jsonify(results)
+
+
+# --- Plugin System ---
+@app.route("/api/plugins")
+@require_auth
+def list_plugins():
+    if not gui_app: return jsonify({"error": "No App"}), 500
+    if not hasattr(gui_app, 'plugin_registry'):
+        return jsonify({"metadata": [], "skip": [], "scrobble": [], "artwork": []})
+    return jsonify(gui_app.plugin_registry.list_providers())
+
+
+# --- Integration Status ---
+@app.route("/api/integrations/status")
+@require_auth
+def integration_status():
+    if not gui_app: return jsonify({"error": "No App"}), 500
+    status = {}
+    integration_names = [
+        "anilist", "letterboxd", "justwatch", "opensubtitles",
+        "simkl", "kitsu", "lastfm", "plex", "jellyfin", "emby",
+        "notion", "obsidian"
+    ]
+    for name in integration_names:
+        status[name] = {
+            "enabled": gui_app.config.get(f"{name}_enabled", False),
+            "configured": bool(gui_app.config.get(f"{name}_api_key", "") or
+                              gui_app.config.get(f"{name}_access_token", "") or
+                              gui_app.config.get(f"{name}_url", "")),
+        }
+    return jsonify(status)
+
+
+# --- OpenAPI / Swagger Docs ---
+@app.route("/api/docs")
+def api_docs():
+    docs = {
+        "openapi": "3.0.0",
+        "info": {
+            "title": "Ascend Media RPC API",
+            "version": "2.0.0",
+            "description": "API for Ascend Media RPC Dashboard"
+        },
+        "paths": {}
+    }
+    for rule in app.url_map.iter_rules():
+        if rule.endpoint == 'static':
+            continue
+        methods = [m for m in rule.methods if m in ('GET', 'POST', 'PUT', 'DELETE')]
+        path = str(rule)
+        docs["paths"][path] = {}
+        for method in methods:
+            docs["paths"][path][method.lower()] = {
+                "summary": rule.endpoint.replace("_", " ").title(),
+                "responses": {"200": {"description": "Success"}}
+            }
+    return jsonify(docs)
+
+
+# --- Multi-Device ---
+@app.route("/api/devices")
+@require_auth
+def list_devices():
+    if not gui_app: return jsonify({"error": "No App"}), 500
+    devices = gui_app.config.get("multi_device_list", [])
+    current = {
+        "host": gui_app.config.get("adb_host", ""),
+        "port": gui_app.config.get("adb_port", 5555),
+        "connected": gui_app.shared_state.get("connected", False),
+        "name": _safe_text(gui_app.shared_state.get("device"), "Unknown"),
+    }
+    mdns_devices = []
+    if hasattr(gui_app, 'discovery') and gui_app.discovery:
+        mdns_devices = gui_app.discovery.get_mdns_devices()
+    return jsonify({
+        "current": current,
+        "saved": devices,
+        "discovered": mdns_devices,
+    })
+
+@app.route("/api/devices/switch", methods=["POST"])
+@require_auth
+def switch_device():
+    if not gui_app: return jsonify({"error": "No App"}), 500
+    data = request.json or {}
+    host = data.get("host", "")
+    port = data.get("port", 5555)
+    if not host:
+        return jsonify({"error": "No host specified"}), 400
+    gui_app.update_config("adb_host", host)
+    gui_app.update_config("adb_port", int(port))
+    gui_app.connect_adb()
+    return jsonify({"status": "ok", "host": host, "port": port})
+
+
+# --- Onboarding ---
+@app.route("/api/onboarding/status")
+def onboarding_status():
+    if not gui_app: return jsonify({"completed": True})
+    return jsonify({
+        "completed": gui_app.config.get("onboarding_completed", False),
+        "steps": {
+            "adb_configured": bool(gui_app.config.get("adb_host", "")),
+            "discord_configured": bool(gui_app.config.get("discord_client_id", "")),
+            "tmdb_configured": bool(gui_app.config.get("tmdb_api_key", "")),
+        }
+    })
+
+@app.route("/api/onboarding/complete", methods=["POST"])
+def onboarding_complete():
+    if not gui_app: return jsonify({"error": "No App"}), 500
+    gui_app.update_config("onboarding_completed", True)
+    return jsonify({"status": "ok"})
 

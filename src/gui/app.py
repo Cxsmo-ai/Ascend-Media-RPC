@@ -47,6 +47,11 @@ from src.core.history import SkipHistory
 from src.core.stats import StatsManager
 from src.core.analytics import AnalyticsDB
 from src.web.server import run_server
+from src.core.audit_log import AuditLog
+from src.core.rpc_history import RPCHistory
+from src.core.config_watcher import ConfigWatcher
+from src.core.plugin_system import PluginRegistry
+from src.core.api_validator import APIKeyValidator
 try:
     import requests
     from PIL import Image, ImageOps, ImageSequence
@@ -200,10 +205,39 @@ class App:
             client_id=self.config.get("trakt_client_id"),
             client_secret=self.config.get("trakt_client_secret"),
             access_token=self.config.get("trakt_access_token"),
-            refresh_token=self.config.get("trakt_refresh_token")
+            refresh_token=self.config.get("trakt_refresh_token"),
+            on_token_refresh=self._save_trakt_tokens,
         )
         
         self.analytics = AnalyticsDB()
+
+        # --- New Feature Modules ---
+        self._start_time = time.time()
+        self.audit_log = AuditLog()
+        self.rpc_history = RPCHistory(
+            enabled=self.config.get("rpc_history_enabled", True),
+            max_entries=self.config.get("rpc_history_limit", 100),
+        )
+        self.plugin_registry = PluginRegistry()
+        self._privacy_mode = self.config.get("privacy_mode", False)
+        self._rpc_cycling_index = 0
+        self._last_cycling_time = 0
+
+        # Config hot-reload watcher
+        self._config_watcher = None
+        if self.config.get("config_hot_reload", False):
+            self._config_watcher = ConfigWatcher(on_change=self._on_config_file_changed)
+            self._config_watcher.start()
+
+        # mDNS discovery
+        self.discovery = ADBDiscovery(
+            port=int(self.config.get("adb_port", 5555)),
+            use_mdns=self.config.get("mdns_discovery_enabled", True),
+        )
+        self.discovery.start_mdns()
+
+        # Initialize API integrations lazily
+        self._integrations = {}
         self._current_session_id = -1
         self.last_full_details = None
         self.last_image_url = None
@@ -257,6 +291,7 @@ class App:
         self.connect_adb()
         threading.Thread(target=self._monitor_loop, daemon=True).start()
         threading.Thread(target=self._start_web_server, daemon=True).start()
+        threading.Thread(target=self._init_integrations, daemon=True).start()
         
         self.start_gui()
     def print_banner(self):
@@ -334,9 +369,16 @@ class App:
         run_server(self)
 
     def start_gui(self):
-        url = 'http://127.0.0.1:5466'
+        port = int(os.environ.get("ASCEND_PORT", self.config.get("dashboard_port", 5466)))
+        url = f'http://127.0.0.1:{port}'
         gui_mode = os.environ.get("GUI_MODE", "browser").lower()
-        if HAS_WEBVIEW and gui_mode == "app":
+        headless = os.environ.get("HEADLESS", "").strip() == "1"
+        if headless:
+            logger.info(f"Running in headless mode. Dashboard at {url}")
+            try:
+                while self.running: time.sleep(1)
+            except KeyboardInterrupt: self.running = False
+        elif HAS_WEBVIEW and gui_mode == "app":
             webview.create_window('Stremio Ascend', url, width=1280, height=850, background_color='#000000')
             webview.start()
             self.running = False
@@ -2658,6 +2700,128 @@ class App:
 
         self.stats.increment("skips")
         self.shared_state["next_skip"] = None
+
+    def _save_trakt_tokens(self, access_token, refresh_token):
+        self.config["trakt_access_token"] = access_token
+        self.config["trakt_refresh_token"] = refresh_token
+        self.save_settings()
+        logger.info("Trakt: Tokens saved after refresh")
+
+    def _on_config_file_changed(self, new_config):
+        old_config = self.config.copy()
+        self.config.update(new_config)
+        changed_keys = [k for k in new_config if new_config.get(k) != old_config.get(k)]
+        if changed_keys:
+            logger.info(f"Config hot-reload: {len(changed_keys)} keys changed")
+            if self.audit_log:
+                self.audit_log.log("config", "hot_reload", {"changed_keys": changed_keys})
+
+    def _init_integrations(self):
+        """Initialize enabled API integrations in background."""
+        try:
+            if self.config.get("anilist_enabled") and self.config.get("anilist_access_token"):
+                from src.core.integrations.anilist import AniListClient
+                self._integrations["anilist"] = AniListClient(
+                    access_token=self.config["anilist_access_token"]
+                )
+                logger.info("Integration: AniList initialized")
+
+            if self.config.get("simkl_enabled") and self.config.get("simkl_client_id"):
+                from src.core.integrations.simkl import SimklClient
+                self._integrations["simkl"] = SimklClient(
+                    client_id=self.config["simkl_client_id"],
+                    access_token=self.config.get("simkl_access_token", ""),
+                )
+                logger.info("Integration: Simkl initialized")
+
+            if self.config.get("kitsu_enabled") and self.config.get("kitsu_access_token"):
+                from src.core.integrations.kitsu import KitsuClient
+                self._integrations["kitsu"] = KitsuClient(
+                    access_token=self.config["kitsu_access_token"]
+                )
+                logger.info("Integration: Kitsu initialized")
+
+            if self.config.get("lastfm_enabled") and self.config.get("lastfm_api_key"):
+                from src.core.integrations.lastfm import LastFMClient
+                self._integrations["lastfm"] = LastFMClient(
+                    api_key=self.config["lastfm_api_key"],
+                    api_secret=self.config.get("lastfm_api_secret", ""),
+                    session_key=self.config.get("lastfm_session_key", ""),
+                )
+                logger.info("Integration: Last.fm initialized")
+
+            if self.config.get("plex_enabled") and self.config.get("plex_url"):
+                from src.core.integrations.media_server import PlexClient
+                self._integrations["plex"] = PlexClient(
+                    base_url=self.config["plex_url"],
+                    token=self.config.get("plex_token", ""),
+                )
+                logger.info("Integration: Plex initialized")
+
+            if self.config.get("jellyfin_enabled") and self.config.get("jellyfin_url"):
+                from src.core.integrations.media_server import JellyfinClient
+                self._integrations["jellyfin"] = JellyfinClient(
+                    base_url=self.config["jellyfin_url"],
+                    api_key=self.config.get("jellyfin_api_key", ""),
+                )
+                logger.info("Integration: Jellyfin initialized")
+
+            if self.config.get("notion_enabled") and self.config.get("notion_api_key"):
+                from src.core.integrations.notion_obsidian import NotionWatchLog
+                self._integrations["notion"] = NotionWatchLog(
+                    api_key=self.config["notion_api_key"],
+                    database_id=self.config.get("notion_database_id", ""),
+                )
+                logger.info("Integration: Notion initialized")
+
+            if self.config.get("obsidian_enabled") and self.config.get("obsidian_vault_path"):
+                from src.core.integrations.notion_obsidian import ObsidianWatchLog
+                self._integrations["obsidian"] = ObsidianWatchLog(
+                    vault_path=self.config["obsidian_vault_path"]
+                )
+                logger.info("Integration: Obsidian initialized")
+
+        except Exception as e:
+            logger.error(f"Integration init error: {e}")
+
+    def _apply_privacy_mode(self, title, subtitle):
+        """Apply privacy mode to hide media details."""
+        if not self._privacy_mode:
+            return title, subtitle
+        blacklist = self.config.get("privacy_blacklist", [])
+        if blacklist and title not in blacklist:
+            return title, subtitle
+        hidden_text = self.config.get("privacy_hidden_text", "Watching something")
+        return hidden_text, ""
+
+    def _get_cycling_status(self):
+        """Get the current cycling status message."""
+        messages = self.config.get("rpc_cycling_messages", [])
+        if not messages:
+            return None
+        interval = self.config.get("rpc_cycling_interval", 30)
+        now = time.time()
+        if now - self._last_cycling_time >= interval:
+            self._rpc_cycling_index = (self._rpc_cycling_index + 1) % len(messages)
+            self._last_cycling_time = now
+        return messages[self._rpc_cycling_index]
+
+    def _get_dynamic_buttons(self, imdb_id=None, tmdb_id=None):
+        """Generate dynamic RPC buttons based on config."""
+        buttons = self.config.get("rpc_dynamic_buttons", [])
+        if not buttons:
+            return None
+        result = []
+        for btn in buttons[:2]:  # Discord max 2 buttons
+            label = btn.get("label", "")
+            url = btn.get("url", "")
+            if imdb_id:
+                url = url.replace("{imdb_id}", imdb_id)
+            if tmdb_id:
+                url = url.replace("{tmdb_id}", str(tmdb_id))
+            if label and url:
+                result.append({"label": label[:32], "url": url})
+        return result if result else None
 
     def save_settings(self): save_config(self.config)
     def update_config(self, k, v):

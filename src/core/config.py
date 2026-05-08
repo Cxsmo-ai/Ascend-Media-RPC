@@ -104,6 +104,112 @@ DEFAULT_CONFIG = {
     "erdb_logos_enabled": True,
     "erdb_thumbnails_enabled": True,
     "rpc_branding": "on Stremio",
+    # Privacy Mode
+    "privacy_mode": False,
+    "privacy_hidden_text": "Watching something",
+    "privacy_blacklist": [],
+    "privacy_pause_analytics": True,
+    "privacy_pause_trakt": True,
+    # Dashboard Authentication
+    "dashboard_auth_enabled": False,
+    "dashboard_auth_pin": "",
+    # Multi-Activity RPC
+    "rpc_activity_type": "watching",
+    "rpc_multi_activity_enabled": False,
+    # Dynamic Button URLs
+    "rpc_dynamic_buttons": [],
+    # Status Cycling
+    "rpc_cycling_messages": [],
+    "rpc_cycling_interval": 30,
+    # RPC History
+    "rpc_history_enabled": True,
+    "rpc_history_limit": 100,
+    # Multi-Discord Account
+    "rpc_multi_discord_enabled": False,
+    "rpc_secondary_client_id": "",
+    # Skip Segment Caching
+    "skip_cache_ttl": 3600,
+    "skip_cache_max_size": 500,
+    # Artwork Fallback Chain
+    "artwork_fallback_chain": ["top_posters", "erdb", "tmdb", "nuvio"],
+    # Config Hot-Reload
+    "config_hot_reload": False,
+    # Rate Limiting
+    "rate_limit_enabled": True,
+    "rate_limit_default": "60/minute",
+    # TMDB Rate Limiting
+    "tmdb_rate_limit_enabled": True,
+    "tmdb_rate_limit_calls": 40,
+    "tmdb_rate_limit_period": 10,
+    # Health Check
+    "health_check_enabled": True,
+    # Docker / Headless
+    "headless_mode": False,
+    # API Key Validation
+    "api_key_validation_enabled": True,
+    # HTTPS
+    "dashboard_https_enabled": False,
+    "dashboard_cert_path": "",
+    "dashboard_key_path": "",
+    # Audit Log
+    "audit_log_enabled": True,
+    "audit_log_max_entries": 1000,
+    # Logging
+    "log_json_enabled": False,
+    "log_level_overrides": {},
+    # Config Schema Validation
+    "config_schema_validation": True,
+    # New API Integrations
+    "anilist_enabled": False,
+    "anilist_access_token": "",
+    "letterboxd_enabled": False,
+    "letterboxd_api_key": "",
+    "letterboxd_api_secret": "",
+    "justwatch_enabled": False,
+    "justwatch_country": "US",
+    "opensubtitles_enabled": False,
+    "opensubtitles_api_key": "",
+    "opensubtitles_username": "",
+    "opensubtitles_password": "",
+    "simkl_enabled": False,
+    "simkl_client_id": "",
+    "simkl_access_token": "",
+    "kitsu_enabled": False,
+    "kitsu_access_token": "",
+    "lastfm_enabled": False,
+    "lastfm_api_key": "",
+    "lastfm_api_secret": "",
+    "lastfm_session_key": "",
+    "plex_enabled": False,
+    "plex_url": "",
+    "plex_token": "",
+    "jellyfin_enabled": False,
+    "jellyfin_url": "",
+    "jellyfin_api_key": "",
+    "emby_enabled": False,
+    "emby_url": "",
+    "emby_api_key": "",
+    "notion_enabled": False,
+    "notion_api_key": "",
+    "notion_database_id": "",
+    "obsidian_enabled": False,
+    "obsidian_vault_path": "",
+    # Wako Improvements
+    "wako_title_overrides": {},
+    "wako_title_cache_enabled": True,
+    "wako_focus_lock_whitelist": [],
+    "wako_focus_lock_cooldown": 5,
+    # mDNS Discovery
+    "mdns_discovery_enabled": True,
+    # ADB Command Queue
+    "adb_retry_count": 3,
+    "adb_retry_delay": 1.0,
+    "adb_command_dedup": True,
+    # Multi-Device
+    "multi_device_enabled": False,
+    "multi_device_list": [],
+    # Onboarding
+    "onboarding_completed": False,
 }
 
 def load_config() -> Dict:
@@ -152,3 +258,48 @@ def load_config() -> Dict:
 def save_config(config: Dict):
     with open(CONFIG_FILE, 'w') as f:
         json.dump(config, f, indent=4)
+
+
+def validate_config(config: Dict) -> list:
+    """Validate config values and return list of warnings."""
+    warnings = []
+    if config.get("adb_port") and not isinstance(config["adb_port"], int):
+        warnings.append("adb_port must be an integer")
+    if config.get("update_interval") and config["update_interval"] < 0.5:
+        warnings.append("update_interval should be >= 0.5 seconds")
+    if config.get("dashboard_port") and not (1024 <= config["dashboard_port"] <= 65535):
+        warnings.append("dashboard_port must be between 1024 and 65535")
+    if config.get("skip_cache_ttl") and config["skip_cache_ttl"] < 0:
+        warnings.append("skip_cache_ttl must be non-negative")
+    if config.get("skip_cache_max_size") and config["skip_cache_max_size"] < 1:
+        warnings.append("skip_cache_max_size must be at least 1")
+    if config.get("rpc_cycling_interval") and config["rpc_cycling_interval"] < 5:
+        warnings.append("rpc_cycling_interval should be >= 5 seconds")
+    unknown_keys = set(config.keys()) - set(DEFAULT_CONFIG.keys())
+    if unknown_keys:
+        warnings.append(f"Unknown config keys: {', '.join(sorted(unknown_keys))}")
+    return warnings
+
+
+def export_config(config: Dict) -> str:
+    """Export config as JSON string (excluding sensitive keys)."""
+    sensitive_keys = {
+        "trakt_access_token", "trakt_refresh_token",
+        "nuvio_covers_password", "nuvio_covers_token",
+        "opensubtitles_password", "lastfm_session_key",
+        "anilist_access_token", "simkl_access_token",
+        "kitsu_access_token", "plex_token",
+        "notion_api_key", "dashboard_auth_pin",
+    }
+    safe = {k: v for k, v in config.items() if k not in sensitive_keys}
+    return json.dumps(safe, indent=4)
+
+
+def import_config(json_str: str, current_config: Dict) -> Dict:
+    """Import config from JSON string, merging with current config."""
+    imported = json.loads(json_str)
+    merged = current_config.copy()
+    for k, v in imported.items():
+        if k in DEFAULT_CONFIG:
+            merged[k] = v
+    return merged

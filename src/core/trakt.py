@@ -1,6 +1,7 @@
 import requests
 import time
 import logging
+from typing import Optional, Callable
 
 logger = logging.getLogger("stremio-rpc")
 
@@ -12,11 +13,15 @@ class TraktClient:
     # For now, we will require the user to input one or use a placeholder they can swap.
     DEFAULT_CLIENT_ID = "" 
     
-    def __init__(self, client_id=None, client_secret=None, access_token=None, refresh_token=None):
+    def __init__(self, client_id=None, client_secret=None, access_token=None, refresh_token=None,
+                 on_token_refresh: Optional[Callable] = None):
         self.client_id = client_id or self.DEFAULT_CLIENT_ID
         self.client_secret = client_secret
         self.access_token = access_token
         self.refresh_token = refresh_token
+        self.on_token_refresh = on_token_refresh
+        self._token_expires_at: Optional[float] = None
+        self._refresh_lock = False
         self.headers = {
             "Content-Type": "application/json",
             "trakt-api-version": "2",
@@ -25,10 +30,63 @@ class TraktClient:
         if self.access_token:
             self.headers["Authorization"] = f"Bearer {self.access_token}"
 
-    def set_auth(self, access_token, refresh_token):
+    def set_auth(self, access_token, refresh_token, expires_in: int = 7776000):
         self.access_token = access_token
         self.refresh_token = refresh_token
         self.headers["Authorization"] = f"Bearer {self.access_token}"
+        self._token_expires_at = time.time() + expires_in
+        self._auth_failures = 0
+
+    def token_needs_refresh(self) -> bool:
+        """Check if the access token is near expiry (within 7 days)."""
+        if not self.refresh_token or not self.access_token:
+            return False
+        if self._token_expires_at is None:
+            return False
+        return time.time() > (self._token_expires_at - 604800)
+
+    def try_refresh_token(self) -> bool:
+        """Attempt to refresh the access token using the refresh token."""
+        if not self.refresh_token or not self.client_id or not self.client_secret:
+            return False
+        if self._refresh_lock:
+            return False
+        self._refresh_lock = True
+        try:
+            url = f"{self.BASE_URL}/oauth/token"
+            payload = {
+                "refresh_token": self.refresh_token,
+                "client_id": self.client_id,
+                "client_secret": self.client_secret,
+                "redirect_uri": "urn:ietf:wg:oauth:2.0:oob",
+                "grant_type": "refresh_token",
+            }
+            r = requests.post(url, json=payload, timeout=10)
+            if r.status_code == 200:
+                data = r.json()
+                self.set_auth(
+                    data["access_token"],
+                    data.get("refresh_token", self.refresh_token),
+                    data.get("expires_in", 7776000),
+                )
+                logger.info("Trakt: Token refreshed successfully")
+                if self.on_token_refresh:
+                    self.on_token_refresh(data["access_token"],
+                                         data.get("refresh_token", self.refresh_token))
+                return True
+            else:
+                logger.warning(f"Trakt token refresh failed: {r.status_code}")
+                return False
+        except Exception as e:
+            logger.error(f"Trakt token refresh error: {e}")
+            return False
+        finally:
+            self._refresh_lock = False
+
+    def ensure_valid_token(self):
+        """Auto-refresh token if it's near expiry."""
+        if self.token_needs_refresh():
+            self.try_refresh_token()
 
     def get_device_code(self):
         """Initiate Device Auth Flow"""
@@ -128,6 +186,7 @@ class TraktClient:
         progress: float 0-100
         """
         if not self.access_token: return
+        self.ensure_valid_token()
         
         # Circuit breaker: stop attempting after repeated auth failures
         if getattr(self, "_auth_failures", 0) >= 3:
