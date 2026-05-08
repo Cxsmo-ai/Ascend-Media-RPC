@@ -115,7 +115,7 @@ If the primary provider fails or returns no result, automatically try the next i
 ### 3.6 Custom Artwork Upload
 **Current:** `artwork_upload_enabled` with a shell command approach.
 **Suggestion:**
-- Add a built-in image hosting option via Imgur, Catbox (partially implemented), or a self-hosted solution.
+- Add a built-in image hosting option via Imgur, 0x0.st (partially implemented), or a self-hosted solution.
 - Allow users to manually override artwork for specific titles via the dashboard (upload custom poster/thumbnail).
 - Store custom artwork mappings in a local database keyed by IMDb ID.
 
