@@ -127,21 +127,14 @@ If the primary provider fails or returns no result, automatically try the next i
 
 ## 4. Skip Segment System
 
-### 4.1 User-Contributed Skip Segments
-**Current:** All skip data comes from external providers.
-**Suggestion:**
-- Allow users to manually mark intro/outro/recap boundaries while watching.
-- Store user-created segments locally in an encrypted database.
-- Optionally submit user segments to a community server (opt-in).
-
-### 4.2 Skip Segment Preview
+### 4.1 Skip Segment Preview
 **Current:** Auto-skip happens silently.
 **Suggestion:**
 - Add a configurable countdown overlay (similar to Netflix's "Skip Intro" button) that shows on the dashboard before auto-skipping.
 - Allow users to cancel a pending skip within a configurable window (e.g., 5 seconds).
 - Show a toast notification on the dashboard when a skip occurs.
 
-### 4.3 Skip Category Granularity
+### 4.2 Skip Category Granularity
 **Current:** Categories are intro, outro, with some provider-specific types.
 **Suggestion:** Add finer-grained skip categories:
 - Recap
@@ -153,7 +146,7 @@ If the primary provider fails or returns no result, automatically try the next i
 
 Allow per-category enable/disable toggles.
 
-### 4.4 Skip Analytics Dashboard
+### 4.3 Skip Analytics Dashboard
 **Current:** `total_skips` and `total_saved_ms` are tracked globally.
 **Suggestion:**
 - Per-provider skip success rate (which providers find segments most often).
@@ -161,7 +154,7 @@ Allow per-category enable/disable toggles.
 - Weekly/monthly time-saved reports with shareable summary images.
 - "Time saved" milestone achievements (e.g., "You've saved 10 hours!").
 
-### 4.5 Skip Segment Caching
+### 4.4 Skip Segment Caching
 **Current:** Skip segments are fetched live from providers each time.
 **Suggestion:** Cache skip segments locally keyed by IMDb ID + season + episode. Invalidate cache after a configurable TTL (e.g., 7 days) to pick up newly submitted segments.
 
