@@ -219,7 +219,6 @@ Allow per-category enable/disable toggles.
 **Suggestion:**
 - Browser push notifications for events (ADB disconnected, skip performed, etc.).
 - Notification center in the dashboard showing recent events.
-- Optional Discord webhook notifications for monitoring.
 
 ### 6.5 Remote Control Improvements
 **Current:** Basic media key events (play/pause, volume, next/prev).
@@ -329,7 +328,7 @@ Allow per-category enable/disable toggles.
 - User score/rating display on RPC.
 
 ### 9.5 Plex/Jellyfin/Emby Companion
-**Suggestion:** While Ascend is Android TV focused, add optional support for Plex, Jellyfin, or Emby webhook events. When these servers send playback webhooks, use them as an alternative metadata source or as a secondary presence trigger.
+**Suggestion:** While Ascend is Android TV focused, add optional support for Plex, Jellyfin, or Emby events. When these servers send playback events, use them as an alternative metadata source or as a secondary presence trigger.
 
 ### 9.6 Last.fm Scrobbling
 **Suggestion:** For music video or soundtrack playback, add [Last.fm](https://www.last.fm/api) scrobbling support alongside Trakt. Detect when the content is music-based and scrobble to Last.fm.
@@ -452,16 +451,7 @@ Useful for monitoring with Uptime Kuma, Healthchecks.io, etc.
 | `/api/artwork/erdb/discord` | GET | Get ERDB Discord artwork |
 | `/api/artwork/cached/{key}` | GET | Get cached RPC artwork |
 
-### 12.2 Webhook / Event System
-**Suggestion:** Add an outbound webhook system that sends events to user-configured URLs:
-```
-Events: playback.started, playback.paused, playback.stopped,
-        skip.performed, device.connected, device.disconnected,
-        rpc.updated
-```
-This enables third-party automation (IFTTT, Zapier, n8n, Node-RED).
-
-### 12.3 CLI Mode
+### 12.2 CLI Mode
 **Current:** Application requires GUI (webview or browser).
 **Suggestion:** Add a headless CLI mode for server/NAS deployments:
 ```bash
@@ -469,7 +459,7 @@ ascend-rpc --headless --config /path/to/config.json
 ```
 Output logs to stdout, expose only the Flask API, and skip GUI initialization.
 
-### 12.4 Unit Test Suite
+### 12.3 Unit Test Suite
 **Current:** No tests in the repository.
 **Suggestion:**
 - Add unit tests for core modules (`title_resolver`, `skip_manager`, `tmdb`, `erdb`, `trakt`).
@@ -477,7 +467,7 @@ Output logs to stdout, expose only the Flask API, and skip GUI initialization.
 - Set up CI/CD with GitHub Actions for automated testing on PR.
 - Add test fixtures for common media title formats and API responses.
 
-### 12.5 Configuration Schema Validation
+### 12.4 Configuration Schema Validation
 **Current:** Config keys are checked individually with `.get()` and defaults.
 **Suggestion:**
 - Define a JSON Schema or Pydantic model for `config.json`.
@@ -485,7 +475,7 @@ Output logs to stdout, expose only the Flask API, and skip GUI initialization.
 - Auto-migrate old config formats to new ones.
 - Provide helpful error messages for invalid values.
 
-### 12.6 Logging Improvements
+### 12.5 Logging Improvements
 **Current:** Excellent logging with `CompactConsoleHandler`, secret redaction, and log tables.
 **Suggestion:**
 - Add structured JSON logging option for log aggregation (ELK stack, Grafana Loki).
