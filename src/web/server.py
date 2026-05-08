@@ -738,10 +738,10 @@ def auth_login():
         resp = make_response(jsonify({"status": "ok"}))
         resp.set_cookie("dashboard_pin", pin, max_age=86400, httponly=True)
         if hasattr(gui_app, 'audit_log'):
-            gui_app.audit_log.log("auth", "login_success", {"ip": request.remote_addr})
+            gui_app.audit_log.log("auth", {"action": "login_success", "ip": request.remote_addr})
         return resp
     if hasattr(gui_app, 'audit_log'):
-        gui_app.audit_log.log("auth", "login_failed", {"ip": request.remote_addr})
+        gui_app.audit_log.log("auth", {"action": "login_failed", "ip": request.remote_addr})
     return jsonify({"error": "Invalid PIN"}), 401
 
 @app.route("/api/auth/status")
@@ -800,7 +800,7 @@ def config_import():
         gui_app.config.update(merged)
         gui_app.save_settings()
         if hasattr(gui_app, 'audit_log'):
-            gui_app.audit_log.log("config", "import", {"keys": len(config_json)})
+            gui_app.audit_log.log("config", {"action": "import", "keys": len(config_json)})
         return jsonify({"status": "ok", "warnings": warnings})
     except Exception as e:
         return jsonify({"error": str(e)}), 400
@@ -832,7 +832,7 @@ def get_audit_log():
         return jsonify([])
     limit = request.args.get("limit", 100, type=int)
     category = request.args.get("category", None)
-    entries = gui_app.audit_log.get_entries(limit=limit, category=category)
+    entries = gui_app.audit_log.get_entries(limit=limit, event_type=category)
     return jsonify(entries)
 
 

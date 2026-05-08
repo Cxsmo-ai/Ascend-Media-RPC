@@ -215,8 +215,7 @@ class App:
         self._start_time = time.time()
         self.audit_log = AuditLog()
         self.rpc_history = RPCHistory(
-            enabled=self.config.get("rpc_history_enabled", True),
-            max_entries=self.config.get("rpc_history_limit", 100),
+            limit=self.config.get("rpc_history_limit", 100),
         )
         self.plugin_registry = PluginRegistry()
         self._privacy_mode = self.config.get("privacy_mode", False)
@@ -2714,7 +2713,7 @@ class App:
         if changed_keys:
             logger.info(f"Config hot-reload: {len(changed_keys)} keys changed")
             if self.audit_log:
-                self.audit_log.log("config", "hot_reload", {"changed_keys": changed_keys})
+                self.audit_log.log("config", {"action": "hot_reload", "changed_keys": changed_keys})
 
     def _init_integrations(self):
         """Initialize enabled API integrations in background."""
