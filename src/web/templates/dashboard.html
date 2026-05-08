@@ -466,6 +466,184 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- AniList -->
+                <div class="glass-panel p-6 rounded-2xl space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3"><i data-lucide="book-open" class="text-blue-400 w-6 h-6"></i><h3 class="font-bold text-lg">AniList</h3></div>
+                        <div class="relative">
+                            <input type="checkbox" id="chk-anilist" onchange="updateConfig('anilist_enabled', this.checked)" class="peer sr-only">
+                            <div class="w-11 h-6 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600 cursor-pointer" onclick="document.getElementById('chk-anilist').click()"></div>
+                        </div>
+                    </div>
+                    <p class="text-[10px] text-slate-500">Anime list tracking &amp; scrobbling</p>
+                    <input type="password" id="inp-anilist-token" placeholder="Access Token" class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-blue-500 outline-none transition-colors">
+                    <button onclick="saveNewIntegration('anilist_access_token','inp-anilist-token')" class="w-full py-2 bg-blue-600/20 text-blue-400 rounded-lg font-bold text-xs hover:bg-blue-600/30 transition-colors">SAVE</button>
+                </div>
+
+                <!-- Simkl -->
+                <div class="glass-panel p-6 rounded-2xl space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3"><i data-lucide="tv" class="text-cyan-400 w-6 h-6"></i><h3 class="font-bold text-lg">Simkl</h3></div>
+                        <div class="relative">
+                            <input type="checkbox" id="chk-simkl" onchange="updateConfig('simkl_enabled', this.checked)" class="peer sr-only">
+                            <div class="w-11 h-6 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-600 cursor-pointer" onclick="document.getElementById('chk-simkl').click()"></div>
+                        </div>
+                    </div>
+                    <p class="text-[10px] text-slate-500">Multi-platform watch tracking</p>
+                    <input type="password" id="inp-simkl-id" placeholder="Client ID" class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-cyan-500 outline-none transition-colors">
+                    <input type="password" id="inp-simkl-token" placeholder="Access Token" class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-cyan-500 outline-none transition-colors">
+                    <button onclick="saveNewIntegration('simkl_client_id','inp-simkl-id','simkl_access_token','inp-simkl-token')" class="w-full py-2 bg-cyan-600/20 text-cyan-400 rounded-lg font-bold text-xs hover:bg-cyan-600/30 transition-colors">SAVE</button>
+                </div>
+
+                <!-- Kitsu -->
+                <div class="glass-panel p-6 rounded-2xl space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3"><i data-lucide="cat" class="text-orange-400 w-6 h-6"></i><h3 class="font-bold text-lg">Kitsu</h3></div>
+                        <div class="relative">
+                            <input type="checkbox" id="chk-kitsu" onchange="updateConfig('kitsu_enabled', this.checked)" class="peer sr-only">
+                            <div class="w-11 h-6 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-600 cursor-pointer" onclick="document.getElementById('chk-kitsu').click()"></div>
+                        </div>
+                    </div>
+                    <p class="text-[10px] text-slate-500">Anime community &amp; tracking</p>
+                    <input type="text" id="inp-kitsu-user" placeholder="Username" class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-orange-500 outline-none transition-colors">
+                    <input type="password" id="inp-kitsu-pass" placeholder="Password" class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-orange-500 outline-none transition-colors">
+                    <button onclick="saveNewIntegration('kitsu_username','inp-kitsu-user','kitsu_password','inp-kitsu-pass')" class="w-full py-2 bg-orange-600/20 text-orange-400 rounded-lg font-bold text-xs hover:bg-orange-600/30 transition-colors">SAVE</button>
+                </div>
+
+                <!-- Letterboxd -->
+                <div class="glass-panel p-6 rounded-2xl space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3"><i data-lucide="film" class="text-emerald-400 w-6 h-6"></i><h3 class="font-bold text-lg">Letterboxd</h3></div>
+                        <div class="relative">
+                            <input type="checkbox" id="chk-letterboxd" onchange="updateConfig('letterboxd_enabled', this.checked)" class="peer sr-only">
+                            <div class="w-11 h-6 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600 cursor-pointer" onclick="document.getElementById('chk-letterboxd').click()"></div>
+                        </div>
+                    </div>
+                    <p class="text-[10px] text-slate-500">Movie diary &amp; social reviews</p>
+                    <input type="password" id="inp-letterboxd-key" placeholder="API Key" class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-emerald-500 outline-none transition-colors">
+                    <input type="password" id="inp-letterboxd-secret" placeholder="API Secret" class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-emerald-500 outline-none transition-colors">
+                    <button onclick="saveNewIntegration('letterboxd_api_key','inp-letterboxd-key','letterboxd_api_secret','inp-letterboxd-secret')" class="w-full py-2 bg-emerald-600/20 text-emerald-400 rounded-lg font-bold text-xs hover:bg-emerald-600/30 transition-colors">SAVE</button>
+                </div>
+
+                <!-- Last.fm -->
+                <div class="glass-panel p-6 rounded-2xl space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3"><i data-lucide="music" class="text-red-400 w-6 h-6"></i><h3 class="font-bold text-lg">Last.fm</h3></div>
+                        <div class="relative">
+                            <input type="checkbox" id="chk-lastfm" onchange="updateConfig('lastfm_enabled', this.checked)" class="peer sr-only">
+                            <div class="w-11 h-6 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600 cursor-pointer" onclick="document.getElementById('chk-lastfm').click()"></div>
+                        </div>
+                    </div>
+                    <p class="text-[10px] text-slate-500">Music scrobbling for soundtracks</p>
+                    <input type="password" id="inp-lastfm-key" placeholder="API Key" class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-red-500 outline-none transition-colors">
+                    <input type="password" id="inp-lastfm-secret" placeholder="Shared Secret" class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-red-500 outline-none transition-colors">
+                    <button onclick="saveNewIntegration('lastfm_api_key','inp-lastfm-key','lastfm_api_secret','inp-lastfm-secret')" class="w-full py-2 bg-red-600/20 text-red-400 rounded-lg font-bold text-xs hover:bg-red-600/30 transition-colors">SAVE</button>
+                </div>
+
+                <!-- JustWatch -->
+                <div class="glass-panel p-6 rounded-2xl space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3"><i data-lucide="search" class="text-amber-400 w-6 h-6"></i><h3 class="font-bold text-lg">JustWatch</h3></div>
+                        <div class="relative">
+                            <input type="checkbox" id="chk-justwatch" onchange="updateConfig('justwatch_enabled', this.checked)" class="peer sr-only">
+                            <div class="w-11 h-6 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600 cursor-pointer" onclick="document.getElementById('chk-justwatch').click()"></div>
+                        </div>
+                    </div>
+                    <p class="text-[10px] text-slate-500">Streaming availability lookup</p>
+                    <select id="sel-justwatch-country" onchange="updateConfig('justwatch_country', this.value)" class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-sm outline-none focus:border-amber-500 transition-colors">
+                        <option value="US">United States</option>
+                        <option value="GB">United Kingdom</option>
+                        <option value="CA">Canada</option>
+                        <option value="AU">Australia</option>
+                        <option value="DE">Germany</option>
+                        <option value="FR">France</option>
+                    </select>
+                </div>
+
+                <!-- OpenSubtitles -->
+                <div class="glass-panel p-6 rounded-2xl space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3"><i data-lucide="subtitles" class="text-violet-400 w-6 h-6"></i><h3 class="font-bold text-lg">OpenSubtitles</h3></div>
+                        <div class="relative">
+                            <input type="checkbox" id="chk-opensubtitles" onchange="updateConfig('opensubtitles_enabled', this.checked)" class="peer sr-only">
+                            <div class="w-11 h-6 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-violet-600 cursor-pointer" onclick="document.getElementById('chk-opensubtitles').click()"></div>
+                        </div>
+                    </div>
+                    <p class="text-[10px] text-slate-500">Subtitle search &amp; download</p>
+                    <input type="password" id="inp-opensubtitles-key" placeholder="API Key" class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-violet-500 outline-none transition-colors">
+                    <input type="text" id="inp-opensubtitles-user" placeholder="Username" class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-violet-500 outline-none transition-colors">
+                    <button onclick="saveNewIntegration('opensubtitles_api_key','inp-opensubtitles-key','opensubtitles_username','inp-opensubtitles-user')" class="w-full py-2 bg-violet-600/20 text-violet-400 rounded-lg font-bold text-xs hover:bg-violet-600/30 transition-colors">SAVE</button>
+                </div>
+
+                <!-- Media Servers (Plex, Jellyfin, Emby) -->
+                <div class="glass-panel p-6 rounded-2xl space-y-4 md:col-span-2">
+                    <div class="flex items-center gap-3"><i data-lucide="server" class="text-amber-400 w-6 h-6"></i><h3 class="font-bold text-lg">Media Servers</h3></div>
+                    <p class="text-xs text-slate-400">Connect Plex, Jellyfin, or Emby for library sync</p>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="border border-white/10 bg-black/20 rounded-xl p-4 space-y-3">
+                            <div class="flex items-center justify-between">
+                                <span class="text-amber-300 font-bold text-sm">Plex</span>
+                                <div class="relative"><input type="checkbox" id="chk-plex" onchange="updateConfig('plex_enabled', this.checked)" class="peer sr-only"><div class="w-9 h-5 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-600 cursor-pointer" onclick="document.getElementById('chk-plex').click()"></div></div>
+                            </div>
+                            <input type="text" id="inp-plex-url" placeholder="http://localhost:32400" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs focus:border-amber-500 outline-none transition-colors">
+                            <input type="password" id="inp-plex-token" placeholder="Plex Token" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs focus:border-amber-500 outline-none transition-colors">
+                        </div>
+                        <div class="border border-white/10 bg-black/20 rounded-xl p-4 space-y-3">
+                            <div class="flex items-center justify-between">
+                                <span class="text-indigo-300 font-bold text-sm">Jellyfin</span>
+                                <div class="relative"><input type="checkbox" id="chk-jellyfin" onchange="updateConfig('jellyfin_enabled', this.checked)" class="peer sr-only"><div class="w-9 h-5 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600 cursor-pointer" onclick="document.getElementById('chk-jellyfin').click()"></div></div>
+                            </div>
+                            <input type="text" id="inp-jellyfin-url" placeholder="http://localhost:8096" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs focus:border-indigo-500 outline-none transition-colors">
+                            <input type="password" id="inp-jellyfin-key" placeholder="API Key" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs focus:border-indigo-500 outline-none transition-colors">
+                        </div>
+                        <div class="border border-white/10 bg-black/20 rounded-xl p-4 space-y-3">
+                            <div class="flex items-center justify-between">
+                                <span class="text-emerald-300 font-bold text-sm">Emby</span>
+                                <div class="relative"><input type="checkbox" id="chk-emby" onchange="updateConfig('emby_enabled', this.checked)" class="peer sr-only"><div class="w-9 h-5 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600 cursor-pointer" onclick="document.getElementById('chk-emby').click()"></div></div>
+                            </div>
+                            <input type="text" id="inp-emby-url" placeholder="http://localhost:8096" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs focus:border-emerald-500 outline-none transition-colors">
+                            <input type="password" id="inp-emby-key" placeholder="API Key" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs focus:border-emerald-500 outline-none transition-colors">
+                        </div>
+                    </div>
+                    <button onclick="saveMediaServers()" class="w-full py-2 bg-amber-600/20 text-amber-400 rounded-lg font-bold text-xs hover:bg-amber-600/30 transition-colors">SAVE ALL SERVERS</button>
+                </div>
+
+                <!-- Notion & Obsidian Journals -->
+                <div class="glass-panel p-6 rounded-2xl space-y-4 md:col-span-2">
+                    <div class="flex items-center gap-3"><i data-lucide="notebook-pen" class="text-slate-300 w-6 h-6"></i><h3 class="font-bold text-lg">Watch Journals</h3></div>
+                    <p class="text-xs text-slate-400">Auto-log watched content to Notion or Obsidian</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="border border-white/10 bg-black/20 rounded-xl p-4 space-y-3">
+                            <div class="flex items-center justify-between">
+                                <span class="text-white font-bold text-sm">Notion</span>
+                                <div class="relative"><input type="checkbox" id="chk-notion" onchange="updateConfig('notion_enabled', this.checked)" class="peer sr-only"><div class="w-9 h-5 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-white cursor-pointer" onclick="document.getElementById('chk-notion').click()"></div></div>
+                            </div>
+                            <input type="password" id="inp-notion-key" placeholder="Integration Token" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs focus:border-white/50 outline-none transition-colors">
+                            <input type="text" id="inp-notion-db" placeholder="Database ID" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs focus:border-white/50 outline-none transition-colors">
+                        </div>
+                        <div class="border border-white/10 bg-black/20 rounded-xl p-4 space-y-3">
+                            <div class="flex items-center justify-between">
+                                <span class="text-purple-300 font-bold text-sm">Obsidian</span>
+                                <div class="relative"><input type="checkbox" id="chk-obsidian" onchange="updateConfig('obsidian_enabled', this.checked)" class="peer sr-only"><div class="w-9 h-5 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-600 cursor-pointer" onclick="document.getElementById('chk-obsidian').click()"></div></div>
+                            </div>
+                            <input type="text" id="inp-obsidian-vault" placeholder="Vault Path" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs focus:border-purple-500 outline-none transition-colors">
+                        </div>
+                    </div>
+                    <button onclick="saveJournals()" class="w-full py-2 bg-slate-600/20 text-slate-300 rounded-lg font-bold text-xs hover:bg-slate-600/30 transition-colors">SAVE JOURNALS</button>
+                </div>
+
+                <!-- Integration Status Overview -->
+                <div class="glass-panel p-6 rounded-2xl space-y-4 md:col-span-2">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3"><i data-lucide="activity" class="text-emerald-400 w-6 h-6"></i><h3 class="font-bold text-lg">Integration Status</h3></div>
+                        <button onclick="loadIntegrationStatus()" class="px-3 py-1 bg-white/5 hover:bg-white/10 text-slate-400 rounded-lg text-[10px] font-bold uppercase transition-colors">Refresh</button>
+                    </div>
+                    <div id="integration-status-grid" class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                        <div class="text-sm text-slate-500 font-mono text-center py-4 col-span-full">Click refresh to check status</div>
+                    </div>
+                </div>
+
             </div>
 
             <!-- SETTINGS VIEW -->
@@ -790,6 +968,74 @@
                         <input type="text" id="inp-remote-json" placeholder="https://example.com/skips.json" class="w-full bg-black/30 border border-white/5 rounded-lg px-4 py-2 text-sm text-white font-mono placeholder:text-slate-600 focus:outline-none focus:border-indigo-500 transition-colors" onblur="updateConfig('remote_json_url', this.value)">
                     </div>
                 </div>
+
+                <!-- Privacy & Security -->
+                <div class="glass-panel p-6 rounded-2xl">
+                    <h3 class="text-lg font-bold mb-4 border-b border-white/10 pb-2 flex items-center gap-2"><i data-lucide="shield" class="w-5 h-5 text-rose-400"></i> Privacy &amp; Security</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between py-2">
+                            <div><span class="text-white">Privacy Mode</span><p class="text-[10px] text-slate-500 mt-1">Hide media details from Discord presence</p></div>
+                            <div class="relative">
+                                <input type="checkbox" id="chk-privacy" onchange="updateConfig('privacy_mode', this.checked)" class="peer sr-only">
+                                <div class="w-11 h-6 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-rose-600 cursor-pointer" onclick="document.getElementById('chk-privacy').click()"></div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between py-2 border-t border-white/5 pt-4">
+                            <div><span class="text-white">Dashboard Authentication</span><p class="text-[10px] text-slate-500 mt-1">Require a PIN to access the dashboard</p></div>
+                            <div class="relative">
+                                <input type="checkbox" id="chk-auth" onchange="updateConfig('dashboard_auth_enabled', this.checked); document.getElementById('auth-pin-section').classList.toggle('hidden', !this.checked)" class="peer sr-only">
+                                <div class="w-11 h-6 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-rose-600 cursor-pointer" onclick="document.getElementById('chk-auth').click()"></div>
+                            </div>
+                        </div>
+                        <div id="auth-pin-section" class="hidden border border-rose-500/20 bg-rose-500/5 rounded-xl p-4">
+                            <label class="text-[10px] text-slate-400 uppercase font-bold block mb-2">Dashboard PIN</label>
+                            <input type="password" id="inp-auth-pin" placeholder="Enter 4-8 digit PIN" maxlength="8" class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-2 text-sm focus:border-rose-500 outline-none transition-colors font-mono">
+                            <button onclick="updateConfig('dashboard_auth_pin', document.getElementById('inp-auth-pin').value)" class="mt-2 w-full py-2 bg-rose-600/20 text-rose-400 rounded-lg font-bold text-xs hover:bg-rose-600/30 transition-colors">SET PIN</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Config Management -->
+                <div class="glass-panel p-6 rounded-2xl">
+                    <h3 class="text-lg font-bold mb-4 border-b border-white/10 pb-2 flex items-center gap-2"><i data-lucide="settings" class="w-5 h-5 text-indigo-400"></i> Config Management</h3>
+                    <div class="space-y-4">
+                        <div class="flex gap-3">
+                            <button onclick="exportConfig()" class="flex-1 py-3 bg-indigo-600/20 text-indigo-400 rounded-lg font-bold text-xs hover:bg-indigo-600/30 transition-colors flex items-center justify-center gap-2"><i data-lucide="download" class="w-4 h-4"></i> EXPORT</button>
+                            <button onclick="document.getElementById('config-import-input').click()" class="flex-1 py-3 bg-emerald-600/20 text-emerald-400 rounded-lg font-bold text-xs hover:bg-emerald-600/30 transition-colors flex items-center justify-center gap-2"><i data-lucide="upload" class="w-4 h-4"></i> IMPORT</button>
+                            <input type="file" id="config-import-input" accept=".json" class="hidden" onchange="importConfigFile(this)">
+                        </div>
+                        <div id="config-import-status" class="hidden text-xs font-mono p-3 bg-black/40 rounded-lg"></div>
+                    </div>
+                </div>
+
+                <!-- Device Management -->
+                <div class="glass-panel p-6 rounded-2xl">
+                    <h3 class="text-lg font-bold mb-4 border-b border-white/10 pb-2 flex items-center gap-2"><i data-lucide="smartphone" class="w-5 h-5 text-emerald-400"></i> Device Management</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between py-2">
+                            <div><span class="text-white">mDNS Auto-Discovery</span><p class="text-[10px] text-slate-500 mt-1">Find Android TV devices on your network</p></div>
+                            <div class="relative">
+                                <input type="checkbox" id="chk-mdns" onchange="updateConfig('mdns_discovery_enabled', this.checked)" class="peer sr-only">
+                                <div class="w-11 h-6 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600 cursor-pointer" onclick="document.getElementById('chk-mdns').click()"></div>
+                            </div>
+                        </div>
+                        <div id="device-list" class="space-y-2">
+                            <div class="text-xs text-slate-500 font-mono text-center py-2">No devices discovered</div>
+                        </div>
+                        <button onclick="loadDevices()" class="w-full py-2 bg-emerald-600/20 text-emerald-400 rounded-lg font-bold text-xs hover:bg-emerald-600/30 transition-colors flex items-center justify-center gap-2"><i data-lucide="radar" class="w-4 h-4"></i> REFRESH DEVICES</button>
+                    </div>
+                </div>
+
+                <!-- Onboarding -->
+                <div class="glass-panel p-6 rounded-2xl">
+                    <h3 class="text-lg font-bold mb-4 border-b border-white/10 pb-2 flex items-center gap-2"><i data-lucide="rocket" class="w-5 h-5 text-cyan-400"></i> Setup Wizard</h3>
+                    <div class="space-y-4">
+                        <p class="text-xs text-slate-400">Run the guided setup to configure integrations and preferences step by step.</p>
+                        <div id="onboarding-status" class="text-xs font-mono text-slate-500"></div>
+                        <button onclick="startOnboarding()" class="w-full py-3 bg-cyan-600/20 text-cyan-400 rounded-lg font-bold text-xs hover:bg-cyan-600/30 transition-colors flex items-center justify-center gap-2"><i data-lucide="play" class="w-4 h-4"></i> LAUNCH SETUP WIZARD</button>
+                    </div>
+                </div>
+
                 </div>
 
 
@@ -910,12 +1156,113 @@
                         <div class="text-sm text-slate-500 font-mono text-center py-4">Loading...</div>
                     </div>
                 </div>
+
+                <!-- Advanced Stats -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="glass-panel p-6 rounded-2xl">
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2"><i data-lucide="pie-chart" class="w-4 h-4"></i> Top Genres</h3>
+                        <div id="analytics-genres" class="space-y-2">
+                            <div class="text-sm text-slate-500 font-mono text-center py-4">Loading...</div>
+                        </div>
+                    </div>
+                    <div class="glass-panel p-6 rounded-2xl">
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2"><i data-lucide="clock" class="w-4 h-4"></i> Peak Watch Hours</h3>
+                        <div id="analytics-peak-hours" class="grid grid-cols-6 gap-1">
+                            <div class="text-sm text-slate-500 font-mono text-center py-4 col-span-6">Loading...</div>
+                        </div>
+                    </div>
+                    <div class="glass-panel p-6 rounded-2xl">
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2"><i data-lucide="flame" class="w-4 h-4"></i> Watch Streak</h3>
+                        <div class="space-y-4">
+                            <div class="text-center">
+                                <span id="analytics-streak" class="text-4xl font-bold text-amber-400 font-mono">0</span>
+                                <p class="text-[10px] text-slate-500 uppercase tracking-wider mt-1">Day Streak</p>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div class="bg-black/30 rounded-lg p-3 text-center">
+                                    <span id="analytics-total-skips" class="text-lg font-bold text-emerald-400 font-mono">0</span>
+                                    <p class="text-[10px] text-slate-500">Total Skips</p>
+                                </div>
+                                <div class="bg-black/30 rounded-lg p-3 text-center">
+                                    <span id="analytics-avg-session" class="text-lg font-bold text-cyan-400 font-mono">0m</span>
+                                    <p class="text-[10px] text-slate-500">Avg Session</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Analytics Search -->
+                <div class="glass-panel p-4 rounded-2xl">
+                    <div class="flex items-center gap-3">
+                        <i data-lucide="search" class="w-5 h-5 text-slate-400"></i>
+                        <input type="text" id="analytics-search-input" placeholder="Search watch history..." onkeydown="if(event.key==='Enter')searchAnalytics()" class="bg-transparent flex-1 text-white outline-none placeholder:text-slate-600">
+                        <button onclick="searchAnalytics()" class="px-4 py-1.5 bg-cyan-600/20 text-cyan-400 rounded-lg text-xs font-bold hover:bg-cyan-600/30 transition-colors">SEARCH</button>
+                    </div>
+                    <div id="analytics-search-results" class="hidden mt-4 space-y-2 max-h-64 overflow-y-auto"></div>
+                </div>
             </div>
 
              <!-- DEBUG VIEW -->
-            <div id="view-debug" class="view-section hidden h-full">
-                <div id="console-output" class="w-full h-full bg-black/80 font-mono text-xs text-green-400 p-4 rounded-xl overflow-y-auto border border-white/10">
-                    <div>&gt; Debug console ready.</div>
+            <div id="view-debug" class="view-section hidden space-y-6">
+                <div class="glass-panel p-4 rounded-2xl">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-2"><i data-lucide="terminal-square" class="w-4 h-4"></i> System Console</h3>
+                    <div id="console-output" class="w-full h-64 bg-black/80 font-mono text-xs text-green-400 p-4 rounded-xl overflow-y-auto border border-white/10">
+                        <div>&gt; Debug console ready.</div>
+                    </div>
+                </div>
+
+                <!-- Audit Log -->
+                <div class="glass-panel p-6 rounded-2xl">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2"><i data-lucide="scroll-text" class="w-4 h-4"></i> Audit Log</h3>
+                        <button onclick="loadAuditLog()" class="px-3 py-1 bg-white/5 hover:bg-white/10 text-slate-400 rounded-lg text-[10px] font-bold uppercase transition-colors">Refresh</button>
+                    </div>
+                    <div id="audit-log-list" class="space-y-2 max-h-64 overflow-y-auto">
+                        <div class="text-sm text-slate-500 font-mono text-center py-4">Click refresh to load audit log</div>
+                    </div>
+                </div>
+
+                <!-- Skip Cache & Health -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="glass-panel p-6 rounded-2xl">
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2"><i data-lucide="database" class="w-4 h-4"></i> Skip Cache</h3>
+                        <div class="grid grid-cols-2 gap-2 mb-3">
+                            <div class="bg-black/30 rounded-lg p-3 text-center">
+                                <span id="cache-total" class="text-lg font-bold text-white font-mono">0</span>
+                                <p class="text-[10px] text-slate-500">Cached</p>
+                            </div>
+                            <div class="bg-black/30 rounded-lg p-3 text-center">
+                                <span id="cache-valid" class="text-lg font-bold text-emerald-400 font-mono">0</span>
+                                <p class="text-[10px] text-slate-500">Valid</p>
+                            </div>
+                        </div>
+                        <button onclick="clearSkipCache()" class="w-full py-2 bg-rose-600/20 text-rose-400 rounded-lg font-bold text-xs hover:bg-rose-600/30 transition-colors">CLEAR CACHE</button>
+                    </div>
+                    <div class="glass-panel p-6 rounded-2xl">
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2"><i data-lucide="heart-pulse" class="w-4 h-4"></i> System Health</h3>
+                        <div class="grid grid-cols-2 gap-2 mb-3">
+                            <div class="bg-black/30 rounded-lg p-3 text-center">
+                                <span id="health-uptime" class="text-lg font-bold text-cyan-400 font-mono">0s</span>
+                                <p class="text-[10px] text-slate-500">Uptime</p>
+                            </div>
+                            <div class="bg-black/30 rounded-lg p-3 text-center">
+                                <span id="health-status" class="text-lg font-bold text-emerald-400 font-mono">OK</span>
+                                <p class="text-[10px] text-slate-500">Status</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Plugins -->
+                <div class="glass-panel p-6 rounded-2xl">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2"><i data-lucide="puzzle" class="w-4 h-4"></i> Plugins</h3>
+                        <button onclick="loadPlugins()" class="px-3 py-1 bg-white/5 hover:bg-white/10 text-slate-400 rounded-lg text-[10px] font-bold uppercase transition-colors">Refresh</button>
+                    </div>
+                    <div id="plugins-list" class="space-y-2">
+                        <div class="text-sm text-slate-500 font-mono text-center py-4">Click refresh to load plugins</div>
+                    </div>
                 </div>
             </div>
 
@@ -1146,6 +1493,11 @@
             }
             if (tab === 'analytics') {
                 loadAnalytics();
+                loadAdvancedAnalytics();
+            }
+            if (tab === 'debug') {
+                loadSkipCacheStats();
+                loadHealthInfo();
             }
         }
 
@@ -1377,6 +1729,24 @@
                     if(document.getElementById('chk-erdb-logos')) document.getElementById('chk-erdb-logos').checked = data.config.erdb_logos_enabled !== false;
                     if(document.getElementById('sel-erdb-episode-id-mode')) document.getElementById('sel-erdb-episode-id-mode').value = data.config.erdb_episode_id_mode || "realimdb";
                     updateArtworkProviderVisibility(data.config.artwork_provider || "legacy");
+                    
+                    // New integration toggles sync
+                    if(document.getElementById('chk-anilist')) document.getElementById('chk-anilist').checked = data.config.anilist_enabled || false;
+                    if(document.getElementById('chk-simkl')) document.getElementById('chk-simkl').checked = data.config.simkl_enabled || false;
+                    if(document.getElementById('chk-kitsu')) document.getElementById('chk-kitsu').checked = data.config.kitsu_enabled || false;
+                    if(document.getElementById('chk-letterboxd')) document.getElementById('chk-letterboxd').checked = data.config.letterboxd_enabled || false;
+                    if(document.getElementById('chk-lastfm')) document.getElementById('chk-lastfm').checked = data.config.lastfm_enabled || false;
+                    if(document.getElementById('chk-justwatch')) document.getElementById('chk-justwatch').checked = data.config.justwatch_enabled || false;
+                    if(document.getElementById('chk-opensubtitles')) document.getElementById('chk-opensubtitles').checked = data.config.opensubtitles_enabled || false;
+                    if(document.getElementById('chk-plex')) document.getElementById('chk-plex').checked = data.config.plex_enabled || false;
+                    if(document.getElementById('chk-jellyfin')) document.getElementById('chk-jellyfin').checked = data.config.jellyfin_enabled || false;
+                    if(document.getElementById('chk-emby')) document.getElementById('chk-emby').checked = data.config.emby_enabled || false;
+                    if(document.getElementById('chk-notion')) document.getElementById('chk-notion').checked = data.config.notion_enabled || false;
+                    if(document.getElementById('chk-obsidian')) document.getElementById('chk-obsidian').checked = data.config.obsidian_enabled || false;
+                    if(document.getElementById('chk-privacy')) document.getElementById('chk-privacy').checked = data.config.privacy_mode || false;
+                    if(document.getElementById('chk-auth')) document.getElementById('chk-auth').checked = data.config.dashboard_auth_enabled || false;
+                    if(document.getElementById('chk-mdns')) document.getElementById('chk-mdns').checked = data.config.mdns_discovery_enabled || false;
+                    if(document.getElementById('sel-justwatch-country')) document.getElementById('sel-justwatch-country').value = data.config.justwatch_country || "US";
                     
                     // Render Skip Providers if available
                     if (data.config.skip_priority_order) {
@@ -2376,6 +2746,223 @@ async function toggleSeason(btn, tmdbId, seasonNum, showImdb) {
             } catch (e) {
                 console.error('Analytics load error:', e);
             }
+        }
+
+        // --- NEW FEATURE FUNCTIONS ---
+        function saveNewIntegration() {
+            var args = Array.from(arguments);
+            var data = { action: 'update' };
+            for (var i = 0; i < args.length; i += 2) {
+                var el = document.getElementById(args[i + 1]);
+                if (el) data[args[i]] = el.value.trim();
+            }
+            fetch('/api/settings', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) })
+                .then(function() { alert('Saved!'); });
+        }
+
+        function saveMediaServers() {
+            var data = { action: 'update' };
+            var fields = [['plex_url','inp-plex-url'],['plex_token','inp-plex-token'],['jellyfin_url','inp-jellyfin-url'],['jellyfin_api_key','inp-jellyfin-key'],['emby_url','inp-emby-url'],['emby_api_key','inp-emby-key']];
+            fields.forEach(function(f) { var el = document.getElementById(f[1]); if (el && el.value.trim()) data[f[0]] = el.value.trim(); });
+            fetch('/api/settings', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) })
+                .then(function() { alert('Media servers saved!'); });
+        }
+
+        function saveJournals() {
+            var data = { action: 'update' };
+            var fields = [['notion_api_key','inp-notion-key'],['notion_database_id','inp-notion-db'],['obsidian_vault_path','inp-obsidian-vault']];
+            fields.forEach(function(f) { var el = document.getElementById(f[1]); if (el && el.value.trim()) data[f[0]] = el.value.trim(); });
+            fetch('/api/settings', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) })
+                .then(function() { alert('Journals saved!'); });
+        }
+
+        async function exportConfig() {
+            try {
+                var res = await fetch('/api/config/export');
+                var data = await res.json();
+                var blob = new Blob([JSON.stringify(data.config || data, null, 2)], { type: 'application/json' });
+                var url = URL.createObjectURL(blob);
+                var a = document.createElement('a'); a.href = url;
+                a.download = 'ascend-config-' + new Date().toISOString().slice(0,10) + '.json';
+                a.click(); URL.revokeObjectURL(url);
+            } catch (e) { alert('Export failed: ' + e); }
+        }
+
+        function importConfigFile(input) {
+            var file = input.files[0]; if (!file) return;
+            var reader = new FileReader();
+            reader.onload = async function(e) {
+                try {
+                    var config = JSON.parse(e.target.result);
+                    var res = await fetch('/api/config/import', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ config: config }) });
+                    var data = await res.json();
+                    var status = document.getElementById('config-import-status');
+                    status.classList.remove('hidden');
+                    if (data.status === 'ok') {
+                        status.className = 'text-xs font-mono p-3 bg-emerald-500/10 text-emerald-400 rounded-lg border border-emerald-500/20';
+                        status.innerText = 'Config imported! ' + (data.warnings && data.warnings.length ? 'Warnings: ' + data.warnings.join(', ') : '');
+                    } else {
+                        status.className = 'text-xs font-mono p-3 bg-rose-500/10 text-rose-400 rounded-lg border border-rose-500/20';
+                        status.innerText = 'Error: ' + (data.error || 'Unknown');
+                    }
+                } catch (err) { alert('Invalid JSON: ' + err); }
+            };
+            reader.readAsText(file); input.value = '';
+        }
+
+        async function loadAuditLog() {
+            try {
+                var res = await fetch('/api/audit?limit=50');
+                var entries = await res.json();
+                var list = document.getElementById('audit-log-list');
+                if (!entries || entries.length === 0) { list.innerHTML = '<div class="text-sm text-slate-500 font-mono text-center py-4">No audit entries</div>'; return; }
+                var colors = { auth: 'text-rose-400', config: 'text-amber-400', api: 'text-blue-400', system: 'text-cyan-400' };
+                list.innerHTML = entries.map(function(e) {
+                    var date = new Date((e.timestamp || 0) * 1000);
+                    var details = typeof e.details === 'object' ? JSON.stringify(e.details) : (e.details || '');
+                    return '<div class="flex items-center gap-3 p-2 bg-black/30 rounded-lg text-xs"><span class="' + (colors[e.event_type] || colors[e.type] || 'text-slate-400') + ' font-bold uppercase w-16">' + (e.event_type || e.type || '?') + '</span><span class="text-white flex-1 font-mono truncate">' + details + '</span><span class="text-slate-600 font-mono">' + date.toLocaleTimeString() + '</span></div>';
+                }).join('');
+            } catch (e) { console.error('Audit load error:', e); }
+        }
+
+        async function loadSkipCacheStats() {
+            try {
+                var res = await fetch('/api/skip/cache');
+                var data = await res.json();
+                document.getElementById('cache-total').innerText = data.total_entries || 0;
+                document.getElementById('cache-valid').innerText = data.valid_entries || 0;
+            } catch (e) { console.error('Skip cache error:', e); }
+        }
+
+        async function clearSkipCache() {
+            await fetch('/api/skip/cache/clear', { method: 'POST' });
+            loadSkipCacheStats();
+        }
+
+        async function loadHealthInfo() {
+            try {
+                var res = await fetch('/api/health');
+                var data = await res.json();
+                var uptime = data.uptime || 0;
+                var h = Math.floor(uptime / 3600); var m = Math.floor((uptime % 3600) / 60);
+                document.getElementById('health-uptime').innerText = h > 0 ? h + 'h' + m + 'm' : m + 'm';
+                document.getElementById('health-status').innerText = data.status === 'ok' ? 'OK' : 'ERR';
+                document.getElementById('health-status').className = 'text-lg font-bold font-mono ' + (data.status === 'ok' ? 'text-emerald-400' : 'text-rose-400');
+            } catch (e) { console.error('Health error:', e); }
+        }
+
+        async function loadDevices() {
+            try {
+                var res = await fetch('/api/devices');
+                var data = await res.json();
+                var list = document.getElementById('device-list');
+                var html = '';
+                if (data.current) {
+                    html += '<div class="flex items-center gap-3 p-2 bg-black/30 rounded-lg"><span class="w-2 h-2 rounded-full ' + (data.current.connected ? 'bg-emerald-400' : 'bg-rose-500') + '"></span><span class="text-sm text-white font-mono flex-1">' + (data.current.host || 'None') + '</span><span class="text-[10px] ' + (data.current.connected ? 'text-emerald-400' : 'text-rose-400') + ' uppercase font-bold">' + (data.current.connected ? 'Connected' : 'Offline') + '</span></div>';
+                }
+                if (data.discovered && data.discovered.length > 0) {
+                    data.discovered.forEach(function(d) {
+                        html += '<div class="flex items-center gap-3 p-2 bg-black/30 rounded-lg cursor-pointer hover:bg-white/5 transition-colors" onclick="switchDevice(\'' + (d.ip || d.host) + '\')"><i data-lucide="monitor" class="w-4 h-4 text-slate-400"></i><span class="text-sm text-white font-mono flex-1">' + (d.name || d.ip || d.host) + '</span><span class="text-[10px] text-indigo-400 uppercase font-bold">Connect</span></div>';
+                    });
+                }
+                list.innerHTML = html || '<div class="text-xs text-slate-500 font-mono text-center py-2">No devices discovered</div>';
+                lucide.createIcons();
+            } catch (e) { console.error('Devices error:', e); }
+        }
+
+        async function switchDevice(ip) {
+            await fetch('/api/devices/switch', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ ip: ip }) });
+            loadDevices();
+        }
+
+        async function loadIntegrationStatus() {
+            try {
+                var res = await fetch('/api/integrations/status');
+                var data = await res.json();
+                var grid = document.getElementById('integration-status-grid');
+                var integrations = data.integrations || data;
+                if (typeof integrations !== 'object') { grid.innerHTML = '<div class="text-sm text-slate-500 font-mono text-center py-4 col-span-full">No data</div>'; return; }
+                var keys = Object.keys(integrations);
+                grid.innerHTML = keys.map(function(k) {
+                    var active = integrations[k];
+                    return '<div class="flex items-center gap-2 p-2 bg-black/30 rounded-lg"><span class="w-2 h-2 rounded-full ' + (active ? 'bg-emerald-400' : 'bg-slate-600') + '"></span><span class="text-xs text-white font-medium">' + k + '</span></div>';
+                }).join('');
+            } catch (e) { console.error('Integration status error:', e); }
+        }
+
+        async function loadAdvancedAnalytics() {
+            try {
+                var res = await fetch('/api/analytics/advanced');
+                var data = await res.json();
+                // Genre breakdown
+                var genreEl = document.getElementById('analytics-genres');
+                if (data.genre_breakdown && Object.keys(data.genre_breakdown).length > 0) {
+                    var genres = Object.entries(data.genre_breakdown).sort(function(a,b) { return b[1] - a[1]; }).slice(0, 8);
+                    var maxVal = genres[0][1];
+                    genreEl.innerHTML = genres.map(function(g) {
+                        var pct = Math.round((g[1] / maxVal) * 100);
+                        return '<div class="flex items-center gap-2"><span class="text-xs text-slate-300 w-20 truncate">' + g[0] + '</span><div class="flex-1 bg-black/30 rounded-full h-2"><div class="bg-cyan-500 h-2 rounded-full" style="width:' + pct + '%"></div></div><span class="text-[10px] text-slate-500 font-mono w-8 text-right">' + g[1] + '</span></div>';
+                    }).join('');
+                } else { genreEl.innerHTML = '<div class="text-xs text-slate-500 font-mono text-center py-2">No genre data</div>'; }
+                // Peak hours
+                var peakEl = document.getElementById('analytics-peak-hours');
+                if (data.peak_hours && Object.keys(data.peak_hours).length > 0) {
+                    var hours = []; for (var i = 0; i < 24; i++) hours.push(data.peak_hours[i] || 0);
+                    var maxH = Math.max.apply(null, hours) || 1;
+                    peakEl.innerHTML = hours.map(function(v, i) {
+                        var intensity = Math.round((v / maxH) * 100);
+                        var bg = intensity > 60 ? 'bg-cyan-500' : intensity > 30 ? 'bg-cyan-700' : 'bg-slate-800';
+                        return '<div class="' + bg + ' rounded aspect-square flex items-center justify-center" title="' + i + ':00 - ' + v + ' sessions"><span class="text-[8px] text-white/60">' + i + '</span></div>';
+                    }).join('');
+                } else { peakEl.innerHTML = '<div class="text-xs text-slate-500 font-mono text-center py-2 col-span-6">No data</div>'; }
+                // Streak & stats
+                if (data.current_streak !== undefined) document.getElementById('analytics-streak').innerText = data.current_streak;
+                if (data.total_skips !== undefined) document.getElementById('analytics-total-skips').innerText = data.total_skips;
+                if (data.avg_session_minutes !== undefined) document.getElementById('analytics-avg-session').innerText = Math.round(data.avg_session_minutes) + 'm';
+            } catch (e) { console.error('Advanced analytics error:', e); }
+        }
+
+        async function searchAnalytics() {
+            var q = document.getElementById('analytics-search-input').value.trim();
+            if (!q) return;
+            try {
+                var res = await fetch('/api/analytics/search?q=' + encodeURIComponent(q) + '&limit=20');
+                var results = await res.json();
+                var container = document.getElementById('analytics-search-results');
+                container.classList.remove('hidden');
+                if (!results || results.length === 0) { container.innerHTML = '<div class="text-sm text-slate-500 font-mono text-center py-4">No results found</div>'; return; }
+                container.innerHTML = results.map(function(s) {
+                    var dur = Math.round((s.duration_watched_ms || 0) / 60000);
+                    return '<div class="flex items-center gap-3 p-2 bg-black/30 rounded-lg"><span class="text-sm text-white flex-1 font-medium">' + s.title + '</span><span class="text-[10px] text-slate-400 font-mono">' + (s.subtitle || '') + '</span><span class="text-[10px] text-cyan-400 font-mono">' + dur + 'm</span></div>';
+                }).join('');
+            } catch (e) { console.error('Search error:', e); }
+        }
+
+        async function loadPlugins() {
+            try {
+                var res = await fetch('/api/plugins');
+                var data = await res.json();
+                var list = document.getElementById('plugins-list');
+                var plugins = data.plugins || data;
+                if (!plugins || (Array.isArray(plugins) && plugins.length === 0)) { list.innerHTML = '<div class="text-sm text-slate-500 font-mono text-center py-4">No plugins installed</div>'; return; }
+                if (Array.isArray(plugins)) {
+                    list.innerHTML = plugins.map(function(p) {
+                        return '<div class="flex items-center gap-3 p-3 bg-black/30 rounded-lg"><div class="p-2 rounded-lg bg-indigo-500/10"><i data-lucide="puzzle" class="w-4 h-4 text-indigo-400"></i></div><div class="flex-1"><span class="text-sm text-white font-bold">' + (p.name || 'Plugin') + '</span><p class="text-[10px] text-slate-500">' + (p.description || '') + '</p></div><span class="text-[10px] font-mono ' + (p.enabled ? 'text-emerald-400' : 'text-slate-500') + '">' + (p.enabled ? 'Active' : 'Inactive') + '</span></div>';
+                    }).join('');
+                } else { list.innerHTML = '<div class="text-xs text-slate-400 font-mono p-3 bg-black/30 rounded-lg">' + JSON.stringify(plugins) + '</div>'; }
+                lucide.createIcons();
+            } catch (e) { console.error('Plugins error:', e); }
+        }
+
+        async function startOnboarding() {
+            var status = document.getElementById('onboarding-status');
+            status.innerText = 'Starting setup wizard...';
+            try {
+                var res = await fetch('/api/onboarding/status');
+                var data = await res.json();
+                status.className = 'text-xs font-mono text-cyan-400 p-3 bg-cyan-500/10 rounded-lg border border-cyan-500/20';
+                status.innerText = 'Step ' + (data.current_step || 1) + '/' + (data.total_steps || 5) + ' — ' + (data.current_step_name || 'Getting Started') + (data.completed ? ' (Completed!)' : '');
+            } catch (e) { status.innerText = 'Setup wizard not available'; status.className = 'text-xs font-mono text-rose-400'; }
         }
 
         // --- WATCH PARTY ---
