@@ -11,15 +11,13 @@
 - [3. Metadata & Artwork Pipeline](#3-metadata--artwork-pipeline)
 - [4. Skip Segment System](#4-skip-segment-system)
 - [5. Trakt Integration](#5-trakt-integration)
-- [6. Watch Party System](#6-watch-party-system)
-- [7. Smart Home Integration](#7-smart-home-integration)
-- [8. Dashboard & Web UI](#8-dashboard--web-ui)
-- [9. Analytics & History](#9-analytics--history)
-- [10. Wako Mode](#10-wako-mode)
-- [11. New API Integrations](#11-new-api-integrations)
-- [12. Architecture & Performance](#12-architecture--performance)
-- [13. Security & Privacy](#13-security--privacy)
-- [14. Developer Experience](#14-developer-experience)
+- [6. Dashboard & Web UI](#6-dashboard--web-ui)
+- [7. Analytics & History](#7-analytics--history)
+- [8. Wako Mode](#8-wako-mode)
+- [9. New API Integrations](#9-new-api-integrations)
+- [10. Architecture & Performance](#10-architecture--performance)
+- [11. Security & Privacy](#11-security--privacy)
+- [12. Developer Experience](#12-developer-experience)
 
 ---
 
@@ -32,7 +30,6 @@
 ### 1.2 Rich Presence Buttons - Dynamic URLs
 **Current:** RPC buttons link to static URLs (TMDB page, trailer).
 **Suggestion:**
-- Add a "Watch Together" button that generates a watch party invite link.
 - Add configurable button templates (e.g., link to Letterboxd, Trakt, or a custom URL with `{imdb_id}` / `{title}` placeholders).
 - Allow per-content-type button configurations (movies vs. TV shows vs. anime).
 
@@ -203,92 +200,9 @@ Allow per-category enable/disable toggles.
 
 ---
 
-## 6. Watch Party System
+## 6. Dashboard & Web UI
 
-### 6.1 WebSocket-Based Communication
-**Current:** HTTP polling with `requests.post()` for sync commands.
-**Suggestion:** Replace the HTTP-based relay with WebSocket communication for:
-- Lower latency sync (sub-100ms vs. HTTP request overhead).
-- Persistent connections with automatic reconnection.
-- Real-time bi-directional event streaming.
-
-### 6.2 Party Chat
-**Current:** Watch party only syncs play/pause/seek state.
-**Suggestion:** Add a text chat feature within the watch party that displays on the dashboard. Messages could also optionally be bridged to a Discord channel via webhook.
-
-### 6.3 Party Permissions & Roles
-**Current:** Any peer can send sync commands.
-**Suggestion:**
-- Add host-only control mode (only the host can play/pause/seek).
-- Add "request control" feature for guests.
-- Add vote-to-skip/pause functionality for democratic control.
-
-### 6.4 Internet Watch Parties
-**Current:** Watch parties are local network only (raw HTTP on LAN IPs).
-**Suggestion:**
-- Add NAT traversal support (UPnP, STUN/TURN) for internet watch parties.
-- Alternatively, offer a lightweight relay server option that can be self-hosted or use a free tier cloud service.
-- Add party invite codes instead of raw IP addresses.
-
-### 6.5 Sync Accuracy Improvements
-**Current:** Deduplication threshold is 5000ms (5 seconds).
-**Suggestion:**
-- Reduce sync threshold to 1-2 seconds for tighter sync.
-- Add NTP-style clock synchronization between peers.
-- Implement buffering sync (pause all peers, wait for slowest, then resume together).
-
----
-
-## 7. Smart Home Integration
-
-### 7.1 MQTT Support
-**Current:** Webhook, Philips Hue, and Home Assistant.
-**Suggestion:** Add MQTT as a smart home provider for users who run MQTT brokers (Mosquitto, etc.). Publish play/pause/stop events to configurable MQTT topics.
-
-### 7.2 Scene-Based Automation
-**Current:** Binary play/pause triggers with dim brightness.
-**Suggestion:**
-- Map different content types to different scenes (e.g., horror movies = red ambient, comedies = warm white).
-- Support genre-aware lighting based on TMDB genre data.
-- Add fade transitions (gradual dim over X seconds when playback starts).
-- Time-of-day aware brightness (don't dim during daytime).
-
-### 7.3 Multi-Light / Multi-Room Support
-**Current:** Single `hue_group_id` and single `ha_entity`.
-**Suggestion:** Support multiple light groups/entities with different behaviors:
-```json
-{
-  "lights": [
-    {"entity": "light.tv_backlight", "on_play": "dim_50", "on_pause": "bright"},
-    {"entity": "light.ceiling", "on_play": "off", "on_pause": "on"}
-  ]
-}
-```
-
-### 7.4 Google Home / Alexa Integration
-**Suggestion:** Add voice assistant integration via Google Home or Alexa routines. Allow users to say "What am I watching?" and have the device respond with current title and progress.
-
-### 7.5 Webhook Payload Customization
-**Current:** Simple GET/POST to `smart_home_play_url` and `smart_home_pause_url`.
-**Suggestion:** Allow custom webhook payloads with template variables:
-```json
-{
-  "url": "https://hooks.example.com/media",
-  "method": "POST",
-  "headers": {"Authorization": "Bearer {token}"},
-  "body": {
-    "event": "{action}",
-    "title": "{title}",
-    "progress": "{progress}"
-  }
-}
-```
-
----
-
-## 8. Dashboard & Web UI
-
-### 8.1 Mobile-Responsive Dashboard
+### 6.1 Mobile-Responsive Dashboard
 **Current:** Dashboard is designed primarily for desktop browsers.
 **Suggestion:** Create a mobile-responsive layout with:
 - Swipe gestures for media controls.
@@ -296,28 +210,28 @@ Allow per-category enable/disable toggles.
 - Pull-to-refresh for state updates.
 - PWA (Progressive Web App) manifest for "Add to Home Screen" support.
 
-### 8.2 Dashboard Authentication
+### 6.2 Dashboard Authentication
 **Current:** No authentication; anyone on the network can access the dashboard.
 **Suggestion:**
 - Add optional PIN/password protection.
 - Support session-based auth with configurable timeout.
 - Rate-limit API endpoints to prevent abuse.
 
-### 8.3 Dark / Light Theme Toggle
+### 6.3 Dark / Light Theme Toggle
 **Current:** `dashboard_ui_mode` supports "normal" but limited theme options.
 **Suggestion:**
 - Add system-preference-aware auto dark/light mode.
 - Allow custom accent colors.
 - Add OLED-black theme option.
 
-### 8.4 Dashboard Notifications
+### 6.4 Dashboard Notifications
 **Current:** No push notification system.
 **Suggestion:**
-- Browser push notifications for events (ADB disconnected, skip performed, watch party invite).
+- Browser push notifications for events (ADB disconnected, skip performed, etc.).
 - Notification center in the dashboard showing recent events.
 - Optional Discord webhook notifications for monitoring.
 
-### 8.5 Remote Control Improvements
+### 6.5 Remote Control Improvements
 **Current:** Basic media key events (play/pause, volume, next/prev).
 **Suggestion:**
 - Full D-pad navigation overlay.
@@ -325,7 +239,7 @@ Allow per-category enable/disable toggles.
 - Screenshot viewer (see what's on the TV screen, already partially implemented via `capture_screenshot`).
 - Keyboard input relay for search fields.
 
-### 8.6 Configuration Import / Export
+### 6.6 Configuration Import / Export
 **Current:** `config.json` must be manually edited for backup/restore.
 **Suggestion:**
 - Add export/import buttons on the dashboard settings page.
@@ -333,7 +247,7 @@ Allow per-category enable/disable toggles.
 - Config diff view showing changes from defaults.
 - Auto-backup before config changes with rollback option.
 
-### 8.7 Onboarding Wizard
+### 6.7 Onboarding Wizard
 **Current:** Users must configure everything manually.
 **Suggestion:** Add a first-run setup wizard that guides users through:
 1. ADB device discovery and connection.
@@ -341,17 +255,16 @@ Allow per-category enable/disable toggles.
 3. TMDB API key setup.
 4. Artwork provider selection.
 5. Skip provider preferences.
-6. Smart home setup (optional).
 
-### 8.8 Real-Time WebSocket State Updates
+### 6.8 Real-Time WebSocket State Updates
 **Current:** Dashboard polls `/api/state` on an interval.
 **Suggestion:** Replace polling with WebSocket or Server-Sent Events (SSE) for instant state updates. This reduces server load and provides a more responsive UI.
 
 ---
 
-## 9. Analytics & History
+## 7. Analytics & History
 
-### 9.1 Advanced Watch Statistics
+### 7.1 Advanced Watch Statistics
 **Current:** Basic total hours, session count, top titles, daily stats.
 **Suggestion:**
 - Genre distribution pie chart (comedy vs. drama vs. action, etc.).
@@ -360,41 +273,41 @@ Allow per-category enable/disable toggles.
 - Peak watching hours heatmap (what times of day the user watches most).
 - Year-in-review summary (total hours, top genres, most-watched shows).
 
-### 9.2 Database Backend
+### 7.2 Database Backend
 **Current:** JSON files (`analytics.json`, `stats.json`) with 500-session cap.
 **Suggestion:**
 - Migrate to SQLite for better query performance and no session cap.
 - Add data export (CSV, JSON) from the dashboard.
 - Support optional cloud sync (encrypted backup to user's own storage).
 
-### 9.3 Watch History Search & Filter
+### 7.3 Watch History Search & Filter
 **Current:** History shows recent entries in a flat list.
 **Suggestion:**
 - Add search by title, date range, and content type.
 - Filter by "completed" vs. "in-progress" vs. "abandoned".
 - Group history entries by show (collapsible per-show episode list).
 
-### 9.4 Shareable Stats Cards
+### 7.4 Shareable Stats Cards
 **Suggestion:** Generate shareable image cards (PNG) showing watch statistics (similar to Spotify Wrapped or Trakt year-in-review). Users can post these to social media or Discord.
 
 ---
 
-## 10. Wako Mode
+## 8. Wako Mode
 
-### 10.1 Wako Plugin Ecosystem
+### 8.1 Wako Plugin Ecosystem
 **Current:** Wako metadata is scraped from UI via `uiautomator`.
 **Suggestion:**
 - Create a lightweight Wako plugin/addon that directly sends metadata to Ascend Media RPC via a local API, eliminating the need for UI scraping.
 - This would provide more reliable title, season, episode, and progress data.
 
-### 10.2 Improved Wako Title Matching
+### 8.2 Improved Wako Title Matching
 **Current:** `MediaTitleResolver` uses multiple parser libraries (PTN, anitopy, guessit) with fallback.
 **Suggestion:**
 - Add a user-configurable title override map for problematic titles (e.g., a title that consistently resolves wrong).
 - Store successful title resolutions in a local cache to speed up future lookups.
 - Add fuzzy matching as a fallback for titles that don't match exactly.
 
-### 10.3 Wako Focus Lock Improvements
+### 8.3 Wako Focus Lock Improvements
 **Current:** `wako_focus_lock` keeps the app in focus but can interfere with other operations.
 **Suggestion:**
 - Add a whitelist of apps that should not trigger focus-lock behavior (e.g., allow switching to YouTube without Wako reclaiming focus).
@@ -402,65 +315,64 @@ Allow per-category enable/disable toggles.
 
 ---
 
-## 11. New API Integrations
+## 9. New API Integrations
 
-### 11.1 Letterboxd Integration
+### 9.1 Letterboxd Integration
 **Suggestion:** Use the [Letterboxd API](https://letterboxd.com/api-beta/) to:
 - Log watched films automatically.
 - Fetch user ratings to display on RPC.
 - Show Letterboxd popular reviews in the dashboard.
 
-### 11.2 JustWatch API
+### 9.2 JustWatch API
 **Suggestion:** Integrate [JustWatch](https://www.justwatch.com/) to show where content is available for streaming. Display "Also on Netflix, Hulu" in the dashboard or as RPC button links.
 
-### 11.3 OpenSubtitles Integration
+### 9.3 OpenSubtitles Integration
 **Suggestion:** Add [OpenSubtitles](https://opensubtitles.stoplight.io/) integration to:
 - Show subtitle availability status on the dashboard.
 - Auto-download subtitles for content being played.
 - Display subtitle language in RPC details.
 
-### 11.4 AniList Integration
+### 9.4 AniList Integration
 **Suggestion:** Add [AniList](https://anilist.gitbook.io/anilist-apiv2-docs/) as an anime metadata and tracking provider alongside MAL. AniList has a GraphQL API and is popular in the anime community. Could be used for:
 - Anime metadata (titles in multiple languages, staff info, studio info).
 - Automatic progress tracking and list updates.
 - User score/rating display on RPC.
 
-### 11.5 Plex/Jellyfin/Emby Companion
+### 9.5 Plex/Jellyfin/Emby Companion
 **Suggestion:** While Ascend is Android TV focused, add optional support for Plex, Jellyfin, or Emby webhook events. When these servers send playback webhooks, use them as an alternative metadata source or as a secondary presence trigger.
 
-### 11.6 Last.fm Scrobbling
+### 9.6 Last.fm Scrobbling
 **Suggestion:** For music video or soundtrack playback, add [Last.fm](https://www.last.fm/api) scrobbling support alongside Trakt. Detect when the content is music-based and scrobble to Last.fm.
 
-### 11.7 Notion / Obsidian Watch Log
+### 9.7 Notion / Obsidian Watch Log
 **Suggestion:** Add optional integration with Notion API or Obsidian (via local files) to maintain a personal watch journal. Auto-create entries with title, rating, date watched, and personal notes prompt.
 
 ---
 
-## 12. Architecture & Performance
+## 10. Architecture & Performance
 
-### 12.1 Async / Event-Driven Architecture
+### 10.1 Async / Event-Driven Architecture
 **Current:** Threading-based with synchronous `requests` calls throughout.
 **Suggestion:**
 - Migrate HTTP calls to `aiohttp` or `httpx` with async support for non-blocking I/O.
 - Use `asyncio` event loops for the monitor loop, ADB communication, and API calls.
 - This would significantly improve performance when multiple providers are queried concurrently (skip manager already does concurrent fetching but with `ThreadPoolExecutor`).
 
-### 12.2 Plugin / Extension System
+### 10.2 Plugin / Extension System
 **Current:** All providers and integrations are hardcoded.
 **Suggestion:** Create a plugin architecture where:
 - Metadata providers implement a standard interface (`search()`, `get_details()`, `get_artwork()`).
 - Skip providers implement a standard interface (`get_skip_times()`).
-- Smart home providers implement a standard interface (`on_play()`, `on_pause()`, `on_stop()`).
 - Third-party developers can create and share plugins.
 
-### 12.3 Configuration Hot-Reload
+### 10.3 Configuration Hot-Reload
 **Current:** Some config changes require restart; `update_config()` updates in-memory state.
 **Suggestion:**
 - Ensure all configuration changes take effect immediately without restart.
 - Add a config file watcher that detects external changes to `config.json`.
 - Emit config change events that components can subscribe to.
 
-### 12.4 Health Check Endpoint
+### 10.4 Health Check Endpoint
 **Current:** No dedicated health check.
 **Suggestion:** Add a `/api/health` endpoint returning:
 ```json
@@ -476,7 +388,7 @@ Allow per-category enable/disable toggles.
 ```
 Useful for monitoring with Uptime Kuma, Healthchecks.io, etc.
 
-### 12.5 Docker Support
+### 10.5 Docker Support
 **Current:** No containerization support.
 **Suggestion:**
 - Add a `Dockerfile` and `docker-compose.yml` for easy deployment.
@@ -484,7 +396,7 @@ Useful for monitoring with Uptime Kuma, Healthchecks.io, etc.
 - Support environment variable configuration as alternative to `config.json`.
 - Add a headless mode that runs without the GUI/webview.
 
-### 12.6 Rate Limiter Middleware
+### 10.6 Rate Limiter Middleware
 **Current:** No rate limiting on the Flask API.
 **Suggestion:** Add Flask-Limiter or custom middleware to prevent:
 - API abuse from the local network.
@@ -493,37 +405,37 @@ Useful for monitoring with Uptime Kuma, Healthchecks.io, etc.
 
 ---
 
-## 13. Security & Privacy
+## 11. Security & Privacy
 
-### 13.1 API Key Validation
+### 11.1 API Key Validation
 **Current:** API keys are stored in plaintext in `config.json`.
 **Suggestion:**
 - Validate API keys on save (test them against the respective API).
 - Show key status indicators on the dashboard (valid, invalid, expired).
 - Support encrypted config storage (partially implemented via `EncryptionManager`).
 
-### 13.2 Privacy Mode
+### 11.2 Privacy Mode
 **Suggestion:** Add a "privacy mode" toggle that:
 - Hides the currently playing title from Discord RPC (shows "Watching something" instead).
 - Excludes certain titles or genres from Trakt scrobbling.
 - Pauses analytics tracking.
 - Allows a "blacklist" of titles that should never appear on RPC.
 
-### 13.3 Dashboard HTTPS Support
+### 11.3 Dashboard HTTPS Support
 **Current:** Flask serves over HTTP on port 5466.
 **Suggestion:**
 - Support self-signed or Let's Encrypt TLS certificates.
 - Auto-generate a self-signed cert on first run for local network security.
 - Add CORS configuration for cross-origin dashboard access.
 
-### 13.4 Audit Log
+### 11.4 Audit Log
 **Suggestion:** Keep a log of all configuration changes, API key updates, and authentication events. Display on the dashboard for security monitoring.
 
 ---
 
-## 14. Developer Experience
+## 12. Developer Experience
 
-### 14.1 REST API Documentation
+### 12.1 REST API Documentation
 **Current:** API endpoints exist but are undocumented.
 **Suggestion:**
 - Add OpenAPI/Swagger documentation for all `/api/*` endpoints.
@@ -546,24 +458,20 @@ Useful for monitoring with Uptime Kuma, Healthchecks.io, etc.
 | `/api/analytics/stats` | GET | Get total analytics stats |
 | `/api/analytics/daily` | GET | Get daily watch stats |
 | `/api/analytics/sessions` | GET | Get recent sessions |
-| `/api/party/host` | POST | Start hosting a watch party |
-| `/api/party/join` | POST | Join a watch party |
-| `/api/party/leave` | POST | Leave a watch party |
-| `/api/party/status` | GET | Get watch party status |
 | `/api/artwork/top-posters/season` | GET | Get Top Posters season artwork |
 | `/api/artwork/erdb/discord` | GET | Get ERDB Discord artwork |
 | `/api/artwork/cached/{key}` | GET | Get cached RPC artwork |
 
-### 14.2 Webhook / Event System
+### 12.2 Webhook / Event System
 **Suggestion:** Add an outbound webhook system that sends events to user-configured URLs:
 ```
 Events: playback.started, playback.paused, playback.stopped,
         skip.performed, device.connected, device.disconnected,
-        rpc.updated, party.joined, party.left
+        rpc.updated
 ```
 This enables third-party automation (IFTTT, Zapier, n8n, Node-RED).
 
-### 14.3 CLI Mode
+### 12.3 CLI Mode
 **Current:** Application requires GUI (webview or browser).
 **Suggestion:** Add a headless CLI mode for server/NAS deployments:
 ```bash
@@ -571,7 +479,7 @@ ascend-rpc --headless --config /path/to/config.json
 ```
 Output logs to stdout, expose only the Flask API, and skip GUI initialization.
 
-### 14.4 Unit Test Suite
+### 12.4 Unit Test Suite
 **Current:** No tests in the repository.
 **Suggestion:**
 - Add unit tests for core modules (`title_resolver`, `skip_manager`, `tmdb`, `erdb`, `trakt`).
@@ -579,7 +487,7 @@ Output logs to stdout, expose only the Flask API, and skip GUI initialization.
 - Set up CI/CD with GitHub Actions for automated testing on PR.
 - Add test fixtures for common media title formats and API responses.
 
-### 14.5 Configuration Schema Validation
+### 12.5 Configuration Schema Validation
 **Current:** Config keys are checked individually with `.get()` and defaults.
 **Suggestion:**
 - Define a JSON Schema or Pydantic model for `config.json`.
@@ -587,7 +495,7 @@ Output logs to stdout, expose only the Flask API, and skip GUI initialization.
 - Auto-migrate old config formats to new ones.
 - Provide helpful error messages for invalid values.
 
-### 14.6 Logging Improvements
+### 12.6 Logging Improvements
 **Current:** Excellent logging with `CompactConsoleHandler`, secret redaction, and log tables.
 **Suggestion:**
 - Add structured JSON logging option for log aggregation (ELK stack, Grafana Loki).
@@ -610,14 +518,12 @@ Output logs to stdout, expose only the Flask API, and skip GUI initialization.
 | REST API documentation | Medium | Low | P1 |
 | Skip segment caching | Medium | Low | P2 |
 | Artwork fallback chain | Medium | Medium | P2 |
-| Watch party WebSocket upgrade | Medium | Medium | P2 |
 | Health check endpoint | Medium | Low | P2 |
 | Mobile-responsive dashboard | Medium | Medium | P2 |
 | Plugin/extension system | High | High | P2 |
 | Onboarding wizard | Medium | Medium | P2 |
 | AniList integration | Medium | Medium | P3 |
 | SponsorBlock integration | Medium | Medium | P3 |
-| MQTT smart home | Low | Low | P3 |
 | Letterboxd integration | Low | Medium | P3 |
 | Async architecture migration | High | High | P3 |
 | Year-in-review stats | Low | Medium | P3 |
@@ -640,8 +546,6 @@ Output logs to stdout, expose only the Flask API, and skip GUI initialization.
 | OpenSubtitles | https://opensubtitles.stoplight.io/ | API Key |
 | JustWatch | https://www.justwatch.com/ | Unofficial |
 | Discord RPC | https://discord.com/developers/docs/rich-presence/how-to | Client ID |
-| Philips Hue | https://developers.meethue.com/ | Bridge Key |
-| Home Assistant | https://developers.home-assistant.io/docs/api/rest/ | Bearer Token |
 | Nuvio | Custom (Supabase-backed) | JWT |
 
 ---
