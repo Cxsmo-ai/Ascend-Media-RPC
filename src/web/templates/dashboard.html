@@ -44,49 +44,30 @@
     <link rel="stylesheet" href="/static/styles.css">
     
     <style>
-        /* Enhanced card hover effects */
-        .glass-panel { transition: border-color 0.3s ease, box-shadow 0.3s ease; }
-        .glass-panel:hover { border-color: rgba(255,255,255,0.08); box-shadow: 0 4px 24px rgba(0,0,0,0.3); }
-        
-        /* Better input focus rings */
-        input:focus, select:focus { box-shadow: 0 0 0 2px rgba(99,102,241,0.15); }
-        input[type="password"]:focus { box-shadow: 0 0 0 2px rgba(99,102,241,0.15); }
-        
-        /* Save button hover glow */
-        button[onclick*="save"]:hover, button[onclick*="Save"]:hover {
-            box-shadow: 0 0 12px rgba(99,102,241,0.2);
-        }
-        
-        /* Smooth toggle transitions */
-        .peer:checked ~ div { transition: background-color 0.2s ease; }
-        
-        /* Better scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
-        
-        /* Section divider animation */
-        .view-section > div { animation: fadeInUp 0.3s ease forwards; opacity: 0; }
-        .view-section > div:nth-child(1) { animation-delay: 0s; }
-        .view-section > div:nth-child(2) { animation-delay: 0.05s; }
-        .view-section > div:nth-child(3) { animation-delay: 0.1s; }
-        .view-section > div:nth-child(4) { animation-delay: 0.15s; }
-        .view-section > div:nth-child(5) { animation-delay: 0.2s; }
-        .view-section > div:nth-child(6) { animation-delay: 0.25s; }
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(8px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
         /* Integration card left accent border */
         .glass-panel[class*="space-y-4"]:not([class*="col-span"]) {
-            border-left: 2px solid rgba(255,255,255,0.05);
-            transition: border-left-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+            border-left: 2px solid rgba(255,255,255,0.04);
         }
         .glass-panel[class*="space-y-4"]:not([class*="col-span"]):hover {
-            border-left-color: rgba(99,102,241,0.4);
+            border-left-color: rgba(99,102,241,0.5);
         }
+
+        /* Section fade-in */
+        .view-section > div { animation: fadeSlideUp 0.35s ease-out both; }
+        .view-section > div:nth-child(1) { animation-delay: 0s; }
+        .view-section > div:nth-child(2) { animation-delay: 0.06s; }
+        .view-section > div:nth-child(3) { animation-delay: 0.12s; }
+        .view-section > div:nth-child(4) { animation-delay: 0.18s; }
+        .view-section > div:nth-child(5) { animation-delay: 0.24s; }
+        .view-section > div:nth-child(6) { animation-delay: 0.3s; }
+
+        /* Stat card subtle glow on hover */
+        .stat-card { transition: all 0.3s ease; }
+        .stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+
+        /* Section divider icon pulse */
+        .section-icon { transition: transform 0.3s ease; }
+        .section-icon:hover { transform: scale(1.1); }
     </style>
 </head>
 
@@ -463,76 +444,92 @@
 
                 <!-- Section: Skip Sources -->
                 <div>
-                    <div class="flex items-center gap-3 mb-4">
+                    <div class="flex items-center gap-3 mb-6">
                         <div class="h-px flex-1 bg-gradient-to-r from-emerald-500/50 to-transparent"></div>
-                        <span class="text-xs font-bold text-emerald-400 uppercase tracking-widest">Skip Sources</span>
+                        <span class="text-xs font-bold text-emerald-400 uppercase tracking-widest flex items-center gap-2"><i data-lucide="fast-forward" class="w-3.5 h-3.5"></i> Skip Sources</span>
                         <div class="h-px flex-1 bg-gradient-to-l from-emerald-500/50 to-transparent"></div>
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="glass-panel p-6 rounded-2xl space-y-4 md:col-span-2">
-                    <div class="flex items-center gap-3"><i data-lucide="fast-forward" class="text-emerald-400 w-6 h-6"></i><h3 class="font-bold text-lg">Skip Sources</h3></div>
-                    <p class="text-xs text-slate-400">Configure where to fetch intro skip data. Manual IDs override automatic detection.</p>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <!-- Manual ID Inputs -->
-                        <div class="space-y-3">
-                            <div>
-                                <label for="inp-skip-tmdb" class="text-[10px] text-slate-500 uppercase font-bold block mb-1">Manual TMDB ID (for IntroDB)</label>
-                                <input type="text" id="inp-skip-tmdb" placeholder="e.g. 60735" aria-label="Manual TMDB ID" class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-2 text-sm focus:border-emerald-500 outline-none transition-colors font-mono">
-                            </div>
-                            <div>
-                                <label for="inp-skip-mal" class="text-[10px] text-slate-500 uppercase font-bold block mb-1">Manual MAL ID (for AniSkip)</label>
-                                <input type="text" id="inp-skip-mal" placeholder="e.g. 21 (One Punch Man)" aria-label="Manual MAL ID" class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-2 text-sm focus:border-purple-500 outline-none transition-colors font-mono">
-                            </div>
-                            <div>
-                                <label for="inp-tidb-key" class="text-[10px] text-slate-500 uppercase font-bold block mb-1">TheIntroDB (TIDB) API Key</label>
-                                <input type="password" id="inp-tidb-key" placeholder="Enter API Key for unverified skips" aria-label="TIDB API Key" class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-2 text-sm focus:border-indigo-500 outline-none transition-colors font-mono">
-                            </div>
-                        </div>
-                        
-                        <!-- Source Toggles -->
-                        <div class="space-y-3">
-                            <div class="flex items-center justify-between py-2 px-3 bg-black/20 rounded-lg">
-                                <span class="text-sm">IntroDB (API)</span>
-                                <div class="relative">
-                                    <input type="checkbox" id="chk-introdb" aria-label="Toggle IntroDB" checked onchange="updateConfig('introdb_enabled', this.checked)" class="peer sr-only">
-                                    <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600 cursor-pointer" onclick="document.getElementById('chk-introdb').click()"></div>
-                                </div>
-                            </div>
-                            <div class="flex items-center justify-between py-2 px-3 bg-black/20 rounded-lg">
-                                <span class="text-sm">AniSkip (Anime)</span>
-                                <div class="relative">
-                                    <input type="checkbox" id="chk-aniskip" aria-label="Toggle AniSkip" checked onchange="updateConfig('aniskip_fallback', this.checked)" class="peer sr-only">
-                                    <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600 cursor-pointer" onclick="document.getElementById('chk-aniskip').click()"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <button onclick="saveIntegration('skip')" class="w-full py-2 bg-emerald-600/20 text-emerald-400 rounded-lg font-bold text-xs hover:bg-emerald-600/30 transition-colors">SAVE SKIP CONFIG</button>
-                </div>
-                <div id="skip-sandbox" class="glass-panel p-6 rounded-2xl border-emerald-500/10 border bg-emerald-500/5">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-lg font-bold text-emerald-400">Pipeline Sandbox</h3>
-                        <div id="sandbox-loader" class="hidden animate-spin rounded-full h-4 w-4 border-2 border-emerald-400 border-t-transparent"></div>
-                    </div>
-                    <div class="space-y-4">
-                        <div class="relative">
-                            <label class="text-[10px] text-slate-500 uppercase font-bold block mb-1">Smart Search (e.g. "Stranger Things S1E1" or "Interstellar")</label>
-                            <input type="text" id="sb-title" placeholder="Try: Game of Thrones S1E1" class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-emerald-500 outline-none transition-colors font-medium">
-                        </div>
-                        
-                        <button onclick="runPipelineTest()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold transition-all flex items-center justify-center gap-2">
-                            <i data-lucide="play" class="w-4 h-4"></i>
-                            RUN PIPELINE TEST
-                        </button>
-                        
-                        <div id="sb-results" class="mt-4 space-y-2 max-h-60 overflow-y-auto hidden">
-                            <!-- Results will be injected here -->
-                        </div>
-                    </div>
-                </div>
 
+                    <div class="space-y-4">
+                        <!-- Provider Priority & Toggles -->
+                        <div class="glass-panel p-6 rounded-2xl space-y-4 skip-panel">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <div class="p-2.5 rounded-xl bg-gradient-to-br from-emerald-500/20 to-emerald-600/10 border border-emerald-500/20">
+                                        <i data-lucide="layers" class="text-emerald-400 w-5 h-5"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-bold text-lg text-white">Provider Priority</h3>
+                                        <p class="text-[10px] text-slate-500 mt-0.5">Reorder with arrows &bull; Toggle to enable/disable each source</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="skip-providers-container" class="space-y-2">
+                                <!-- Dynamically rendered by renderSkipProviders() -->
+                                <div class="text-center py-6 text-slate-600 text-xs font-mono">Loading providers...</div>
+                            </div>
+                        </div>
+
+                        <!-- Configuration Inputs -->
+                        <div class="glass-panel p-6 rounded-2xl space-y-5 skip-panel">
+                            <div class="flex items-center gap-3">
+                                <div class="p-2.5 rounded-xl bg-gradient-to-br from-indigo-500/20 to-indigo-600/10 border border-indigo-500/20">
+                                    <i data-lucide="settings" class="text-indigo-400 w-5 h-5"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-lg text-white">Provider Configuration</h3>
+                                    <p class="text-[10px] text-slate-500 mt-0.5">API keys, URLs, and manual ID overrides</p>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="space-y-1">
+                                    <label for="inp-tidb-key" class="text-[10px] text-slate-500 uppercase font-bold block">TheIntroDB API Key</label>
+                                    <input type="password" id="inp-tidb-key" placeholder="API key for unverified skip segments" aria-label="TIDB API Key" class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-sm focus:border-indigo-500 outline-none transition-all font-mono hover:border-white/20">
+                                </div>
+                                <div class="space-y-1">
+                                    <label for="inp-remote-json" class="text-[10px] text-slate-500 uppercase font-bold block">Remote JSON URL</label>
+                                    <input type="text" id="inp-remote-json" placeholder="https://example.com/skips.json" aria-label="Remote JSON URL" class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-sm focus:border-emerald-500 outline-none transition-all font-mono hover:border-white/20">
+                                </div>
+                                <div class="space-y-1">
+                                    <label for="inp-skip-tmdb" class="text-[10px] text-slate-500 uppercase font-bold block">Manual TMDB ID</label>
+                                    <input type="text" id="inp-skip-tmdb" placeholder="e.g. 60735" aria-label="Manual TMDB ID" class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-sm focus:border-emerald-500 outline-none transition-all font-mono hover:border-white/20">
+                                </div>
+                                <div class="space-y-1">
+                                    <label for="inp-skip-mal" class="text-[10px] text-slate-500 uppercase font-bold block">Manual MAL ID</label>
+                                    <input type="text" id="inp-skip-mal" placeholder="e.g. 21 (One Punch Man)" aria-label="Manual MAL ID" class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-sm focus:border-purple-500 outline-none transition-all font-mono hover:border-white/20">
+                                </div>
+                            </div>
+                            <button onclick="saveIntegration('skip')" class="w-full py-2.5 bg-gradient-to-r from-emerald-600/20 to-emerald-500/10 text-emerald-400 rounded-xl font-bold text-xs hover:from-emerald-600/30 hover:to-emerald-500/20 transition-all duration-200 border border-emerald-500/15 hover:border-emerald-500/30 hover:shadow-lg hover:shadow-emerald-500/5">SAVE SKIP CONFIG</button>
+                        </div>
+
+                        <!-- Pipeline Sandbox -->
+                        <div id="skip-sandbox" class="glass-panel p-6 rounded-2xl border-emerald-500/15 border bg-gradient-to-br from-emerald-500/5 via-transparent to-emerald-600/5 skip-panel">
+                            <div class="flex items-center justify-between mb-5">
+                                <div class="flex items-center gap-3">
+                                    <div class="p-2.5 rounded-xl bg-gradient-to-br from-emerald-500/20 to-teal-600/10 border border-emerald-500/20">
+                                        <i data-lucide="flask-conical" class="text-emerald-400 w-5 h-5"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-lg font-bold text-emerald-400">Pipeline Sandbox</h3>
+                                        <p class="text-[10px] text-slate-500 mt-0.5">Test skip segment fetching from all enabled providers</p>
+                                    </div>
+                                </div>
+                                <div id="sandbox-loader" class="hidden animate-spin rounded-full h-5 w-5 border-2 border-emerald-400 border-t-transparent"></div>
+                            </div>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="text-[10px] text-slate-500 uppercase font-bold block mb-1.5">Smart Search</label>
+                                    <input type="text" id="sb-title" placeholder='Try: "Stranger Things S1E1" or "Interstellar"' class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-emerald-500 outline-none transition-all font-medium hover:border-white/20" onkeydown="if(event.key==='Enter')runPipelineTest()">
+                                </div>
+                                <button onclick="runPipelineTest()" class="w-full py-3 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white rounded-xl font-bold transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20 hover:shadow-emerald-500/30 hover:scale-[1.01] active:scale-[0.99]">
+                                    <i data-lucide="play" class="w-4 h-4"></i>
+                                    RUN PIPELINE TEST
+                                </button>
+                                <div id="sb-results" class="mt-2 space-y-2 max-h-72 overflow-y-auto hidden">
+                                    <!-- Results injected by runPipelineTest() -->
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -547,80 +544,98 @@
                 <!-- AniList -->
                 <div class="glass-panel p-6 rounded-2xl space-y-4">
                     <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-3"><i data-lucide="book-open" class="text-blue-400 w-6 h-6"></i><h3 class="font-bold text-lg">AniList</h3></div>
+                        <div class="flex items-center gap-3">
+                            <div class="p-2 rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-600/10 border border-blue-500/20"><i data-lucide="book-open" class="text-blue-400 w-5 h-5"></i></div>
+                            <h3 class="font-bold text-lg">AniList</h3>
+                        </div>
                         <div class="relative">
                             <input type="checkbox" id="chk-anilist" onchange="updateConfig('anilist_enabled', this.checked)" class="peer sr-only">
                             <div class="w-11 h-6 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600 cursor-pointer" onclick="document.getElementById('chk-anilist').click()"></div>
                         </div>
                     </div>
                     <p class="text-xs text-slate-400">Track anime progress and sync your watchlist automatically</p>
-                    <input type="password" id="inp-anilist-token" placeholder="Access Token" class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-blue-500 outline-none transition-colors">
-                    <button onclick="saveNewIntegration('anilist_access_token','inp-anilist-token')" class="w-full py-2 bg-blue-600/20 text-blue-400 rounded-lg font-bold text-xs hover:bg-blue-600/30 transition-colors">SAVE</button>
+                    <input type="password" id="inp-anilist-token" placeholder="Access Token" class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-sm focus:border-blue-500 outline-none transition-all hover:border-white/20">
+                    <button onclick="saveNewIntegration('anilist_access_token','inp-anilist-token')" class="w-full py-2.5 bg-gradient-to-r from-blue-600/20 to-blue-500/10 text-blue-400 rounded-xl font-bold text-xs hover:from-blue-600/30 hover:to-blue-500/20 transition-all border border-blue-500/10 hover:border-blue-500/25">SAVE</button>
                 </div>
 
                 <!-- Simkl -->
                 <div class="glass-panel p-6 rounded-2xl space-y-4">
                     <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-3"><i data-lucide="tv" class="text-cyan-400 w-6 h-6"></i><h3 class="font-bold text-lg">Simkl</h3></div>
+                        <div class="flex items-center gap-3">
+                            <div class="p-2 rounded-xl bg-gradient-to-br from-cyan-500/20 to-cyan-600/10 border border-cyan-500/20"><i data-lucide="tv" class="text-cyan-400 w-5 h-5"></i></div>
+                            <h3 class="font-bold text-lg">Simkl</h3>
+                        </div>
                         <div class="relative">
                             <input type="checkbox" id="chk-simkl" onchange="updateConfig('simkl_enabled', this.checked)" class="peer sr-only">
                             <div class="w-11 h-6 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-600 cursor-pointer" onclick="document.getElementById('chk-simkl').click()"></div>
                         </div>
                     </div>
                     <p class="text-xs text-slate-400">Sync watch history across TV, movies, and anime platforms</p>
-                    <input type="password" id="inp-simkl-id" placeholder="Client ID" class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-cyan-500 outline-none transition-colors">
-                    <input type="password" id="inp-simkl-token" placeholder="Access Token" class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-cyan-500 outline-none transition-colors">
-                    <button onclick="saveNewIntegration('simkl_client_id','inp-simkl-id','simkl_access_token','inp-simkl-token')" class="w-full py-2 bg-cyan-600/20 text-cyan-400 rounded-lg font-bold text-xs hover:bg-cyan-600/30 transition-colors">SAVE</button>
+                    <input type="password" id="inp-simkl-id" placeholder="Client ID" class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-sm focus:border-cyan-500 outline-none transition-all hover:border-white/20">
+                    <input type="password" id="inp-simkl-token" placeholder="Access Token" class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-sm focus:border-cyan-500 outline-none transition-all hover:border-white/20">
+                    <button onclick="saveNewIntegration('simkl_client_id','inp-simkl-id','simkl_access_token','inp-simkl-token')" class="w-full py-2.5 bg-gradient-to-r from-cyan-600/20 to-cyan-500/10 text-cyan-400 rounded-xl font-bold text-xs hover:from-cyan-600/30 hover:to-cyan-500/20 transition-all border border-cyan-500/10 hover:border-cyan-500/25">SAVE</button>
                 </div>
 
                 <!-- Kitsu -->
                 <div class="glass-panel p-6 rounded-2xl space-y-4">
                     <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-3"><i data-lucide="cat" class="text-orange-400 w-6 h-6"></i><h3 class="font-bold text-lg">Kitsu</h3></div>
+                        <div class="flex items-center gap-3">
+                            <div class="p-2 rounded-xl bg-gradient-to-br from-orange-500/20 to-orange-600/10 border border-orange-500/20"><i data-lucide="cat" class="text-orange-400 w-5 h-5"></i></div>
+                            <h3 class="font-bold text-lg">Kitsu</h3>
+                        </div>
                         <div class="relative">
                             <input type="checkbox" id="chk-kitsu" onchange="updateConfig('kitsu_enabled', this.checked)" class="peer sr-only">
                             <div class="w-11 h-6 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-600 cursor-pointer" onclick="document.getElementById('chk-kitsu').click()"></div>
                         </div>
                     </div>
                     <p class="text-xs text-slate-400">Connect to the Kitsu anime community and library</p>
-                    <input type="password" id="inp-kitsu-token" placeholder="Access Token" class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-orange-500 outline-none transition-colors">
-                    <button onclick="saveNewIntegration('kitsu_access_token','inp-kitsu-token')" class="w-full py-2 bg-orange-600/20 text-orange-400 rounded-lg font-bold text-xs hover:bg-orange-600/30 transition-colors">SAVE</button>
+                    <input type="password" id="inp-kitsu-token" placeholder="Access Token" class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-sm focus:border-orange-500 outline-none transition-all hover:border-white/20">
+                    <button onclick="saveNewIntegration('kitsu_access_token','inp-kitsu-token')" class="w-full py-2.5 bg-gradient-to-r from-orange-600/20 to-orange-500/10 text-orange-400 rounded-xl font-bold text-xs hover:from-orange-600/30 hover:to-orange-500/20 transition-all border border-orange-500/10 hover:border-orange-500/25">SAVE</button>
                 </div>
 
                 <!-- Letterboxd -->
                 <div class="glass-panel p-6 rounded-2xl space-y-4">
                     <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-3"><i data-lucide="film" class="text-emerald-400 w-6 h-6"></i><h3 class="font-bold text-lg">Letterboxd</h3></div>
+                        <div class="flex items-center gap-3">
+                            <div class="p-2 rounded-xl bg-gradient-to-br from-emerald-500/20 to-emerald-600/10 border border-emerald-500/20"><i data-lucide="film" class="text-emerald-400 w-5 h-5"></i></div>
+                            <h3 class="font-bold text-lg">Letterboxd</h3>
+                        </div>
                         <div class="relative">
                             <input type="checkbox" id="chk-letterboxd" onchange="updateConfig('letterboxd_enabled', this.checked)" class="peer sr-only">
                             <div class="w-11 h-6 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600 cursor-pointer" onclick="document.getElementById('chk-letterboxd').click()"></div>
                         </div>
                     </div>
                     <p class="text-xs text-slate-400">Log movies to your Letterboxd diary as you watch</p>
-                    <input type="password" id="inp-letterboxd-key" placeholder="API Key" class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-emerald-500 outline-none transition-colors">
-                    <input type="password" id="inp-letterboxd-secret" placeholder="API Secret" class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-emerald-500 outline-none transition-colors">
-                    <button onclick="saveNewIntegration('letterboxd_api_key','inp-letterboxd-key','letterboxd_api_secret','inp-letterboxd-secret')" class="w-full py-2 bg-emerald-600/20 text-emerald-400 rounded-lg font-bold text-xs hover:bg-emerald-600/30 transition-colors">SAVE</button>
+                    <input type="password" id="inp-letterboxd-key" placeholder="API Key" class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-sm focus:border-emerald-500 outline-none transition-all hover:border-white/20">
+                    <input type="password" id="inp-letterboxd-secret" placeholder="API Secret" class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-sm focus:border-emerald-500 outline-none transition-all hover:border-white/20">
+                    <button onclick="saveNewIntegration('letterboxd_api_key','inp-letterboxd-key','letterboxd_api_secret','inp-letterboxd-secret')" class="w-full py-2.5 bg-gradient-to-r from-emerald-600/20 to-emerald-500/10 text-emerald-400 rounded-xl font-bold text-xs hover:from-emerald-600/30 hover:to-emerald-500/20 transition-all border border-emerald-500/10 hover:border-emerald-500/25">SAVE</button>
                 </div>
 
                 <!-- Last.fm -->
                 <div class="glass-panel p-6 rounded-2xl space-y-4">
                     <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-3"><i data-lucide="music" class="text-red-400 w-6 h-6"></i><h3 class="font-bold text-lg">Last.fm</h3></div>
+                        <div class="flex items-center gap-3">
+                            <div class="p-2 rounded-xl bg-gradient-to-br from-red-500/20 to-red-600/10 border border-red-500/20"><i data-lucide="music" class="text-red-400 w-5 h-5"></i></div>
+                            <h3 class="font-bold text-lg">Last.fm</h3>
+                        </div>
                         <div class="relative">
                             <input type="checkbox" id="chk-lastfm" onchange="updateConfig('lastfm_enabled', this.checked)" class="peer sr-only">
                             <div class="w-11 h-6 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600 cursor-pointer" onclick="document.getElementById('chk-lastfm').click()"></div>
                         </div>
                     </div>
                     <p class="text-xs text-slate-400">Scrobble soundtrack info from what you're watching</p>
-                    <input type="password" id="inp-lastfm-key" placeholder="API Key" class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-red-500 outline-none transition-colors">
-                    <input type="password" id="inp-lastfm-secret" placeholder="Shared Secret" class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-red-500 outline-none transition-colors">
-                    <button onclick="saveNewIntegration('lastfm_api_key','inp-lastfm-key','lastfm_api_secret','inp-lastfm-secret')" class="w-full py-2 bg-red-600/20 text-red-400 rounded-lg font-bold text-xs hover:bg-red-600/30 transition-colors">SAVE</button>
+                    <input type="password" id="inp-lastfm-key" placeholder="API Key" class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-sm focus:border-red-500 outline-none transition-all hover:border-white/20">
+                    <input type="password" id="inp-lastfm-secret" placeholder="Shared Secret" class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-sm focus:border-red-500 outline-none transition-all hover:border-white/20">
+                    <button onclick="saveNewIntegration('lastfm_api_key','inp-lastfm-key','lastfm_api_secret','inp-lastfm-secret')" class="w-full py-2.5 bg-gradient-to-r from-red-600/20 to-red-500/10 text-red-400 rounded-xl font-bold text-xs hover:from-red-600/30 hover:to-red-500/20 transition-all border border-red-500/10 hover:border-red-500/25">SAVE</button>
                 </div>
 
                 <!-- JustWatch -->
                 <div class="glass-panel p-6 rounded-2xl space-y-4">
                     <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-3"><i data-lucide="search" class="text-amber-400 w-6 h-6"></i><h3 class="font-bold text-lg">JustWatch</h3></div>
+                        <div class="flex items-center gap-3">
+                            <div class="p-2 rounded-xl bg-gradient-to-br from-amber-500/20 to-amber-600/10 border border-amber-500/20"><i data-lucide="search" class="text-amber-400 w-5 h-5"></i></div>
+                            <h3 class="font-bold text-lg">JustWatch</h3>
+                        </div>
                         <div class="relative">
                             <input type="checkbox" id="chk-justwatch" onchange="updateConfig('justwatch_enabled', this.checked)" class="peer sr-only">
                             <div class="w-11 h-6 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600 cursor-pointer" onclick="document.getElementById('chk-justwatch').click()"></div>
@@ -640,16 +655,19 @@
                 <!-- OpenSubtitles -->
                 <div class="glass-panel p-6 rounded-2xl space-y-4">
                     <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-3"><i data-lucide="subtitles" class="text-violet-400 w-6 h-6"></i><h3 class="font-bold text-lg">OpenSubtitles</h3></div>
+                        <div class="flex items-center gap-3">
+                            <div class="p-2 rounded-xl bg-gradient-to-br from-violet-500/20 to-violet-600/10 border border-violet-500/20"><i data-lucide="subtitles" class="text-violet-400 w-5 h-5"></i></div>
+                            <h3 class="font-bold text-lg">OpenSubtitles</h3>
+                        </div>
                         <div class="relative">
                             <input type="checkbox" id="chk-opensubtitles" onchange="updateConfig('opensubtitles_enabled', this.checked)" class="peer sr-only">
                             <div class="w-11 h-6 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-violet-600 cursor-pointer" onclick="document.getElementById('chk-opensubtitles').click()"></div>
                         </div>
                     </div>
                     <p class="text-xs text-slate-400">Search and download subtitles for your media</p>
-                    <input type="password" id="inp-opensubtitles-key" placeholder="API Key" class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-violet-500 outline-none transition-colors">
-                    <input type="text" id="inp-opensubtitles-user" placeholder="Username" class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-violet-500 outline-none transition-colors">
-                    <button onclick="saveNewIntegration('opensubtitles_api_key','inp-opensubtitles-key','opensubtitles_username','inp-opensubtitles-user')" class="w-full py-2 bg-violet-600/20 text-violet-400 rounded-lg font-bold text-xs hover:bg-violet-600/30 transition-colors">SAVE</button>
+                    <input type="password" id="inp-opensubtitles-key" placeholder="API Key" class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-sm focus:border-violet-500 outline-none transition-all hover:border-white/20">
+                    <input type="text" id="inp-opensubtitles-user" placeholder="Username" class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-sm focus:border-violet-500 outline-none transition-all hover:border-white/20">
+                    <button onclick="saveNewIntegration('opensubtitles_api_key','inp-opensubtitles-key','opensubtitles_username','inp-opensubtitles-user')" class="w-full py-2.5 bg-gradient-to-r from-violet-600/20 to-violet-500/10 text-violet-400 rounded-xl font-bold text-xs hover:from-violet-600/30 hover:to-violet-500/20 transition-all border border-violet-500/10 hover:border-violet-500/25">SAVE</button>
                 </div>
 
                     </div>
@@ -665,7 +683,10 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <!-- Media Servers (Plex, Jellyfin, Emby) -->
                 <div class="glass-panel p-6 rounded-2xl space-y-4 md:col-span-2">
-                    <div class="flex items-center gap-3"><i data-lucide="server" class="text-amber-400 w-6 h-6"></i><h3 class="font-bold text-lg">Media Servers</h3></div>
+                    <div class="flex items-center gap-3">
+                        <div class="p-2 rounded-xl bg-gradient-to-br from-amber-500/20 to-amber-600/10 border border-amber-500/20"><i data-lucide="server" class="text-amber-400 w-5 h-5"></i></div>
+                        <h3 class="font-bold text-lg">Media Servers</h3>
+                    </div>
                     <p class="text-xs text-slate-400">Sync your media library from Plex, Jellyfin, or Emby servers</p>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div class="border border-white/10 bg-black/20 rounded-xl p-4 space-y-3">
@@ -745,7 +766,10 @@
             <div id="view-settings" class="view-section hidden max-w-2xl mx-auto space-y-6">
                 <!-- Appearance & Behavior -->
                 <div class="glass-panel p-6 rounded-2xl">
-                    <h3 class="text-lg font-bold mb-4 border-b border-white/10 pb-3 flex items-center gap-2"><i data-lucide="palette" class="w-5 h-5 text-indigo-400"></i> Appearance & Behavior</h3>
+                    <h3 class="text-lg font-bold mb-4 border-b border-white/10 pb-3 flex items-center gap-3">
+                        <div class="p-2 rounded-xl bg-gradient-to-br from-indigo-500/20 to-indigo-600/10 border border-indigo-500/20"><i data-lucide="palette" class="w-4 h-4 text-indigo-400"></i></div>
+                        Appearance & Behavior
+                    </h3>
                     <div class="space-y-4">
                         <div class="flex items-center justify-between py-2">
                             <span>Show Device Name</span>
@@ -819,7 +843,10 @@
 
                 <!-- RPC Customization -->
                 <div class="glass-panel p-6 rounded-2xl">
-                    <h3 class="text-lg font-bold mb-4 border-b border-white/10 pb-2 flex items-center gap-2"><i data-lucide="gamepad-2" class="w-5 h-5 text-indigo-400"></i> RPC Customization</h3>
+                    <h3 class="text-lg font-bold mb-4 border-b border-white/10 pb-3 flex items-center gap-3">
+                        <div class="p-2 rounded-xl bg-gradient-to-br from-indigo-500/20 to-purple-600/10 border border-indigo-500/20"><i data-lucide="gamepad-2" class="w-4 h-4 text-indigo-400"></i></div>
+                        RPC Customization
+                    </h3>
                     <div class="space-y-4">
                         <div class="flex items-center justify-between py-2">
                             <div>
@@ -1435,24 +1462,43 @@
                     
                     resultsCont.innerHTML = '';
                     if(data.results && data.results.length > 0) {
+                        // Group results by source
+                        const sourceColors = {
+                            'introdb': 'blue', 'tidb': 'indigo', 'remote_json': 'emerald',
+                            'videoskip': 'rose', 'notscare_major': 'orange', 'notscare_minor': 'yellow',
+                            'aniskip': 'purple', 'skipme': 'cyan', 'IntroDB': 'blue', 'TIDB': 'indigo',
+                            'RemoteJSON': 'emerald', 'VideoSkip': 'rose', 'NotScare': 'orange',
+                            'AniSkip': 'purple', 'SkipMe': 'cyan'
+                        };
+                        // Summary bar
+                        const sources = [...new Set(data.results.map(r => r.source))];
+                        const summaryDiv = document.createElement('div');
+                        summaryDiv.className = 'flex items-center gap-2 flex-wrap mb-2 p-3 bg-emerald-500/5 border border-emerald-500/10 rounded-xl';
+                        summaryDiv.innerHTML = `<span class="text-[10px] text-emerald-400 font-bold uppercase">${data.results.length} segments from ${sources.length} source${sources.length > 1 ? 's' : ''}</span>` +
+                            sources.map(s => `<span class="text-[9px] px-2 py-0.5 rounded-full bg-${sourceColors[s] || 'slate'}-500/15 text-${sourceColors[s] || 'slate'}-400 border border-${sourceColors[s] || 'slate'}-500/20 font-bold">${s}</span>`).join('');
+                        resultsCont.appendChild(summaryDiv);
                         data.results.forEach(res => {
+                            const c = sourceColors[res.source] || 'slate';
                             const div = document.createElement('div');
-                            div.className = "p-3 bg-white/5 border border-white/5 rounded-lg flex items-center justify-between";
+                            div.className = `p-3 bg-black/30 border border-${c}-500/10 rounded-xl flex items-center justify-between hover:bg-white/5 transition-colors group`;
                             div.innerHTML = `
-                                <div class="flex flex-col">
-                                    <span class="text-[10px] text-emerald-400 font-bold uppercase">${res.source}</span>
-                                    <span class="text-xs font-medium">${res.label}</span>
+                                <div class="flex items-center gap-3">
+                                    <div class="w-1 h-8 rounded-full bg-${c}-500/60"></div>
+                                    <div class="flex flex-col">
+                                        <span class="text-[10px] text-${c}-400 font-bold uppercase tracking-wider">${res.source}</span>
+                                        <span class="text-xs font-medium text-white/90">${res.label}</span>
+                                    </div>
                                 </div>
                                 <div class="text-right">
-                                    <span class="text-[10px] text-slate-500 block">TIME (SEC)</span>
-                                    <span class="text-xs font-mono">${res.start.toFixed(1)} -> ${res.end.toFixed(1)}</span>
+                                    <span class="text-[10px] text-slate-500 block tracking-wider">TIME</span>
+                                    <span class="text-xs font-mono text-white/70">${res.start.toFixed(1)}s → ${res.end.toFixed(1)}s</span>
                                 </div>
                             `;
                             resultsCont.appendChild(div);
                         });
                         resultsCont.classList.remove('hidden');
                     } else {
-                        resultsCont.innerHTML = '<div class="p-4 text-center text-slate-500 italic text-sm">No timestamps found for this query.</div>';
+                        resultsCont.innerHTML = '<div class="p-6 text-center rounded-xl bg-black/20 border border-white/5"><i data-lucide="search-x" class="w-8 h-8 text-slate-700 mx-auto mb-2"></i><p class="text-sm text-slate-500">No skip segments found</p><p class="text-[10px] text-slate-600 mt-1">Try a different title or enable more providers</p></div>';
                         resultsCont.classList.remove('hidden');
                     }
                 } catch(err) {
@@ -2635,7 +2681,7 @@ async function toggleSeason(btn, tmdbId, seasonNum, showImdb) {
             // Need to mock config object to re-render locally immediately
             const mockConfig = { skip_priority_order: newOrder };
             newOrder.forEach(p => {
-                const toggleKeys = {'introdb':'introdb_enabled','tidb':'tidb_enabled','remote_json':'remote_json_enabled','videoskip':'videoskip_enabled','notscare_major':'notscare_major_enabled','notscare_minor':'notscare_minor_enabled','aniskip':'aniskip_fallback'};
+                const toggleKeys = {'introdb':'introdb_enabled','tidb':'tidb_enabled','remote_json':'remote_json_enabled','videoskip':'videoskip_enabled','notscare_major':'notscare_major_enabled','notscare_minor':'notscare_minor_enabled','aniskip':'aniskip_fallback','skipme':'skipme_enabled'};
                 const isChecked = document.getElementById('chk-pr-' + p).checked;
                 mockConfig[toggleKeys[p]] = isChecked;
             });
@@ -2648,7 +2694,8 @@ async function toggleSeason(btn, tmdbId, seasonNum, showImdb) {
                      action: 'update',
                      skip_tmdb: document.getElementById('inp-skip-tmdb').value.trim(),
                      skip_mal: document.getElementById('inp-skip-mal').value.trim(),
-                     tidb_api_key: document.getElementById('inp-tidb-key').value.trim()
+                     tidb_api_key: document.getElementById('inp-tidb-key').value.trim(),
+                     remote_json_url: document.getElementById('inp-remote-json').value.trim()
                  };
                  fetch('/api/settings', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) })
                      .then(() => { showToast('Skip config saved', 'success'); });

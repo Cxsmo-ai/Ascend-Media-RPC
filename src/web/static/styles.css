@@ -1,14 +1,26 @@
 :root {
-  --glass-border: 1px solid rgba(255, 255, 255, 0.05);
+  --glass-border: 1px solid rgba(255, 255, 255, 0.06);
   --neon-shadow: 0 0 20px rgba(var(--accent-rgb, 99, 102, 241), 0.15);
   --accent-primary: rgb(var(--accent-rgb, 99, 102, 241));
   --accent-glow: rgba(var(--accent-rgb, 99, 102, 241), 0.4);
+  --card-bg: rgba(255, 255, 255, 0.02);
+  --surface-1: rgba(15, 23, 42, 0.5);
+  --surface-2: rgba(30, 41, 59, 0.3);
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-hover: rgba(255, 255, 255, 0.12);
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #475569;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
 }
 
+/* Base */
 body {
-  background-color: #000000;
-  color: #ffffff;
-  overflow: hidden; /* App-like feel */
+  background: linear-gradient(145deg, #000000 0%, #020617 30%, #0a0f1a 60%, #050a14 100%);
+  color: var(--text-primary);
+  overflow: hidden;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
 }
 
 /* Ambient Glow Layer */
@@ -21,41 +33,100 @@ body {
   z-index: -1;
   background-size: cover;
   background-position: center;
-  opacity: 0.5;
-  filter: blur(100px) saturate(2) brightness(0.7);
+  opacity: 0.45;
+  filter: blur(100px) saturate(2.2) brightness(0.6);
   transition: background-image 1.5s ease-in-out;
   mask-image: radial-gradient(circle at center, black 20%, transparent 80%);
-  -webkit-mask-image: radial-gradient(
-    circle at center,
-    black 40%,
-    transparent 90%
-  );
+  -webkit-mask-image: radial-gradient(circle at center, black 40%, transparent 90%);
 }
 
-/* Glassmorphism */
+/* Glassmorphism - Enhanced */
 .glass-panel {
-  background: var(--card);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  backdrop-filter: blur(20px) saturate(180%);
-  border: var(--glass-border);
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.45) 0%, rgba(2, 6, 23, 0.55) 100%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: fadeSlideUp 0.4s ease-out both;
 }
 
 .glass-panel:hover {
   border-color: rgba(255, 255, 255, 0.1);
-  box-shadow: var(--neon-shadow);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  transform: translateY(-1px);
 }
 
-/* Scrollbar */
+/* Staggered delays for card groups */
+.glass-panel:nth-child(1) { animation-delay: 0.05s; }
+.glass-panel:nth-child(2) { animation-delay: 0.1s; }
+.glass-panel:nth-child(3) { animation-delay: 0.15s; }
+.glass-panel:nth-child(4) { animation-delay: 0.2s; }
+.glass-panel:nth-child(5) { animation-delay: 0.25s; }
+.glass-panel:nth-child(6) { animation-delay: 0.3s; }
+
+/* Enhanced Input Styles */
+input:not([type="checkbox"]):not([type="radio"]),
+select,
+textarea {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+input:not([type="checkbox"]):not([type="radio"]):focus,
+select:focus,
+textarea:focus {
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1), 0 0 20px rgba(99, 102, 241, 0.05);
+}
+
+/* Enhanced Toggle Switches */
+.peer:checked + div {
+  box-shadow: 0 0 12px rgba(99, 102, 241, 0.3);
+}
+
+/* Skip Panel Cards */
+.skip-panel {
+  position: relative;
+  overflow: hidden;
+}
+
+.skip-panel::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(16, 185, 129, 0.3), transparent);
+}
+
+/* Provider Priority List Items */
+#skip-providers-container > div {
+  transition: all 0.2s ease;
+}
+
+#skip-providers-container > div:hover {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Scrollbar - Refined */
 ::-webkit-scrollbar {
-  width: 4px;
+  width: 5px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.15);
 }
 
 /* Utils */
@@ -64,6 +135,78 @@ body {
 }
 .app-drag {
   -webkit-app-region: drag;
+}
+
+/* Animations */
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes subtlePulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* Button Enhanced Hover */
+button {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Active indicator glow */
+.active-indicator {
+  box-shadow: 0 0 8px currentColor;
+}
+
+/* Header enhancement */
+header {
+  position: relative;
+}
+
+header::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.2), rgba(16, 185, 129, 0.2), transparent);
+}
+
+/* Nav button hover */
+nav button {
+  position: relative;
+  overflow: hidden;
+}
+
+nav button::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  border-radius: inherit;
+}
+
+nav button:hover::before {
+  opacity: 1;
+}
+
+/* Sandbox Results Animation */
+#sb-results > div {
+  animation: fadeSlideUp 0.25s ease-out both;
+}
+#sb-results > div:nth-child(1) { animation-delay: 0s; }
+#sb-results > div:nth-child(2) { animation-delay: 0.05s; }
+#sb-results > div:nth-child(3) { animation-delay: 0.1s; }
+#sb-results > div:nth-child(4) { animation-delay: 0.15s; }
+#sb-results > div:nth-child(5) { animation-delay: 0.2s; }
+#sb-results > div:nth-child(6) { animation-delay: 0.25s; }
+
+/* Toast Enhancement */
+#toast-container > div {
+  backdrop-filter: blur(12px);
 }
 
 /* Alt UI: AIOStreams-inspired dense control-center skin layered over this dashboard. */
