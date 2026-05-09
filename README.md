@@ -1,12 +1,12 @@
 <div align="center">
 
-# 🌌 Ascend Media RPC
+# Ascend Media RPC
 
 ### Discord Rich Presence, Android TV telemetry, Smart Skip, and premium artwork for Stremio & Wako
 
 ![Ascend Media RPC Logo](src/web/static/logo.png)
 
-![Platform](https://img.shields.io/badge/platform-Windows-blue)
+![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20Docker-blue)
 ![Python](https://img.shields.io/badge/python-3.x-yellow)
 ![Android TV](https://img.shields.io/badge/Android%20TV-supported-green)
 ![Discord RPC](https://img.shields.io/badge/Discord-Rich%20Presence-5865F2)
@@ -32,18 +32,25 @@ Show what you are watching from **Stremio** or **Wako** directly on Discord with
 - [Requirements](#requirements)
 - [Quick Start](#quick-start)
 - [Installation](#installation)
-- [What `run.bat` Does](#what-runbat-does)
+- [What run.bat Does](#what-runbat-does)
+- [CLI and Headless Mode](#cli-and-headless-mode)
+- [Docker](#docker)
 - [Android TV Setup](#android-tv-setup)
 - [Connection Methods](#connection-methods)
 - [Configuration](#configuration)
-- [Example `config.json`](#example-configjson)
+- [Example config.json](#example-configjson)
 - [API Keys and Providers](#api-keys-and-providers)
+- [API Integrations](#api-integrations)
 - [Using with Stremio](#using-with-stremio)
 - [Using with Wako](#using-with-wako)
 - [Dashboard](#dashboard)
+- [Smart Skip Pipeline](#smart-skip-pipeline)
+- [Analytics](#analytics)
+- [Plugin System](#plugin-system)
+- [Privacy and Security](#privacy-and-security)
 - [Customization](#customization)
 - [Troubleshooting](#troubleshooting)
-- [Security and Privacy](#security-and-privacy)
+- [API Reference](#api-reference)
 - [Built With](#built-with)
 - [Credits](#credits)
 - [Disclaimer](#disclaimer)
@@ -53,7 +60,7 @@ Show what you are watching from **Stremio** or **Wako** directly on Discord with
 
 ## What Is Ascend Media RPC?
 
-**Ascend Media RPC** is a local Windows application that bridges your Android TV media playback with **Discord Rich Presence**.
+**Ascend Media RPC** is a local application that bridges your Android TV media playback with **Discord Rich Presence**.
 
 When you play something in **Stremio** or **Wako** on Android TV, Ascend Media RPC detects the playback activity, enriches it with metadata and artwork, and updates your Discord status in real time.
 
@@ -65,10 +72,12 @@ It can display:
 - Posters, backdrops, season art, and episode thumbnails
 - Custom Discord branding text
 - Small playback, app, network, or device icons
-- Smart Skip status
+- Smart Skip status with 8 skip providers
 - Real-time telemetry in a local browser dashboard
+- Watch history and analytics
+- Integration status for 9+ connected services
 
-Ascend Media RPC is designed to make Android TV playback feel more connected, polished, and customizable.
+Ascend Media RPC runs on **Windows** natively, and on **Linux** or any platform via **Docker** or **headless mode**.
 
 ---
 
@@ -106,8 +115,6 @@ Join the Discord for project support, release updates, setup help, and community
 https://discord.gg/njSKPUQtFa
 ```
 
-> GitHub READMEs do not allow live Discord embeds, iframes, or scripts. For live member/online counts, enable the Discord server widget and add a Shields.io Discord badge using the server ID.
-
 ---
 
 ## What Does RPC Mean?
@@ -134,9 +141,9 @@ Flow:
 
 ```txt
 Stremio / Wako
-      ↓
+      |
 Ascend Media RPC
-      ↓
+      |
 Discord Rich Presence
 ```
 
@@ -152,138 +159,179 @@ https://docs.discord.com/developers/platform/rich-presence
 
 ### Android TV Telemetry
 
-- Built-in ADB tooling
-- No manual ADB installation required
-- No manual platform-tools setup required
-- Auto IP scanning
-- Dashboard-based device scanner
-- Manual IP fallback
-- Android TV and Google TV support
-- NVIDIA Shield support
-- Chromecast with Google TV support
-- Other Android-based TV device support
-- Stremio playback detection
-- Wako playback detection
-- Playback state tracking
-- Progress tracking when available
-- Local network connection support
+- Built-in ADB tooling — no manual ADB installation required
+- Auto IP scanning and mDNS/Zeroconf device discovery
+- Dashboard-based device scanner with manual IP fallback
+- Android TV, Google TV, NVIDIA Shield, and Chromecast with Google TV support
+- Stremio and Wako playback detection
+- Playback state and progress tracking
 - Device reconnect support
+- Multi-device management
+- ADB command deduplication and retry logic
 - First-time debugging permission support
 
 ---
 
 ### Discord Rich Presence
 
-- Live Discord activity updates
-- Movie status support
-- TV show status support
+- Live Discord activity updates for movies and TV shows
 - Season and episode display
 - Custom branding text
-- Elapsed time display
-- Remaining time display
-- Poster artwork support
-- Backdrop artwork support
-- Season artwork support
-- Episode thumbnail support when available
-- Small icon modes
-- Playback state icons
-- App, network, and device icon modes
-- Automatic activity refresh when playback changes
-- Status clearing or refreshing when playback stops
-- Designed for Discord desktop activity status
+- Elapsed or remaining time display
+- Poster, backdrop, season, and episode thumbnail artwork
+- Small icon modes: playback state, app, network, device, animated Nuvio GIFs
+- Status message cycling with configurable interval
+- Dynamic button URLs
+- Multi-activity support
+- Privacy mode (hides what you are watching)
+- RPC history logging
+- Profanity filter
+- Multi-Discord account support
 
 ---
 
 ### Real-Time Local Dashboard
 
-Ascend Media RPC includes a local web dashboard for monitoring and control.
+Ascend Media RPC includes a local web dashboard with 7 tabs for monitoring and control.
 
-Default dashboard URL:
+Default URL:
 
 ```txt
 http://localhost:5466
 ```
 
-The dashboard can show:
+**Dashboard tabs:**
 
-- Android TV connection status
-- Device/IP scanner
-- Selected device
-- Current app
-- Current playback metadata
-- Playback state
-- Playback progress
-- Artwork preview
-- Discord RPC status
-- Skip status
-- Smart Skip HUD
-- Provider and metadata status
+| Tab | Description |
+| :--- | :--- |
+| **Dashboard** | Connection status, playback info, artwork preview, live log, skip HUD |
+| **Connections** | API keys, skip sources with priority reordering, pipeline sandbox, 9 integration cards |
+| **Settings** | Appearance, RPC customization, privacy, config management, device management, setup wizard |
+| **History** | Watch history and session log |
+| **Analytics** | Watch stats, top genres, peak hours heatmap, streaks, search |
+| **Debug** | Audit log viewer, skip cache stats, system health, plugins |
+| **Trakt** | Trakt OAuth login and scrobbling status |
+
+Dashboard features:
+
+- Toast notification system (replaces alert dialogs)
+- Sidebar navigation with icon tooltips
+- Config export and import (JSON)
+- Setup wizard / onboarding flow
+- Optional PIN-based authentication
+- Optional HTTPS support
+- Live SSE event stream
+- Glassmorphism UI with gradient accents and staggered animations
 
 ---
 
 ### Artwork Engine
 
-Ascend Media RPC includes a multi-source artwork system designed to improve Discord and dashboard visuals.
+Multi-source artwork system for Discord and dashboard visuals.
 
-Supported artwork types may include:
+Supported artwork types:
 
-- Movie posters
-- TV show posters
-- Season posters
-- Episode thumbnails
-- Backdrops
-- Logos
-- Rating badges
-- Provider-enhanced posters
-- Fallback posters
+- Movie and TV show posters
+- Season posters and episode thumbnails
+- Backdrops and logos
+- Rating badges and provider-enhanced posters
 
-Artwork providers include:
+Artwork providers:
 
-- EasyRatingsDB
-- Top Posters
-- TMDB fallback artwork
+- **EasyRatingsDB** — rating overlays, generated posters
+- **Top Posters** — modern streaming-style posters
+- **TMDB** — fallback artwork
+- **Nuvio** — animated network GIF icons
+
+Configurable fallback chain:
+
+```json
+"artwork_fallback_chain": ["top_posters", "erdb", "tmdb", "nuvio"]
+```
 
 ---
 
 ### Smart Skip Pipeline
 
-Ascend Media RPC includes a Smart Skip pipeline that can use multiple providers to detect or expose skippable media segments.
+8-provider skip segment pipeline with priority ordering, category-aware conflict resolution, and TTL caching.
 
-Supported skip categories may include:
+**Supported skip providers:**
 
-- Intros
-- Outros
-- Recaps
-- Credits
-- Anime openings
-- Anime endings
-- Jump scares
-- Provider-specific skip segments
+| # | Provider | Description |
+| :--- | :--- | :--- |
+| 1 | **IntroDB.app** | Intro and outro timestamps |
+| 2 | **TheIntroDB.org (TIDB)** | Intro, recap, credits, preview, filler segments |
+| 3 | **Remote JSON** | Custom skip database from a remote URL |
+| 4 | **VideoSkip.org** | Mature content filters (sex, violence, profanity) |
+| 5 | **NotScare.me (Major)** | Major jump scare timestamps |
+| 6 | **NotScare.me (Minor)** | Minor jump scare timestamps |
+| 7 | **AniSkip** | Anime opening and ending skip segments |
+| 8 | **SkipMe.db** | Community skip database |
 
-Supported providers include:
+Features:
 
-- AniSkip
-- IntroDB
-- Tidb
-- SkipMe
-- VideoSkip
-- NotScare
+- Individual enable/disable toggles per provider
+- Drag-to-reorder priority in the dashboard
+- Cloudflare bypass via cloudscraper for TIDB and NotScare
+- Category-aware conflict resolution
+- TTL-based skip segment cache (thread-safe)
+- Pipeline Sandbox in dashboard for testing
 
 ---
 
 ### NotScare Support
 
-NotScare support is designed for horror content.
+Jump scare detection for horror content via notscare.me.
 
-It can help expose jump scare information through the Smart Skip pipeline and dashboard HUD.
+- Major and Minor severity levels
+- Episode slicing from full season pages
+- Cloudflare bypass via cloudscraper
+- Dashboard HUD alerts
 
-Useful for:
+---
 
-- Horror movies
-- Horror shows
-- Jump scare warnings
-- Jump scare skip logic
-- Dashboard alerts
+### 9 API Integrations
+
+All manageable from the dashboard Connections tab:
+
+| Integration | Description |
+| :--- | :--- |
+| **AniList** | Track anime progress and sync watchlist |
+| **Simkl** | Sync watch history across platforms |
+| **Kitsu** | Connect to the Kitsu anime community |
+| **Letterboxd** | Log movies to your diary as you watch |
+| **Last.fm** | Scrobble soundtrack info |
+| **JustWatch** | Find where content is streaming |
+| **OpenSubtitles** | Find and fetch subtitles |
+| **Plex / Jellyfin / Emby** | Media server connections |
+| **Notion / Obsidian** | Watch journals and note logging |
+
+---
+
+### Analytics
+
+Local SQLite-backed watch analytics:
+
+- Total watch time, session counts, average session duration
+- Top genres breakdown
+- Peak watch hours (24-hour heatmap)
+- Watch streak tracking
+- Total skips count
+- Session search
+- Auto-migration from legacy JSON format
+
+---
+
+### Core Modules
+
+| Module | Description |
+| :--- | :--- |
+| audit_log.py | Config change and auth event logging with sensitive key masking |
+| skip_cache.py | Thread-safe TTL cache for skip segments |
+| rpc_history.py | RPC activity history with SQLite storage |
+| api_validator.py | API key validation against provider endpoints |
+| config_watcher.py | File system watcher for config hot-reload |
+| plugin_system.py | Abstract base classes and registry for extending functionality |
 
 ---
 
@@ -291,31 +339,31 @@ Useful for:
 
 ```txt
 Android TV / Google TV
-        ↓
+        |
 Stremio or Wako playback
-        ↓
+        |
 Ascend Media RPC built-in ADB tooling
-        ↓
+        |
 Playback and app telemetry
-        ↓
+        |
 Metadata, artwork, ratings, and skip providers
-        ↓
-Discord Rich Presence + local dashboard
+        |
+Discord Rich Presence + Dashboard + Analytics + Integrations
 ```
 
-Ascend Media RPC runs locally on your Windows PC.
-
-It communicates with your Android TV over your local network using built-in ADB tooling. You do **not** need to manually install ADB or run ADB commands.
+Ascend Media RPC runs locally on your PC and communicates with your Android TV over your local network using built-in ADB tooling. You do **not** need to manually install ADB or run ADB commands.
 
 Ascend Media RPC can:
 
-1. Scan your local network for Android TV devices
+1. Scan your local network for Android TV devices (IP scan + mDNS/Zeroconf)
 2. Connect automatically using Auto IP mode
-3. Let you choose a device from the dashboard scanner
-4. Detect Stremio or Wako playback
-5. Fetch metadata and artwork from supported providers
+3. Detect Stremio or Wako playback
+4. Fetch metadata and artwork from supported providers
+5. Fetch skip segments from 8 providers simultaneously
 6. Update Discord Rich Presence
 7. Display live telemetry in the local dashboard
+8. Log watch history and analytics
+9. Sync with connected integrations (Trakt, AniList, Last.fm, etc.)
 
 ---
 
@@ -342,28 +390,11 @@ Ascend Media RPC can use premium artwork providers to create cleaner, richer vis
   </tr>
 </table>
 
-These examples show how Ascend Media RPC can enhance media artwork with generated posters, rating overlays, clean layouts, and dashboard-ready visuals.
-
-> The example images should be placed in the repository root, at the same level as `README.md`.
-
-Expected repo layout:
-
-```txt
-Ascend-Media-RPC/
-├─ README.md
-├─ ERDB Example.png
-├─ Top Poster Example.png
-├─ config.json
-├─ run.bat
-├─ src/
-└─ ...
-```
-
 ---
 
 ## Animated Network Icons with Nuvio
 
-Ascend Media RPC can use Nuvio community GIF covers as animated Discord small icons for streaming networks. This makes the small badge show a matching animated network icon when the show metadata says it is from Netflix, Paramount+, Prime Video, Hulu, Disney+, HBO Max, and similar providers.
+Ascend Media RPC can use Nuvio community GIF covers as animated Discord small icons for streaming networks (Netflix, Paramount+, Prime Video, Hulu, Disney+, HBO Max, etc.).
 
 Demo animated WebP:
 
@@ -376,77 +407,77 @@ https://nuvioapp.space/
 https://nuvioapp.space/covers?format=gif&sort=popular
 ```
 
-Simple setup:
+Setup:
 
 1. Sign up or sign in at Nuvio.
-2. Open the local Ascend Media RPC dashboard.
-3. Set the small icon or badge mode to the Nuvio network GIF option.
+2. Open the Ascend Media RPC dashboard.
+3. Set the small icon mode to the Nuvio network GIF option.
 4. Enable Nuvio Network GIFs.
-5. Enter your Nuvio email and password in the Nuvio login fields.
-6. Save settings and restart or let the next Discord update refresh the icon.
-
-How the Nuvio login works:
-
-1. Create a Nuvio account or sign in at `https://nuvioapp.space/`.
-2. Use the same email and password in the Ascend Media RPC dashboard.
-3. Ascend Media RPC logs in for you and uses the session to search community GIF covers.
-4. If you change your Nuvio password, update it in the dashboard too.
+5. Enter your Nuvio email and password.
+6. Save settings.
 
 Notes:
 
-- `401` in the log means the Nuvio login failed, expired, or needs the email/password saved again.
-- The password field is saved hidden in the dashboard. Enter a new password to replace it.
-- `Paramount+` is searched as `Paramount +`, `Paramount`, and `Paramount+` so it can match the community upload names.
-- If no animated GIF is found, Ascend Media RPC falls back to the normal static network logo.
-- `wsrv.nl` is used for static PNG resizing only. Animated GIFs are handled without `wsrv.nl` because it does not preserve animation.
+- 401 in the log means the Nuvio login failed or expired.
+- If no animated GIF is found, Ascend Media RPC falls back to a static network logo.
+- wsrv.nl is used for static PNG resizing only. Animated GIFs are handled without wsrv.nl.
 
 ---
 
 ## Requirements
 
-Before using Ascend Media RPC, you need:
-
-- Windows PC
-- Discord desktop app installed and running
+- Windows PC, Linux machine, or Docker environment
+- Discord desktop app installed and running (for RPC features)
 - Android TV, Google TV, NVIDIA Shield, Chromecast with Google TV, or another Android-based streaming device
 - Stremio or Wako installed on the Android TV
 - PC and Android TV on the same local network
-- Developer Options enabled on the Android TV
-- ADB, Network Debugging, or Wireless Debugging enabled on the Android TV
+- Developer Options and ADB/Network/Wireless Debugging enabled on the Android TV
+- Python 3.x (if running without Docker)
 - Optional API keys for artwork, metadata, ratings, and skip features
 
-> You do **not** need to manually install ADB.  
-> Ascend Media RPC includes its own ADB tooling and can scan/connect automatically.
+> You do **not** need to manually install ADB. Ascend Media RPC includes its own ADB tooling.
 
 ---
 
 ## Quick Start
 
 1. Download or clone this repository.
-2. Enable Developer Options on your Android TV.
-3. Enable ADB, Network Debugging, or Wireless Debugging.
-4. Open `config.json`.
-5. Enable Auto IP scanning:
+2. Install dependencies:
 
-```json
-"auto_ip": true
+```bash
+pip install -r requirements.txt
 ```
 
-6. Double-click:
+3. Enable Developer Options on your Android TV.
+4. Enable ADB, Network Debugging, or Wireless Debugging.
+5. Open config.json and configure your settings.
+6. Run the app:
 
-```txt
+**Windows:**
+
+```
 run.bat
+```
+
+**Any platform (headless):**
+
+```bash
+python start_gui.py --headless
+```
+
+**Docker:**
+
+```bash
+docker-compose up -d
 ```
 
 7. Open the dashboard:
 
-```txt
+```
 http://localhost:5466
 ```
 
-8. Use Auto IP or the dashboard scanner to connect to your Android TV.
-9. Start playback in Stremio or Wako.
-10. Watch Discord Rich Presence update automatically.
+8. Connect to your Android TV and start playback.
 
 ---
 
@@ -454,75 +485,107 @@ http://localhost:5466
 
 ### Option 1: Download ZIP
 
-1. Click **Code**
-2. Click **Download ZIP**
-3. Extract the ZIP somewhere easy to access, for example:
+1. Click **Code** then **Download ZIP**
+2. Extract the ZIP
+3. Install dependencies:
 
-```txt
-C:\Ascend-Media-RPC
+```bash
+pip install -r requirements.txt
 ```
 
-4. Open the extracted folder.
-5. Edit `config.json`.
-6. Double-click `run.bat`.
-
----
+4. Edit config.json
+5. Double-click run.bat
 
 ### Option 2: Clone with Git
 
 ```bash
 git clone https://github.com/Cxsmo-ai/Ascend-Media-RPC.git
 cd Ascend-Media-RPC
+pip install -r requirements.txt
 ```
 
-Then edit:
+Edit config.json, then run run.bat or python start_gui.py --headless.
 
-```txt
-config.json
+### Option 3: Docker
+
+See the [Docker](#docker) section below.
+
+---
+
+## What run.bat Does
+
+run.bat is the main launcher for Ascend Media RPC on Windows. It prepares the local environment, installs dependencies, starts the controller, connects to your Android TV via built-in ADB tooling, starts Discord Rich Presence updates, and serves the local dashboard.
+
+---
+
+## CLI and Headless Mode
+
+Ascend Media RPC supports CLI arguments and a headless mode for running without a GUI.
+
+```bash
+python start_gui.py [options]
 ```
 
-And run:
+| Flag | Description | Example |
+| :--- | :--- | :--- |
+| --headless | Run without GUI (Flask API only) | python start_gui.py --headless |
+| --config PATH | Use a custom config file | python start_gui.py --config /path/to/config.json |
+| --port PORT | Override dashboard port | python start_gui.py --port 8080 |
+| --host HOST | Override ADB host address | python start_gui.py --host 192.168.1.50 |
 
-```txt
-run.bat
+Headless mode is useful for Linux servers, Docker containers, and environments without a display.
+
+Environment variables also work:
+
+```bash
+HEADLESS=1 python start_gui.py
 ```
 
 ---
 
-## What `run.bat` Does
+## Docker
 
-`run.bat` is the main launcher for Ascend Media RPC.
+Ascend Media RPC includes Docker support for containerized deployment.
 
-It can:
+### Docker Compose (recommended)
 
-- Prepare the local environment
-- Install required dependencies
-- Start the Ascend controller
-- Use the built-in ADB tooling
-- Scan for Android TV devices
-- Connect to your selected Android TV
-- Start Discord Rich Presence updates
-- Start or serve the local dashboard
+```bash
+docker-compose up -d
+```
 
-You do not need a separate setup script.
+The docker-compose.yml includes:
+
+- Health checks every 30 seconds
+- Automatic restart on failure
+- Host network mode (required for ADB and Discord IPC)
+- Volume mount for persistent config
+
+### Manual Docker build
+
+```bash
+docker build -t ascend-media-rpc .
+docker run -d --network host --name ascend-rpc ascend-media-rpc
+```
+
+The container uses Python 3.11 slim, runs in headless mode by default, exposes port 5466, and includes a health check at /api/health.
+
+### Docker environment variables
+
+| Variable | Description | Default |
+| :--- | :--- | :--- |
+| HEADLESS | Run in headless mode | 1 |
+| GUI_MODE | UI mode | browser |
+| ASCEND_PORT | Dashboard port override | — |
+| ASCEND_ADB_HOST | ADB host override | — |
+| ASCEND_CONFIG_PATH | Config file path override | — |
+
+> **Note:** network_mode: host is required for ADB device communication and Discord IPC.
 
 ---
 
 ## Android TV Setup
 
-Ascend Media RPC needs Android TV debugging enabled so it can communicate with your device locally.
-
-You do **not** need to type ADB commands manually.
-
-Official Android ADB documentation:
-
-```txt
-https://developer.android.com/tools/adb
-```
-
-This link is provided for reference only. Ascend Media RPC handles ADB internally.
-
----
+Ascend Media RPC needs Android TV debugging enabled so it can communicate with your device locally. You do **not** need to type ADB commands manually.
 
 ### Step 1: Enable Developer Options
 
@@ -530,248 +593,135 @@ On your Android TV:
 
 1. Open **Settings**
 2. Go to **System**, **Device Preferences**, or **About**
-3. Find **Android TV OS build**, **Build**, or **Build number**
+3. Find **Android TV OS build** or **Build number**
 4. Click it about **7 times**
-5. You should see a message similar to:
-
-```txt
-You are now a developer!
-```
-
-Developer Options are now enabled.
-
-Menu names may vary depending on your device.
-
----
+5. You should see: You are now a developer!
 
 ### Step 2: Enable Debugging
 
-Go to:
-
-```txt
-Settings > System > Developer options
-```
-
-Enable whichever debugging option your device provides:
-
-```txt
-ADB debugging
-Network debugging
-Wireless debugging
-USB debugging
-```
-
-For Ascend Media RPC, network or wireless debugging is preferred because the app connects over your local network.
-
----
+Go to Settings then System then Developer options and enable whichever debugging option your device provides (ADB debugging, Network debugging, or Wireless debugging).
 
 ### Step 3: Accept the First-Time Permission Prompt
 
-The first time Ascend Media RPC connects, your Android TV may show a permission prompt.
-
-It may say:
-
-```txt
-Allow USB debugging?
-```
-
-Or:
-
-```txt
-Allow network debugging?
-```
-
-Select:
-
-```txt
-Always allow from this computer
-```
-
-Then select:
-
-```txt
-Allow
-```
-
-After allowing it once, Ascend Media RPC should be able to reconnect automatically later.
+The first time Ascend Media RPC connects, your Android TV will show a permission prompt. Select **Always allow from this computer**, then **Allow**.
 
 ---
 
 ## Connection Methods
 
-Ascend Media RPC can connect to your Android TV in three ways.
-
-Recommended order:
-
-1. Auto IP scanning
-2. Dashboard device scanner
-3. Manual IP fallback
-
----
+Ascend Media RPC can connect to your Android TV in four ways:
 
 ### Method 1: Auto IP Mode
-
-Open:
-
-```txt
-config.json
-```
-
-Enable Auto IP:
 
 ```json
 "auto_ip": true
 ```
 
-Example:
+Scans your local network for compatible Android TV devices and connects automatically. Easiest option for most setups.
+
+### Method 2: mDNS/Zeroconf Discovery
 
 ```json
-{
-  "auto_ip": true,
-  "dashboard_port": 5466,
-  "rpc_branding": "on Stremio",
-  "rpc_large_image_mode": "season",
-  "rpc_time_display": "remaining",
-  "wako_mode": false
-}
+"mdns_discovery_enabled": true
 ```
 
-Auto IP mode scans your local network for compatible Android TV devices and attempts to connect automatically.
+Uses Zeroconf to find Android TV devices broadcasting _adb._tcp services. Faster and more reliable than IP scanning on some networks.
 
-This is the easiest option if:
+### Method 3: Dashboard Device Scanner
 
-- Your TV and PC are on the same network
-- You mainly use one Android TV device
-- You do not want to enter an IP address manually
-- Your TV IP address changes sometimes
+Open the dashboard at http://localhost:5466 and use the built-in scanner to find and select your device.
 
----
+### Method 4: Manual IP Fallback
 
-### Method 2: Dashboard Device Scanner
-
-Start Ascend Media RPC:
-
-```txt
-run.bat
-```
-
-Open:
-
-```txt
-http://localhost:5466
-```
-
-Use the dashboard scanner to search for Android TV devices on your network.
-
-This is useful if:
-
-- You do not know your Android TV IP
-- Your TV IP changes often
-- You have multiple Android TV devices
-- You want to choose the device visually
-- Auto IP finds more than one device
-
----
-
-### Method 3: Manual IP Fallback
-
-Use manual IP only if Auto IP or the dashboard scanner does not find your Android TV.
-
-To find your Android TV IP:
-
-```txt
-Android TV Settings > Network & Internet
-```
-
-Select your Wi-Fi or Ethernet network and look for the IP address.
-
-Example:
-
-```txt
-192.168.1.50
-```
-
-Then open `config.json` and set:
+Find your Android TV IP in Settings then Network & Internet, then set:
 
 ```json
 "adb_host": "192.168.1.50"
 ```
 
-Example manual configuration:
-
-```json
-{
-  "auto_ip": false,
-  "adb_host": "192.168.1.50",
-  "dashboard_port": 5466,
-  "rpc_branding": "on Stremio",
-  "rpc_large_image_mode": "season",
-  "rpc_time_display": "remaining",
-  "wako_mode": false
-}
-```
-
-Tip: If you use manual IP, set a static IP or DHCP reservation for your Android TV in your router settings.
-
 ---
 
 ## Configuration
 
-Open:
+Ascend Media RPC uses a single **config.json** file in the project root. All settings are managed from this one file — there is no second config file. The Python module src/core/config.py is the code that loads, saves, and validates config.json.
 
-```txt
-config.json
-```
+The config is organized into 12 labeled sections:
 
-Common options:
+1. **ADB / Device Connection** — host, port, retry, mDNS, multi-device
+2. **Metadata Providers** — TMDB, MAL API keys and rate limits
+3. **Discord RPC** — branding, icons, buttons, cycling, history, privacy
+4. **Skip Providers** — provider toggles, priority order, cache settings
+5. **Artwork & Covers** — provider, fallback chain, Top Posters, ERDB, Nuvio
+6. **Wako Mode** — Wako-specific detection settings
+7. **API Integrations — Tracking** — AniList, Simkl, Kitsu, Letterboxd, Last.fm
+8. **API Integrations — Discovery** — JustWatch, OpenSubtitles
+9. **API Integrations — Media Servers** — Plex, Jellyfin, Emby
+10. **API Integrations — Journals** — Notion, Obsidian
+11. **Privacy & Security** — privacy mode, dashboard auth, blacklist
+12. **Dashboard & System** — port, HTTPS, headless, rate limiting, audit log, health check
 
-| Config Key | Description | Example |
-| :--- | :--- | :--- |
-| `auto_ip` | Enables automatic Android TV discovery | `true` |
-| `adb_host` | Optional manual Android TV IP fallback | `"192.168.1.50"` |
-| `dashboard_port` | Local dashboard port | `5466` |
-| `rpc_branding` | Text shown in Discord status | `"on Stremio"` |
-| `rpc_large_image_mode` | Preferred Discord artwork mode | `"season"` |
-| `rpc_small_icon_mode` | Preferred Discord small icon mode | `"content_network_gif"` |
-| `rpc_time_display` | Shows remaining or elapsed time | `"remaining"` |
-| `wako_mode` | Enables Wako detection mode | `false` |
-| `tmdb_api_key` | TMDB API key | `"YOUR_TMDB_API_KEY"` |
-| `erdb_token` | EasyRatingsDB token | `"YOUR_ERDB_TOKEN"` |
-| `trakt_client_id` | Trakt client ID | `"YOUR_TRAKT_CLIENT_ID"` |
-| `mal_client_id` | MyAnimeList client ID | `"YOUR_MAL_CLIENT_ID"` |
-| `top_posters_api_key` | Top Posters API key | `"YOUR_TOP_POSTERS_API_KEY"` |
-| `nuvio_covers_enabled` | Enables animated Nuvio network icons | `true` |
-| `nuvio_covers_email` | Nuvio account email for community GIF covers | `"you@example.com"` |
-| `nuvio_covers_password` | Nuvio account password for community GIF covers | `"YOUR_NUVIO_PASSWORD"` |
+Config features:
+
+- **Validation** — warns about invalid values and unknown keys
+- **Export** — export config as JSON (sensitive keys excluded)
+- **Import** — import config from JSON, merged with current config
+- **Hot-reload** — watch config file for changes and reload automatically (config_hot_reload: true)
+- **Schema validation** — validates config keys against the default schema
+- **Migration** — automatically migrates legacy key names
 
 ---
 
-## Example `config.json`
+## Example config.json
 
 ```json
 {
-  "auto_ip": true,
-  "adb_host": "",
-  "dashboard_port": 5466,
+    "auto_ip": true,
+    "adb_host": "",
+    "adb_port": 5555,
+    "dashboard_port": 5466,
 
-  "rpc_branding": "on Stremio",
-  "rpc_large_image_mode": "season",
-  "rpc_small_icon_mode": "content_network_gif",
-  "rpc_time_display": "remaining",
+    "tmdb_api_key": "YOUR_TMDB_API_KEY",
+    "mal_client_id": "YOUR_MAL_CLIENT_ID",
+    "erdb_token": "YOUR_ERDB_TOKEN",
+    "top_posters_api_key": "YOUR_TOP_POSTERS_API_KEY",
 
-  "wako_mode": false,
+    "discord_client_id": "",
+    "rpc_branding": "on Stremio",
+    "rpc_large_image_mode": "season",
+    "rpc_small_icon_mode": "content_network_gif",
+    "rpc_time_display": "remaining",
 
-  "tmdb_api_key": "YOUR_TMDB_API_KEY",
-  "erdb_token": "YOUR_ERDB_TOKEN",
-  "trakt_client_id": "YOUR_TRAKT_CLIENT_ID",
-  "mal_client_id": "YOUR_MAL_CLIENT_ID",
-  "top_posters_api_key": "YOUR_TOP_POSTERS_API_KEY",
+    "nuvio_covers_enabled": true,
+    "nuvio_covers_email": "you@example.com",
+    "nuvio_covers_password": "YOUR_NUVIO_PASSWORD",
 
-  "nuvio_covers_enabled": true,
-  "nuvio_covers_email": "you@example.com",
-  "nuvio_covers_password": "YOUR_NUVIO_PASSWORD",
-  "nuvio_covers_base_url": "https://nuvioapp.space",
-  "nuvio_covers_orientation": "all"
+    "introdb_enabled": true,
+    "tidb_enabled": true,
+    "videoskip_enabled": true,
+    "notscare_major_enabled": true,
+    "notscare_minor_enabled": true,
+    "aniskip_enabled": false,
+    "skipme_enabled": true,
+
+    "wako_mode": false,
+
+    "anilist_enabled": false,
+    "simkl_enabled": false,
+    "kitsu_enabled": false,
+    "letterboxd_enabled": false,
+    "lastfm_enabled": false,
+    "justwatch_enabled": false,
+    "opensubtitles_enabled": false,
+    "plex_enabled": false,
+    "jellyfin_enabled": false,
+    "emby_enabled": false,
+    "notion_enabled": false,
+    "obsidian_enabled": false,
+
+    "privacy_mode": false,
+    "dashboard_auth_enabled": false,
+    "audit_log_enabled": true,
+    "config_hot_reload": false
 }
 ```
 
@@ -779,317 +729,413 @@ Common options:
 
 ## API Keys and Providers
 
-API keys are optional, but they unlock better artwork, metadata, ratings, posters, and skip features.
-
-You do not need every key for Ascend Media RPC to launch. Adding more keys improves coverage and quality.
-
----
+API keys are optional but unlock better artwork, metadata, ratings, and skip features. You do not need every key for Ascend Media RPC to launch.
 
 ### TMDB API Key
 
-TMDB is useful for movie/show metadata and fallback artwork.
-
-Config field:
+TMDB provides movie/show metadata and fallback artwork.
 
 ```json
 "tmdb_api_key": "YOUR_TMDB_API_KEY"
 ```
 
-Links:
-
-```txt
-https://www.themoviedb.org/settings/api
-https://developer.themoviedb.org/docs/getting-started
-```
-
-Basic steps:
-
-1. Create or log in to your TMDB account.
-2. Open account settings.
-3. Go to the API section.
-4. Create or request an API key.
-5. Copy the key.
-6. Paste it into `config.json`.
-
----
+Get your key at: https://www.themoviedb.org/settings/api
 
 ### EasyRatingsDB Token
 
-EasyRatingsDB can provide high-quality generated artwork and rating-focused media visuals.
-
-Ascend Media RPC can use EasyRatingsDB artwork for richer Discord cards and better dashboard previews.
-
-Example output:
-
-<img src="./ERDB%20Example.png" alt="EasyRatingsDB poster example" width="420">
-
-Useful for:
-
-- Posters
-- Backdrops
-- Logos
-- Thumbnails
-- Rating badges
-- Addon-style media artwork
-- Better dashboard visuals
-- Better Discord Rich Presence images
-
-Config field:
+EasyRatingsDB provides generated artwork with rating overlays.
 
 ```json
 "erdb_token": "YOUR_ERDB_TOKEN"
 ```
 
-Links:
-
-```txt
-https://easyratingsdb.com/
-https://easyratingsdb.com/configurator
-https://easyratingsdb.com/docs
-```
-
-Basic steps:
-
-1. Open EasyRatingsDB.
-2. Open the configurator/workspace.
-3. Register or log in if needed.
-4. Create or restore your workspace.
-5. Copy your token or config token.
-6. Paste it into `config.json`.
-
----
+Get your token at: https://easyratingsdb.com/configurator
 
 ### Top Posters API Key
 
-Top Posters provides modern generated posters with rating badges and streaming-style layouts.
-
-Ascend Media RPC can use Top Posters artwork to give Discord Rich Presence and the dashboard a more polished streaming-app style.
-
-Example output:
-
-<img src="./Top%20Poster%20Example.png" alt="Top Posters poster example" width="420">
-
-Useful for:
-
-- High-resolution posters
-- Movie posters
-- TV show posters
-- Season posters
-- Rating overlays
-- Trend indicators
-- Modern streaming visuals
-
-Config field:
+Top Posters provides modern streaming-style posters with rating badges.
 
 ```json
 "top_posters_api_key": "YOUR_TOP_POSTERS_API_KEY"
 ```
 
-Links:
+Get your key at: https://api.top-streaming.stream/user/register
 
-```txt
-https://api.top-streaming.stream/
-https://api.top-streaming.stream/user/register
-https://api.top-streaming.stream/faq
-https://api.top-streaming.stream/api
-```
+### Nuvio (Animated Network Icons)
 
-Basic steps:
-
-1. Open the Top Posters registration page.
-2. Create an account.
-3. Open your dashboard.
-4. Copy your API key.
-5. Paste it into `config.json`.
-
----
-
-### Nuvio Animated Network Icons
-
-Nuvio provides community-uploaded GIF covers that can be used as animated Discord small icons for network badges.
-
-Use this when you want the small icon beside your Discord activity to show an animated Netflix, Paramount+, Prime Video, Hulu, Disney+, HBO Max, or similar network badge.
-
-Config fields:
+Nuvio provides community GIF covers for animated Discord network badges.
 
 ```json
-"rpc_small_icon_mode": "content_network_gif",
 "nuvio_covers_enabled": true,
 "nuvio_covers_email": "you@example.com",
 "nuvio_covers_password": "YOUR_NUVIO_PASSWORD"
 ```
 
-Links:
+Sign up at: https://nuvioapp.space/
 
-```txt
-https://nuvioapp.space/
-https://nuvioapp.space/covers?format=gif&sort=popular
-```
+### Trakt
 
-Basic steps:
-
-1. Create or sign in to your Nuvio account.
-2. Open the Nuvio covers page.
-3. Enter your Nuvio email and password in the dashboard Nuvio login fields.
-4. Select the Nuvio/network GIF small icon mode.
-5. Save settings.
-
-If a GIF is not found for the current network, Ascend Media RPC falls back to the normal static network logo.
-
----
-
-### Trakt Client ID
-
-Trakt can be used for extra movie/show metadata or watch-related integrations.
-
-Config field:
+Trakt provides metadata and scrobbling with automatic token refresh.
 
 ```json
-"trakt_client_id": "YOUR_TRAKT_CLIENT_ID"
+"trakt_client_id": "YOUR_TRAKT_CLIENT_ID",
+"trakt_client_secret": "YOUR_TRAKT_CLIENT_SECRET"
 ```
 
-Links:
+Create an app at: https://trakt.tv/oauth/applications
 
-```txt
-https://trakt.tv/oauth/applications
-https://trakt.tv/apps
-https://trakt.docs.apiary.io/
-```
+### MyAnimeList
 
-Basic steps:
-
-1. Log in to Trakt.
-2. Open OAuth Applications.
-3. Create a new application.
-4. Copy the Client ID.
-5. Paste it into `config.json`.
-
----
-
-### MyAnimeList Client ID
-
-MyAnimeList can be used for anime-related metadata.
-
-Config field:
+MyAnimeList provides anime metadata.
 
 ```json
 "mal_client_id": "YOUR_MAL_CLIENT_ID"
 ```
 
-Link:
+Get your key at: https://myanimelist.net/apiconfig
 
-```txt
-https://myanimelist.net/apiconfig
+---
+
+## API Integrations
+
+### AniList
+
+Track anime progress and sync your watchlist automatically via the AniList GraphQL API.
+
+```json
+"anilist_enabled": true,
+"anilist_access_token": "YOUR_ANILIST_TOKEN"
 ```
 
-Basic steps:
+Get your token at: https://anilist.co/settings/developer
 
-1. Log in to MyAnimeList.
-2. Open the API config page.
-3. Create an API client.
-4. Copy the Client ID.
-5. Paste it into `config.json`.
+### Simkl
+
+Sync watch history across TV, movies, and anime platforms.
+
+```json
+"simkl_enabled": true,
+"simkl_client_id": "YOUR_SIMKL_CLIENT_ID",
+"simkl_access_token": "YOUR_SIMKL_TOKEN"
+```
+
+Get your key at: https://simkl.com/settings/developer/
+
+### Kitsu
+
+Connect to the Kitsu anime community and library.
+
+```json
+"kitsu_enabled": true,
+"kitsu_access_token": "YOUR_KITSU_TOKEN"
+```
+
+### Letterboxd
+
+Log movies to your Letterboxd diary as you watch.
+
+```json
+"letterboxd_enabled": true,
+"letterboxd_api_key": "YOUR_LETTERBOXD_KEY",
+"letterboxd_api_secret": "YOUR_LETTERBOXD_SECRET"
+```
+
+### Last.fm
+
+Scrobble soundtrack and score info to Last.fm.
+
+```json
+"lastfm_enabled": true,
+"lastfm_api_key": "YOUR_LASTFM_KEY",
+"lastfm_api_secret": "YOUR_LASTFM_SECRET"
+```
+
+Get your key at: https://www.last.fm/api/account/create
+
+### JustWatch
+
+Find where movies and shows are streaming in your country.
+
+```json
+"justwatch_enabled": true,
+"justwatch_country": "US"
+```
+
+No API key required — uses public data.
+
+### OpenSubtitles
+
+Find and fetch subtitles for your media.
+
+```json
+"opensubtitles_enabled": true,
+"opensubtitles_api_key": "YOUR_OPENSUBTITLES_KEY",
+"opensubtitles_username": "YOUR_USERNAME",
+"opensubtitles_password": "YOUR_PASSWORD"
+```
+
+Get your key at: https://www.opensubtitles.com/en/consumers
+
+### Plex / Jellyfin / Emby
+
+Connect to your media server for playback sync.
+
+**Plex:**
+
+```json
+"plex_enabled": true,
+"plex_url": "http://192.168.1.100:32400",
+"plex_token": "YOUR_PLEX_TOKEN"
+```
+
+**Jellyfin:**
+
+```json
+"jellyfin_enabled": true,
+"jellyfin_url": "http://192.168.1.100:8096",
+"jellyfin_api_key": "YOUR_JELLYFIN_KEY"
+```
+
+**Emby:**
+
+```json
+"emby_enabled": true,
+"emby_url": "http://192.168.1.100:8096",
+"emby_api_key": "YOUR_EMBY_KEY"
+```
+
+### Notion
+
+Log watch activity to a Notion database.
+
+```json
+"notion_enabled": true,
+"notion_api_key": "YOUR_NOTION_KEY",
+"notion_database_id": "YOUR_DATABASE_ID"
+```
+
+### Obsidian
+
+Write watch notes to an Obsidian vault folder.
+
+```json
+"obsidian_enabled": true,
+"obsidian_vault_path": "/path/to/your/vault"
+```
+
+All integrations can be enabled/disabled from the dashboard Connections tab. They initialize lazily in a background thread only when their enabled flag is true.
+
+---
 
 ## Using with Stremio
-
-For Stremio, set:
 
 ```json
 "wako_mode": false
 ```
 
-Recommended connection setting:
-
-```json
-"auto_ip": true
-```
-
-Then:
-
 1. Enable debugging on your Android TV.
-2. Start Ascend Media RPC with `run.bat`.
-3. Open the dashboard:
-
-```txt
-http://localhost:5466
-```
-
-4. Let Auto IP connect, or choose your TV using the dashboard scanner.
-5. Open Stremio on your Android TV.
-6. Start playing a movie or episode.
-7. Discord Rich Presence should update automatically.
+2. Start Ascend Media RPC (run.bat or python start_gui.py --headless).
+3. Open the dashboard at http://localhost:5466.
+4. Connect to your Android TV.
+5. Start playing in Stremio.
+6. Discord Rich Presence updates automatically.
 
 ---
 
 ## Using with Wako
 
-For Wako, set:
-
 ```json
 "wako_mode": true
 ```
 
-Recommended connection setting:
-
-```json
-"auto_ip": true
-```
-
-Then:
-
 1. Enable debugging on your Android TV.
-2. Start Ascend Media RPC with `run.bat`.
-3. Open the dashboard:
+2. Start Ascend Media RPC.
+3. Open the dashboard.
+4. Connect to your Android TV.
+5. Start playback in Wako.
+6. Discord Rich Presence updates automatically.
 
-```txt
-http://localhost:5466
-```
+Wako-specific config options:
 
-4. Let Auto IP connect, or choose your TV using the dashboard scanner.
-5. Open Wako on your Android TV.
-6. Start playback.
-7. Discord Rich Presence and dashboard telemetry should update automatically.
-
-Wako mode uses dedicated detection because Wako may expose playback information differently than Stremio.
+| Config Key | Description |
+| :--- | :--- |
+| wako_player_only | Only detect player activity |
+| wako_stay_awake_on_pause | Keep device awake when paused |
+| wako_focus_lock | Lock focus to Wako app |
+| wako_title_overrides | Manual title corrections |
+| wako_title_cache_enabled | Cache parsed titles |
+| wako_focus_lock_whitelist | Apps allowed when focus lock is on |
+| wako_focus_lock_cooldown | Cooldown between focus checks (seconds) |
 
 ---
 
 ## Dashboard
 
-The dashboard is the local control center for Ascend Media RPC.
+The dashboard is the local control center for Ascend Media RPC at http://localhost:5466.
 
-Default URL:
+### Dashboard Tab
 
-```txt
-http://localhost:5466
-```
+Connection status, device scanner, playback info (app, title, state, progress), artwork preview, Discord RPC status, Smart Skip HUD, and live log.
 
-The dashboard may show:
+### Connections Tab
 
-- Android TV connection status
-- Device/IP scanner
-- Selected Android TV device
-- Current playback app
-- Current title
-- Playback state
-- Playback progress
-- Artwork preview
-- Discord RPC status
-- Skip status
-- Smart Skip HUD
-- Provider and metadata status
+- **Core APIs** — TMDB, MAL, Trakt, Discord credential inputs
+- **Skip Sources** — Provider priority list with reorder arrows and toggles, provider config (API keys, URLs, TMDB/MAL ID overrides), Pipeline Sandbox for testing
+- **Tracking & Scrobbling** — AniList, Simkl, Kitsu, Letterboxd, Last.fm cards with toggles and descriptions
+- **Discovery & Utilities** — JustWatch, OpenSubtitles cards
+- **Media Servers** — Plex, Jellyfin, Emby cards
+- **Watch Journals** — Notion, Obsidian cards
+- **Integration Status** — overview grid showing connected/disconnected status
 
-If you change the dashboard port:
+### Settings Tab
+
+Appearance, RPC customization, privacy mode toggle, dashboard PIN authentication, config export/import (JSON), device management (mDNS toggle, device list), and setup wizard.
+
+### History Tab
+
+Watch history entries and session log.
+
+### Analytics Tab
+
+Total watch time, top genres, peak watch hours heatmap, watch streak, total skips, average session duration, and session search.
+
+### Debug Tab
+
+Audit log viewer (searchable, filterable), skip cache statistics (hit rate, size, clear button), system health (uptime, status), and plugin list.
+
+### Trakt Tab
+
+Trakt OAuth login flow and scrobbling status.
+
+---
+
+## Smart Skip Pipeline
+
+The Smart Skip pipeline fetches skip segments from up to 8 providers simultaneously using a thread pool executor.
+
+### How It Works
+
+1. When playback starts, Ascend Media RPC resolves the media IMDB ID (via TMDB lookup or manual override).
+2. All enabled providers are queried in parallel.
+3. Results are merged using category-aware conflict resolution:
+   - Segments of **different categories** (e.g. structure vs mature content) are all kept.
+   - Segments of the **same category** that overlap are resolved by provider priority order.
+4. Results are cached using a TTL-based cache (default 1 hour, configurable).
+
+### Pipeline Sandbox
+
+The dashboard includes a Pipeline Sandbox for testing skip providers without active playback:
+
+1. Go to the **Connections** tab.
+2. Scroll to **Pipeline Sandbox**.
+3. Enter a title (e.g. Stranger Things), season, and episode.
+4. Click **Run Pipeline Test**.
+5. View color-coded results grouped by source.
+
+### Provider Details
+
+| Provider | Notes |
+| :--- | :--- |
+| **IntroDB.app** | Intro/outro timestamps for TV episodes |
+| **TheIntroDB.org (TIDB)** | Cloudflare-protected; uses cloudscraper for bypass |
+| **Remote JSON** | Custom URL for your own skip database |
+| **VideoSkip.org** | Mature content markers (sex, violence, profanity) |
+| **NotScare.me** | Cloudflare-protected; uses cloudscraper. Supports episode slicing from season pages |
+| **AniSkip** | Requires MAL ID for anime lookups |
+| **SkipMe.db** | Community skip segment database |
+
+---
+
+## Analytics
+
+Ascend Media RPC stores watch analytics in a local SQLite database (analytics.db).
+
+- **SQLite backend** with WAL mode and indexed columns
+- **Automatic migration** from legacy JSON format
+- **Watch stats** — total sessions, total watch time, average session
+- **Top genres** — genre breakdown from TMDB metadata
+- **Peak hours** — 24-hour heatmap
+- **Watch streak** — consecutive days of watching
+- **Total skips** — count of all skipped segments
+- **Search** — search sessions by title, genre, or date
+
+View analytics in the **Analytics** tab of the dashboard.
+
+---
+
+## Plugin System
+
+Ascend Media RPC includes a plugin system for extending functionality.
+
+| Plugin Type | Base Class | Description |
+| :--- | :--- | :--- |
+| Metadata | MetadataProvider | Custom metadata sources |
+| Skip | SkipProvider | Custom skip segment sources |
+| Scrobble | ScrobbleProvider | Custom scrobbling destinations |
+| Artwork | ArtworkProvider | Custom artwork sources |
+
+Plugins are loaded from a configurable directory via the PluginRegistry. The plugin list is visible in the **Debug** tab.
+
+> The plugin system provides the base classes and registry. No concrete plugins are bundled — this is scaffolding for community extensions.
+
+---
+
+## Privacy and Security
+
+### Privacy Mode
+
+Hide what you are watching from Discord:
 
 ```json
-"dashboard_port": 8080
+"privacy_mode": true,
+"privacy_hidden_text": "Watching something"
 ```
 
-Then open:
+Privacy mode can also blacklist specific titles, pause analytics, and pause Trakt scrobbling.
 
-```txt
-http://localhost:8080
+### Dashboard Authentication
+
+Protect your dashboard with a PIN:
+
+```json
+"dashboard_auth_enabled": true,
+"dashboard_auth_pin": "1234"
 ```
+
+### HTTPS Support
+
+Enable HTTPS for the dashboard:
+
+```json
+"dashboard_https_enabled": true,
+"dashboard_cert_path": "/path/to/cert.pem",
+"dashboard_key_path": "/path/to/key.pem"
+```
+
+### Audit Log
+
+Track config changes and auth events with sensitive key masking:
+
+```json
+"audit_log_enabled": true,
+"audit_log_max_entries": 1000
+```
+
+View the audit log in the **Debug** tab.
+
+### API Rate Limiting
+
+```json
+"rate_limit_enabled": true,
+"rate_limit_default": "60/minute"
+```
+
+### General Safety
+
+- Only enable debugging on trusted home networks
+- Do not expose Android TV debugging ports to the internet
+- Do not publicly expose the dashboard port
+- Do not share API keys or tokens publicly
 
 ---
 
@@ -1097,79 +1143,46 @@ http://localhost:8080
 
 ### Discord Branding
 
-Controls the text shown in your Discord status.
-
 ```json
 "rpc_branding": "on Stremio"
 ```
 
-Examples:
-
-```json
-"rpc_branding": "on Android TV"
-```
-
-```json
-"rpc_branding": "with Ascend"
-```
-
-```json
-"rpc_branding": "on Wako"
-```
-
----
-
 ### Large Image Mode
-
-Controls which artwork type Discord should prefer.
 
 ```json
 "rpc_large_image_mode": "season"
 ```
 
-Common artwork modes may include:
-
-```txt
-season
-show
-episode
-poster
-backdrop
-```
-
-Use the values supported by your current app version.
-
----
+Options: show, season, episode
 
 ### Time Display
-
-Controls whether Discord shows remaining or elapsed time.
 
 ```json
 "rpc_time_display": "remaining"
 ```
 
-Common options:
-
-```txt
-remaining
-elapsed
-```
-
----
+Options: remaining, elapsed
 
 ### Dashboard Port
-
-Controls the local dashboard port.
 
 ```json
 "dashboard_port": 5466
 ```
 
-Default dashboard:
+### Status Message Cycling
 
-```txt
-http://localhost:5466
+```json
+"rpc_status_cycling_enabled": true,
+"rpc_cycling_messages": ["Chilling", "Binge watching", "Movie night"],
+"rpc_cycling_interval": 30
+```
+
+### Dynamic Buttons
+
+```json
+"rpc_dynamic_buttons": [
+  {"label": "My Profile", "url": "https://example.com"}
+]
 ```
 
 ---
@@ -1178,242 +1191,121 @@ http://localhost:5466
 
 ### Android TV does not appear in the dashboard scanner
 
-Check that:
-
-- Android TV is turned on
-- Android TV is awake
+- Android TV is turned on and awake
 - PC and Android TV are on the same network
-- Developer Options are enabled
-- ADB, Network Debugging, or Wireless Debugging is enabled
-- VPN is not separating your PC from your TV
-- Firewall is not blocking local network scanning
-- Router allows local device discovery
-
-Try:
-
-1. Restart Ascend Media RPC.
-2. Restart your Android TV.
-3. Reopen the dashboard.
-4. Run the scanner again.
-5. Use manual IP fallback if needed.
-
----
+- Developer Options and debugging are enabled
+- VPN/firewall is not blocking local discovery
+- Try enabling mDNS discovery (mdns_discovery_enabled: true)
+- Try manual IP fallback
 
 ### Auto IP mode does not connect
 
-Confirm this is enabled:
-
-```json
-"auto_ip": true
-```
-
-Then check:
-
-- Android TV is awake
-- Debugging is enabled
-- PC and TV are on the same network
+- Confirm auto_ip: true
+- Debugging is enabled on the TV
 - First-time debugging prompt was accepted
-- VPN/firewall is not blocking local discovery
-- Router is not isolating devices from each other
-
-If Auto IP still fails, use the dashboard scanner or manual IP fallback.
-
----
-
-### Dashboard scanner finds multiple devices
-
-Choose the Android TV device you use for Stremio or Wako.
-
-Possible detected devices may include:
-
-- Android TV
-- Google TV
-- NVIDIA Shield
-- Chromecast with Google TV
-- Fire TV or Android-based TV boxes
-- Phones or tablets with debugging enabled
-
----
-
-### Android TV asks for debugging permission
-
-This is normal the first time.
-
-On the TV, select:
-
-```txt
-Always allow from this computer
-```
-
-Then select:
-
-```txt
-Allow
-```
-
-Restart Ascend Media RPC if needed.
-
----
-
-### Android TV asks for debugging permission every time
-
-Make sure you selected:
-
-```txt
-Always allow from this computer
-```
-
-If it still asks every time:
-
-- TV debugging permissions may have been reset
-- PC network identity may have changed
-- Android TV debugging keys may have reset
-- VPN or network changes may be affecting the connection
-
-Try disabling and re-enabling debugging on the TV, then accept the prompt again.
-
----
+- Try mDNS discovery or manual IP
 
 ### Discord Rich Presence does not show
 
-Check that:
-
-- Discord desktop app is open
-- You are logged into Discord
-- Discord Activity Status is enabled
+- Discord desktop app is open and logged in
+- Activity Status is enabled in Discord settings (User Settings then Activity Privacy)
 - Ascend Media RPC is running
-- Stremio or Wako is actively playing something
-- Android TV is connected in the dashboard
+- Stremio or Wako is actively playing
 - Another Discord RPC app is not overriding the status
-
-In Discord, check:
-
-```txt
-User Settings > Activity Privacy
-```
-
-Make sure activity sharing is enabled.
-
----
 
 ### Dashboard does not open
 
-Open it manually:
-
-```txt
-http://localhost:5466
-```
-
-If you changed the port, use that port instead.
-
-Check that:
-
-- `run.bat` is still running
-- The app did not crash
+- Check run.bat or start_gui.py is still running
+- Try http://localhost:5466 (or your custom port)
 - No other app is using the same port
-- Firewall is not blocking local connections
-
----
 
 ### Playback does not update
 
-Check that:
-
-- Stremio or Wako is actively playing
 - Correct Android TV device is selected
+- wako_mode matches the app you are using (false for Stremio, true for Wako)
 - TV is awake
-- Dashboard shows the TV as connected
-- `wako_mode` matches the app you are using
-
-For Stremio:
-
-```json
-"wako_mode": false
-```
-
-For Wako:
-
-```json
-"wako_mode": true
-```
-
----
 
 ### Artwork is missing
 
-Check that your API keys are correct:
-
-```json
-"tmdb_api_key": "YOUR_TMDB_API_KEY",
-"erdb_token": "YOUR_ERDB_TOKEN",
-"top_posters_api_key": "YOUR_TOP_POSTERS_API_KEY"
-```
-
-Also check:
-
+- API keys are correct in config.json
 - Internet connection is working
-- Media title is detected correctly
-- Title exists in TMDB or the selected artwork provider
-- Selected artwork mode is supported
-- API provider is not rate-limiting requests
+- Media exists in TMDB or selected artwork provider
+- Try TMDB as fallback
 
-TMDB is useful as a fallback when other providers do not return artwork.
+### Skip providers returning 0 segments
 
----
-
-### Stremio is not detected correctly
-
-Check:
-
-```json
-"wako_mode": false
-```
-
-Also confirm:
-
-- Stremio is open
-- Playback is active
-- Android TV is connected
-- Android TV screen is awake
-- Dashboard shows the correct selected device
+- Provider is enabled in config or dashboard
+- Media has data in that provider database
+- For TIDB/NotScare: cloudscraper is installed (pip install cloudscraper)
+- For TIDB: Cloudflare may IP-block certain networks
+- For AniSkip: valid MAL ID is required
+- Check server logs for errors
 
 ---
 
-### Wako is not detected correctly
+## API Reference
 
-Check:
+Ascend Media RPC exposes a REST API for the dashboard and external integrations.
 
-```json
-"wako_mode": true
-```
+### Core
 
-Also confirm:
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| GET | /api/health | Health check (uptime, version, status) |
+| GET | /api/state | Current app state (playback, config, metadata) |
+| POST | /api/update_settings | Update config values |
+| GET | /api/events | SSE event stream for live updates |
 
-- Wako is open
-- Playback is active
-- Android TV is connected
-- Android TV screen is awake
-- Dashboard shows the correct selected device
+### Config Management
 
----
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| GET | /api/config/export | Export config as JSON (sensitive keys excluded) |
+| POST | /api/config/import | Import config from JSON |
+| GET | /api/config/validate | Validate current config |
+| GET | /api/config/schema | Get config schema with types |
 
-## Security and Privacy
+### Skip Pipeline
 
-Ascend Media RPC is designed for local use.
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| POST | /api/test/skip_pipeline | Test skip pipeline (title, season, episode) |
+| GET | /api/skip/cache | Skip cache statistics |
+| DELETE | /api/skip/cache | Clear skip cache |
 
-It connects to your Android TV over your local network and serves a local dashboard from your PC.
+### Analytics
 
-For safety:
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| GET | /api/analytics/advanced | Full analytics (genres, hours, streaks, stats) |
+| GET | /api/analytics/search?q=QUERY | Search watch sessions |
 
-- Only enable debugging on trusted home networks
-- Do not expose Android TV debugging ports to the internet
-- Do not port-forward Android TV debugging through your router
-- Only accept debugging prompts from your own computer
-- Disable debugging when not using it if you want maximum security
-- Do not publicly expose the dashboard port
-- Do not share your API keys or tokens publicly
+### System
 
-Ascend Media RPC is intended to run on your private local network.
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| GET | /api/audit | Audit log entries |
+| GET | /api/rpc/history | RPC activity history |
+| POST | /api/validate/keys | Validate API keys |
+| GET | /api/plugins | List loaded plugins |
+| GET | /api/integrations/status | Integration connection status |
+| GET | /api/devices | List discovered devices |
+| POST | /api/devices/switch | Switch active device |
+
+### Authentication
+
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| POST | /api/auth/login | Dashboard PIN login |
+| POST | /api/auth/logout | Dashboard logout |
+
+### Onboarding
+
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| GET | /api/onboarding/status | Onboarding progress |
+| POST | /api/onboarding/start | Start setup wizard |
+| POST | /api/onboarding/complete | Mark onboarding complete |
 
 ---
 
@@ -1422,14 +1314,16 @@ Ascend Media RPC is intended to run on your private local network.
 - Python
 - Flask
 - pypresence
+- cloudscraper
+- guessit
+- anitopy
+- SQLite
+- Zeroconf
 - Built-in ADB tooling
 - Discord Rich Presence
-- TMDB
-- EasyRatingsDB
-- Top Posters
-- Nuvio
-- Trakt
-- MyAnimeList
+- TMDB, EasyRatingsDB, Top Posters, Nuvio
+- Trakt, MyAnimeList
+- IntroDB, TheIntroDB.org, VideoSkip, NotScare, AniSkip, SkipMe
 
 ---
 
@@ -1441,7 +1335,7 @@ Developed by **Cxsmo-ai**.
 
 ## Disclaimer
 
-This project is not affiliated with Discord, Stremio, Wako, TMDB, Trakt, MyAnimeList, EasyRatingsDB, Top Posters, Nuvio, AniSkip, IntroDB, Tidb, SkipMe, VideoSkip, or NotScare.
+This project is not affiliated with Discord, Stremio, Wako, TMDB, Trakt, MyAnimeList, EasyRatingsDB, Top Posters, Nuvio, AniSkip, IntroDB, TheIntroDB.org, SkipMe, VideoSkip, NotScare, AniList, Simkl, Kitsu, Letterboxd, Last.fm, JustWatch, OpenSubtitles, Plex, Jellyfin, Emby, Notion, or Obsidian.
 
 All trademarks, names, logos, and brands belong to their respective owners.
 
@@ -1454,6 +1348,6 @@ Ascend Media RPC does not provide, host, index, distribute, or stream media cont
 If you like this project, consider starring the repository.
 
 ```txt
-🌌 Ascend Media RPC
-Rich Presence Client + Smart Skip + Android TV Telemetry
+Ascend Media RPC
+Rich Presence Client + Smart Skip + Android TV Telemetry + Analytics + Integrations
 ```
