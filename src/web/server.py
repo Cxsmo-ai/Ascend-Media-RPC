@@ -378,6 +378,31 @@ def get_state():
                 "notion_database_id": gui_app.config.get("notion_database_id", ""),
                 "obsidian_enabled": gui_app.config.get("obsidian_enabled", False),
                 "obsidian_vault_path": gui_app.config.get("obsidian_vault_path", ""),
+                # FanArt.tv
+                "fanart_enabled": gui_app.config.get("fanart_enabled", False),
+                "fanart_api_key": gui_app.config.get("fanart_api_key", ""),
+                # Device Health
+                "device_health_enabled": gui_app.config.get("device_health_enabled", False),
+                # Push Notifications
+                "push_notifications_enabled": gui_app.config.get("push_notifications_enabled", False),
+                # Trakt Social
+                "trakt_collection_sync": gui_app.config.get("trakt_collection_sync", False),
+                "trakt_social_enabled": gui_app.config.get("trakt_social_enabled", False),
+                # Theme
+                "theme_mode": gui_app.config.get("theme_mode", "dark"),
+                "theme_accent_color": gui_app.config.get("theme_accent_color", "#8a2be2"),
+                "theme_oled_black": gui_app.config.get("theme_oled_black", False),
+                # Skip Category Toggles
+                "skip_cat_intro": gui_app.config.get("skip_cat_intro", True),
+                "skip_cat_outro": gui_app.config.get("skip_cat_outro", True),
+                "skip_cat_recap": gui_app.config.get("skip_cat_recap", True),
+                "skip_cat_preview": gui_app.config.get("skip_cat_preview", True),
+                "skip_cat_credits": gui_app.config.get("skip_cat_credits", True),
+                "skip_cat_filler": gui_app.config.get("skip_cat_filler", True),
+                "skip_cat_mature": gui_app.config.get("skip_cat_mature", True),
+                "skip_cat_scare": gui_app.config.get("skip_cat_scare", True),
+                # Artwork Fallback Chain
+                "artwork_fallback_chain": gui_app.config.get("artwork_fallback_chain", ["tmdb", "fanart", "tvdb"]),
             },
             
             # Stats (Live from StatsManager)

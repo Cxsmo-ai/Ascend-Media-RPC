@@ -781,6 +781,49 @@
                     </div>
                 </div>
 
+                <!-- Section: Trakt Social -->
+                <div>
+                    <div class="grid grid-cols-1 gap-4">
+                <div class="glass-panel p-6 rounded-2xl space-y-4">
+                    <div class="flex items-center gap-3"><i data-lucide="users" class="text-red-400 w-6 h-6"></i><h3 class="font-bold text-lg">Trakt Social</h3></div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Collection Sync -->
+                        <div class="bg-black/30 rounded-xl p-4 space-y-3 border border-white/5">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-2"><i data-lucide="library" class="w-4 h-4 text-red-400"></i><span class="font-bold text-sm">Collection Sync</span></div>
+                                <div class="relative"><input type="checkbox" id="chk-trakt-collection" onchange="updateConfig('trakt_collection_sync', this.checked)" class="peer sr-only"><div class="w-9 h-5 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-red-600 cursor-pointer" onclick="document.getElementById('chk-trakt-collection').click()"></div></div>
+                            </div>
+                            <p class="text-xs text-slate-500">Auto-add watched content to your Trakt collection</p>
+                            <button onclick="loadTraktCollection()" class="w-full py-1.5 bg-red-500/10 text-red-400 rounded-lg text-xs font-bold hover:bg-red-500/20 transition-colors">LOAD COLLECTION</button>
+                            <div id="trakt-collection-list" class="space-y-1 max-h-32 overflow-y-auto text-xs text-slate-400"><p class="text-center py-2">Click Load to view collection</p></div>
+                        </div>
+                        <!-- Friends Watching -->
+                        <div class="bg-black/30 rounded-xl p-4 space-y-3 border border-white/5">
+                            <div class="flex items-center gap-2"><i data-lucide="eye" class="w-4 h-4 text-blue-400"></i><span class="font-bold text-sm">Friends Watching</span></div>
+                            <p class="text-xs text-slate-500">See what your Trakt friends are watching now</p>
+                            <button onclick="loadTraktFriends()" class="w-full py-1.5 bg-blue-500/10 text-blue-400 rounded-lg text-xs font-bold hover:bg-blue-500/20 transition-colors">LOAD FRIENDS</button>
+                            <div id="trakt-friends-list" class="space-y-1 max-h-32 overflow-y-auto text-xs text-slate-400"><p class="text-center py-2">Click Load to view friends</p></div>
+                        </div>
+                        <!-- Calendar -->
+                        <div class="bg-black/30 rounded-xl p-4 space-y-3 border border-white/5">
+                            <div class="flex items-center gap-2"><i data-lucide="calendar" class="w-4 h-4 text-green-400"></i><span class="font-bold text-sm">Calendar</span></div>
+                            <p class="text-xs text-slate-500">Upcoming episodes from your watchlist</p>
+                            <button onclick="loadTraktCalendar()" class="w-full py-1.5 bg-green-500/10 text-green-400 rounded-lg text-xs font-bold hover:bg-green-500/20 transition-colors">LOAD CALENDAR</button>
+                            <div id="trakt-calendar-list" class="space-y-1 max-h-32 overflow-y-auto text-xs text-slate-400"><p class="text-center py-2">Click Load to view calendar</p></div>
+                        </div>
+                        <!-- Check-In -->
+                        <div class="bg-black/30 rounded-xl p-4 space-y-3 border border-white/5">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-2"><i data-lucide="check-circle" class="w-4 h-4 text-amber-400"></i><span class="font-bold text-sm">Check-In</span></div>
+                                <div class="relative"><input type="checkbox" id="chk-trakt-social" onchange="updateConfig('trakt_social_enabled', this.checked)" class="peer sr-only"><div class="w-9 h-5 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-600 cursor-pointer" onclick="document.getElementById('chk-trakt-social').click()"></div></div>
+                            </div>
+                            <p class="text-xs text-slate-500">Auto check-in to Trakt when watching</p>
+                        </div>
+                    </div>
+                </div>
+                    </div>
+                </div>
+
                 <!-- Section: Status -->
                 <div>
                     <div class="grid grid-cols-1 gap-4">
