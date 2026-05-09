@@ -12,25 +12,65 @@ def get_config_path():
 CONFIG_FILE = os.path.join(get_config_path(), "config.json")
 
 DEFAULT_CONFIG = {
+    # ──────────────────────────────────────────────
+    # ADB / Device Connection
+    # ──────────────────────────────────────────────
     "adb_host": "",
     "adb_port": 5555,
+    "adb_retry_count": 3,
+    "adb_retry_delay": 1.0,
+    "adb_command_dedup": True,
+    "mdns_discovery_enabled": True,
+    "multi_device_enabled": False,
+    "multi_device_list": [],
+
+    # ──────────────────────────────────────────────
+    # Metadata Providers (TMDB / MAL)
+    # ──────────────────────────────────────────────
     "tmdb_api_key": "",
-    "discord_client_id": "1451010126495617106",
-    "discord_wako_client_id": "",
-    "dashboard_port": 5466,
-    "dashboard_public_base_url": "",
-    "dashboard_ui_mode": "normal",
-    "update_interval": 2.0,
-    "playback_debug_enabled": False,
-    "playback_logcat_enabled": False,
-    "aniskip_enabled": False,
     "mal_client_id": "",
     "mal_metadata_enabled": True,
-    # Skip Provider Defaults
-    "skip_tmdb_id": "",          # Manual TMDB ID for IntroDB
-    "skip_mal_id": "",           # Manual MAL ID for AniSkip
-    "introdb_enabled": True,
+    "tmdb_rate_limit_enabled": True,
+    "tmdb_rate_limit_calls": 40,
+    "tmdb_rate_limit_period": 10,
+
+    # ──────────────────────────────────────────────
+    # Discord RPC
+    # ──────────────────────────────────────────────
+    "discord_client_id": "1451010126495617106",
+    "discord_wako_client_id": "",
+    "rpc_buttons_enabled": True,
+    "rpc_streaming_mode": True,
+    "rpc_custom_status": "",
+    "rpc_time_display": "remaining",
+    "rpc_large_image_mode": "episode",
+    "rpc_small_icon_mode": "play_status",
+    "rpc_rating_badges_enabled": False,
+    "rpc_status_cycling_enabled": False,
+    "rpc_status_effects_enabled": False,
+    "rpc_branding": "on Stremio",
+    "rpc_activity_type": "watching",
+    "rpc_multi_activity_enabled": False,
+    "rpc_dynamic_buttons": [],
+    "rpc_cycling_messages": [],
+    "rpc_cycling_interval": 30,
+    "rpc_image_url_limit": 256,
+    "rpc_history_enabled": True,
+    "rpc_history_limit": 100,
+    "rpc_multi_discord_enabled": False,
+    "rpc_secondary_client_id": "",
+    "show_device_name": True,
+    "profanity_filter": False,
+
+    # ──────────────────────────────────────────────
+    # Skip Providers
+    # ──────────────────────────────────────────────
+    "skip_mode": "auto",
+    "skip_tmdb_id": "",
+    "skip_mal_id": "",
+    "aniskip_enabled": False,
     "aniskip_fallback": True,
+    "introdb_enabled": True,
     "tidb_enabled": False,
     "tidb_api_key": "",
     "remote_json_enabled": False,
@@ -40,52 +80,20 @@ DEFAULT_CONFIG = {
     "notscare_major_enabled": False,
     "notscare_minor_enabled": False,
     "skip_priority_order": ["tidb", "remote_json", "introdb", "videoskip", "notscare_major", "notscare_minor", "aniskip", "skipme"],
-    "wako_mode": False,           # Wako Telemetry Mode (UI scraping via uiautomator)
-    "wako_player_only": False,
-    "wako_stay_awake_on_pause": False,
-    "wako_focus_lock": False,
-    # Phase 3: Smart Home Lighting
-    "smart_home_enabled": False,
-    "smart_home_provider": "webhook",  # "webhook", "hue", "homeassistant"
-    "smart_home_play_url": "",
-    "smart_home_pause_url": "",
-    "hue_bridge_ip": "",
-    "hue_api_key": "",
-    "hue_group_id": "0",
-    "hue_dim_brightness": 25,
-    "ha_url": "",
-    "ha_token": "",
-    "ha_entity": "light.living_room",
-    "ha_dim_brightness": 25,
-    # Phase 4: Watch Party
-    "watch_party_enabled": False,
-    "watch_party_mode": "off",
-    "watch_party_port": 5467,
-    "watch_party_host_ip": "",
-    # RPC Enhancements
-    "rpc_buttons_enabled": True,
-    "rpc_streaming_mode": True,
-    "rpc_custom_status": "",
-    "rpc_time_display": "remaining", # "remaining" or "elapsed"
-    "rpc_large_image_mode": "episode", # "show", "season", "episode"
-    "rpc_rating_badges_enabled": False,
-    "rpc_status_cycling_enabled": False,
-    "rpc_status_effects_enabled": False,
-    "rpc_small_icon_mode": "play_status", # "play_status", "stremio", "wako", "device", "streaming_service", "content_network", "content_network_gif"
-    "nuvio_covers_enabled": False,
-    "nuvio_covers_token": "",
-    "nuvio_covers_email": "",
-    "nuvio_covers_password": "",
-    "nuvio_covers_base_url": "https://nuvioapp.space",
-    "nuvio_covers_orientation": "all",
-    "artwork_provider": "top_posters", # "legacy", "top_posters", "erdb"
-    "rpc_image_url_limit": 256,
+    "skip_cache_ttl": 3600,
+    "skip_cache_max_size": 500,
+
+    # ──────────────────────────────────────────────
+    # Artwork & Covers
+    # ──────────────────────────────────────────────
+    "artwork_provider": "top_posters",
     "artwork_cache_enabled": True,
     "artwork_cache_size": 1024,
     "artwork_upload_enabled": False,
     "artwork_upload_command": "",
     "artwork_upload_timeout": 45,
-    # Top Posters artwork
+    "artwork_fallback_chain": ["top_posters", "erdb", "tmdb", "nuvio"],
+    # Top Posters
     "top_posters_enabled": False,
     "top_posters_api_key": "",
     "top_posters_base_url": "https://api.top-posters.com",
@@ -94,7 +102,7 @@ DEFAULT_CONFIG = {
     "top_posters_blur": False,
     "top_posters_style": "modern",
     "top_posters_season_mask_threshold": 32,
-    # ERDB artwork
+    # ERDB
     "erdb_token": "",
     "erdb_base_url": "https://easyratingsdb.com",
     "erdb_episode_id_mode": "realimdb",
@@ -103,83 +111,53 @@ DEFAULT_CONFIG = {
     "erdb_backdrops_enabled": True,
     "erdb_logos_enabled": True,
     "erdb_thumbnails_enabled": True,
-    "rpc_branding": "on Stremio",
-    # Privacy Mode
-    "privacy_mode": False,
-    "privacy_hidden_text": "Watching something",
-    "privacy_blacklist": [],
-    "privacy_pause_analytics": True,
-    "privacy_pause_trakt": True,
-    # Dashboard Authentication
-    "dashboard_auth_enabled": False,
-    "dashboard_auth_pin": "",
-    # Multi-Activity RPC
-    "rpc_activity_type": "watching",
-    "rpc_multi_activity_enabled": False,
-    # Dynamic Button URLs
-    "rpc_dynamic_buttons": [],
-    # Status Cycling
-    "rpc_cycling_messages": [],
-    "rpc_cycling_interval": 30,
-    # RPC History
-    "rpc_history_enabled": True,
-    "rpc_history_limit": 100,
-    # Multi-Discord Account
-    "rpc_multi_discord_enabled": False,
-    "rpc_secondary_client_id": "",
-    # Skip Segment Caching
-    "skip_cache_ttl": 3600,
-    "skip_cache_max_size": 500,
-    # Artwork Fallback Chain
-    "artwork_fallback_chain": ["top_posters", "erdb", "tmdb", "nuvio"],
-    # Config Hot-Reload
-    "config_hot_reload": False,
-    # Rate Limiting
-    "rate_limit_enabled": True,
-    "rate_limit_default": "60/minute",
-    # TMDB Rate Limiting
-    "tmdb_rate_limit_enabled": True,
-    "tmdb_rate_limit_calls": 40,
-    "tmdb_rate_limit_period": 10,
-    # Health Check
-    "health_check_enabled": True,
-    # Docker / Headless
-    "headless_mode": False,
-    # API Key Validation
-    "api_key_validation_enabled": True,
-    # HTTPS
-    "dashboard_https_enabled": False,
-    "dashboard_cert_path": "",
-    "dashboard_key_path": "",
-    # Audit Log
-    "audit_log_enabled": True,
-    "audit_log_max_entries": 1000,
-    # Logging
-    "log_json_enabled": False,
-    "log_level_overrides": {},
-    # Config Schema Validation
-    "config_schema_validation": True,
-    # New API Integrations
+    # Nuvio
+    "nuvio_covers_enabled": False,
+    "nuvio_covers_token": "",
+    "nuvio_covers_email": "",
+    "nuvio_covers_password": "",
+    "nuvio_covers_base_url": "https://nuvioapp.space",
+    "nuvio_covers_orientation": "all",
+
+    # ──────────────────────────────────────────────
+    # Wako Mode
+    # ──────────────────────────────────────────────
+    "wako_mode": False,
+    "wako_player_only": False,
+    "wako_stay_awake_on_pause": False,
+    "wako_focus_lock": False,
+    "wako_title_overrides": {},
+    "wako_title_cache_enabled": True,
+    "wako_focus_lock_whitelist": [],
+    "wako_focus_lock_cooldown": 5,
+
+    # ──────────────────────────────────────────────
+    # API Integrations — Tracking
+    # ──────────────────────────────────────────────
     "anilist_enabled": False,
     "anilist_access_token": "",
+    "simkl_enabled": False,
+    "simkl_client_id": "",
+    "simkl_access_token": "",
+    "kitsu_enabled": False,
+    "kitsu_access_token": "",
     "letterboxd_enabled": False,
     "letterboxd_api_key": "",
     "letterboxd_api_secret": "",
+    "lastfm_enabled": False,
+    "lastfm_api_key": "",
+    "lastfm_api_secret": "",
+    "lastfm_session_key": "",
     "justwatch_enabled": False,
     "justwatch_country": "US",
     "opensubtitles_enabled": False,
     "opensubtitles_api_key": "",
     "opensubtitles_username": "",
     "opensubtitles_password": "",
-    "simkl_enabled": False,
-    "simkl_client_id": "",
-    "simkl_access_token": "",
-    "kitsu_enabled": False,
-    "kitsu_access_token": "",
-    "lastfm_enabled": False,
-    "lastfm_api_key": "",
-    "lastfm_api_secret": "",
-    "lastfm_session_key": "",
+
+    # ──────────────────────────────────────────────
+    # API Integrations — Media Servers
+    # ──────────────────────────────────────────────
     "plex_enabled": False,
     "plex_url": "",
     "plex_token": "",
@@ -189,27 +167,55 @@ DEFAULT_CONFIG = {
     "emby_enabled": False,
     "emby_url": "",
     "emby_api_key": "",
+
+    # ──────────────────────────────────────────────
+    # API Integrations — Journals
+    # ──────────────────────────────────────────────
     "notion_enabled": False,
     "notion_api_key": "",
     "notion_database_id": "",
     "obsidian_enabled": False,
     "obsidian_vault_path": "",
-    # Wako Improvements
-    "wako_title_overrides": {},
-    "wako_title_cache_enabled": True,
-    "wako_focus_lock_whitelist": [],
-    "wako_focus_lock_cooldown": 5,
-    # mDNS Discovery
-    "mdns_discovery_enabled": True,
-    # ADB Command Queue
-    "adb_retry_count": 3,
-    "adb_retry_delay": 1.0,
-    "adb_command_dedup": True,
-    # Multi-Device
-    "multi_device_enabled": False,
-    "multi_device_list": [],
-    # Onboarding
+
+    # ──────────────────────────────────────────────
+    # Privacy & Security
+    # ──────────────────────────────────────────────
+    "privacy_mode": False,
+    "privacy_hidden_text": "Watching something",
+    "privacy_blacklist": [],
+    "privacy_pause_analytics": True,
+    "privacy_pause_trakt": True,
+    "dashboard_auth_enabled": False,
+    "dashboard_auth_pin": "",
+
+    # ──────────────────────────────────────────────
+    # Dashboard & Server
+    # ──────────────────────────────────────────────
+    "dashboard_port": 5466,
+    "dashboard_public_base_url": "",
+    "dashboard_ui_mode": "normal",
+    "dashboard_https_enabled": False,
+    "dashboard_cert_path": "",
+    "dashboard_key_path": "",
+    "update_interval": 2.0,
+    "headless_mode": False,
     "onboarding_completed": False,
+
+    # ──────────────────────────────────────────────
+    # System & Advanced
+    # ──────────────────────────────────────────────
+    "playback_debug_enabled": False,
+    "playback_logcat_enabled": False,
+    "config_hot_reload": False,
+    "config_schema_validation": True,
+    "rate_limit_enabled": True,
+    "rate_limit_default": "60/minute",
+    "health_check_enabled": True,
+    "api_key_validation_enabled": True,
+    "audit_log_enabled": True,
+    "audit_log_max_entries": 1000,
+    "log_json_enabled": False,
+    "log_level_overrides": {},
 }
 
 def load_config() -> Dict:

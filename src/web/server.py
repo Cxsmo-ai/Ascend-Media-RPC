@@ -299,7 +299,6 @@ def get_state():
                 "notscare_minor_enabled": gui_app.config.get("notscare_minor_enabled", False),
                 "skipme_enabled": gui_app.config.get("skipme_enabled", True),
                 "skip_priority_order": gui_app.config.get("skip_priority_order", ["tidb", "introdb", "remote_json", "videoskip", "notscare_major", "notscare_minor", "aniskip", "skipme"]),
-                "watch_party_host_ip": gui_app.config.get("watch_party_host_ip", ""),
                 "wako_mode": gui_app.config.get("wako_mode", False),
                 "wako_player_only": gui_app.config.get("wako_player_only", False),
                 "wako_stay_awake_on_pause": gui_app.config.get("wako_stay_awake_on_pause", False),
@@ -340,6 +339,45 @@ def get_state():
                 "nuvio_covers_token_saved": bool(gui_app.config.get("nuvio_covers_token", "")),
                 "nuvio_covers_base_url": gui_app.config.get("nuvio_covers_base_url", "https://nuvioapp.space"),
                 "nuvio_covers_orientation": gui_app.config.get("nuvio_covers_orientation", "all"),
+                # Privacy & Security
+                "privacy_mode": gui_app.config.get("privacy_mode", False),
+                "privacy_hidden_text": gui_app.config.get("privacy_hidden_text", "Watching something"),
+                "dashboard_auth_enabled": gui_app.config.get("dashboard_auth_enabled", False),
+                # mDNS Discovery
+                "mdns_discovery_enabled": gui_app.config.get("mdns_discovery_enabled", True),
+                # New API Integrations
+                "anilist_enabled": gui_app.config.get("anilist_enabled", False),
+                "anilist_access_token": gui_app.config.get("anilist_access_token", ""),
+                "simkl_enabled": gui_app.config.get("simkl_enabled", False),
+                "simkl_client_id": gui_app.config.get("simkl_client_id", ""),
+                "simkl_access_token": gui_app.config.get("simkl_access_token", ""),
+                "kitsu_enabled": gui_app.config.get("kitsu_enabled", False),
+                "kitsu_access_token": gui_app.config.get("kitsu_access_token", ""),
+                "letterboxd_enabled": gui_app.config.get("letterboxd_enabled", False),
+                "letterboxd_api_key": gui_app.config.get("letterboxd_api_key", ""),
+                "letterboxd_api_secret": gui_app.config.get("letterboxd_api_secret", ""),
+                "lastfm_enabled": gui_app.config.get("lastfm_enabled", False),
+                "lastfm_api_key": gui_app.config.get("lastfm_api_key", ""),
+                "lastfm_api_secret": gui_app.config.get("lastfm_api_secret", ""),
+                "justwatch_enabled": gui_app.config.get("justwatch_enabled", False),
+                "justwatch_country": gui_app.config.get("justwatch_country", "US"),
+                "opensubtitles_enabled": gui_app.config.get("opensubtitles_enabled", False),
+                "opensubtitles_api_key": gui_app.config.get("opensubtitles_api_key", ""),
+                "opensubtitles_username": gui_app.config.get("opensubtitles_username", ""),
+                "plex_enabled": gui_app.config.get("plex_enabled", False),
+                "plex_url": gui_app.config.get("plex_url", ""),
+                "plex_token": gui_app.config.get("plex_token", ""),
+                "jellyfin_enabled": gui_app.config.get("jellyfin_enabled", False),
+                "jellyfin_url": gui_app.config.get("jellyfin_url", ""),
+                "jellyfin_api_key": gui_app.config.get("jellyfin_api_key", ""),
+                "emby_enabled": gui_app.config.get("emby_enabled", False),
+                "emby_url": gui_app.config.get("emby_url", ""),
+                "emby_api_key": gui_app.config.get("emby_api_key", ""),
+                "notion_enabled": gui_app.config.get("notion_enabled", False),
+                "notion_api_key": gui_app.config.get("notion_api_key", ""),
+                "notion_database_id": gui_app.config.get("notion_database_id", ""),
+                "obsidian_enabled": gui_app.config.get("obsidian_enabled", False),
+                "obsidian_vault_path": gui_app.config.get("obsidian_vault_path", ""),
             },
             
             # Stats (Live from StatsManager)
@@ -474,12 +512,8 @@ def update_settings():
                 if key == "rpc_small_icon": config_key = "rpc_small_icon_mode"
                 if key == "rpc_large_image": config_key = "rpc_large_image_mode"
 
-                # Ensure ALL Skip Provider explicitly save regardless of cache
-                provider_keys = ["tidb_enabled", "introdb_enabled", "remote_json_enabled", "videoskip_enabled", 
-                                 "notscare_major_enabled", "notscare_minor_enabled", "skipme_enabled", "aniskip_fallback"]
-                
-                # Update Config
-                if config_key in gui_app.config or key in skip_config_keys or config_key in provider_keys:
+                # Update Config - accept any key that exists in config or DEFAULT_CONFIG
+                if config_key in gui_app.config or config_key in DEFAULT_CONFIG or key in skip_config_keys:
                     gui_app.config[config_key] = val
                     
                 # Live Updates for skip manager

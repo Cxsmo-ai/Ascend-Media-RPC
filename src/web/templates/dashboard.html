@@ -42,6 +42,52 @@
 
     <!-- External CSS -->
     <link rel="stylesheet" href="/static/styles.css">
+    
+    <style>
+        /* Enhanced card hover effects */
+        .glass-panel { transition: border-color 0.3s ease, box-shadow 0.3s ease; }
+        .glass-panel:hover { border-color: rgba(255,255,255,0.08); box-shadow: 0 4px 24px rgba(0,0,0,0.3); }
+        
+        /* Better input focus rings */
+        input:focus, select:focus { box-shadow: 0 0 0 2px rgba(99,102,241,0.15); }
+        input[type="password"]:focus { box-shadow: 0 0 0 2px rgba(99,102,241,0.15); }
+        
+        /* Save button hover glow */
+        button[onclick*="save"]:hover, button[onclick*="Save"]:hover {
+            box-shadow: 0 0 12px rgba(99,102,241,0.2);
+        }
+        
+        /* Smooth toggle transitions */
+        .peer:checked ~ div { transition: background-color 0.2s ease; }
+        
+        /* Better scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+        
+        /* Section divider animation */
+        .view-section > div { animation: fadeInUp 0.3s ease forwards; opacity: 0; }
+        .view-section > div:nth-child(1) { animation-delay: 0s; }
+        .view-section > div:nth-child(2) { animation-delay: 0.05s; }
+        .view-section > div:nth-child(3) { animation-delay: 0.1s; }
+        .view-section > div:nth-child(4) { animation-delay: 0.15s; }
+        .view-section > div:nth-child(5) { animation-delay: 0.2s; }
+        .view-section > div:nth-child(6) { animation-delay: 0.25s; }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Integration card left accent border */
+        .glass-panel[class*="space-y-4"]:not([class*="col-span"]) {
+            border-left: 2px solid rgba(255,255,255,0.05);
+            transition: border-left-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        .glass-panel[class*="space-y-4"]:not([class*="col-span"]):hover {
+            border-left-color: rgba(99,102,241,0.4);
+        }
+    </style>
 </head>
 
 <body class="flex flex-col md:flex-row h-screen antialiased selection:bg-indigo-500/30">
@@ -50,9 +96,6 @@
     <div id="ambient-glow"></div>
     <div class="fixed inset-0 bg-black/60 z-[-1] pointer-events-none"></div> <!-- Overlay for readability -->
     
-    <!-- Festive Snow Container (Hidden by default) -->
-    <div id="snow-container" class="fixed inset-0 pointer-events-none z-[100] overflow-hidden hidden"></div>
-
     <!-- Toast Notification Container -->
     <div id="toast-container" class="fixed top-4 right-4 z-[200] flex flex-col gap-2 pointer-events-none" style="max-width:380px"></div>
 
@@ -157,11 +200,6 @@
                  <button onclick="sendCmd('scan_network')" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 transition-all text-xs font-bold uppercase tracking-wider group">
                     <i data-lucide="radar" class="w-3 h-3 group-hover:rotate-180 transition-transform duration-700"></i>
                     Scan
-                </button>
-                 <!-- Festive Snow Toggle -->
-                 <button onclick="toggleSnow()" id="btn-snow" title="Toggle Festive Snow ❄️" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/20 transition-all text-xs font-bold uppercase tracking-wider group">
-                    <i data-lucide="snowflake" class="w-3 h-3 group-hover:rotate-180 transition-transform duration-700"></i>
-                    ❄️
                 </button>
                  <!-- Remote Toggle -->
                  <button onclick="toggleRemote()" title="Open Remote 🎮" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/20 transition-all text-xs font-bold uppercase tracking-wider group">
@@ -353,7 +391,15 @@
             </div>
 
             <!-- INTEGRATIONS VIEW -->
-            <div id="view-integrations" class="view-section hidden grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div id="view-integrations" class="view-section hidden space-y-8">
+                <!-- Section: Core APIs -->
+                <div>
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="h-px flex-1 bg-gradient-to-r from-indigo-500/50 to-transparent"></div>
+                        <span class="text-xs font-bold text-indigo-400 uppercase tracking-widest">Core APIs</span>
+                        <div class="h-px flex-1 bg-gradient-to-l from-indigo-500/50 to-transparent"></div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <!-- TMDB -->
                 <div class="glass-panel p-6 rounded-2xl space-y-4">
                     <div class="flex items-center gap-3"><i data-lucide="film" class="text-blue-400 w-6 h-6"></i><h3 class="font-bold text-lg">TMDB</h3></div>
@@ -412,7 +458,17 @@
                     <button onclick="saveIntegration('discord')" class="w-full py-2 bg-indigo-600/20 text-indigo-400 rounded-lg font-bold text-xs hover:bg-indigo-600/30 transition-colors">SAVE</button>
                 </div>
 
-                <!-- Skip Sources (NEW) -->
+                    </div>
+                </div>
+
+                <!-- Section: Skip Sources -->
+                <div>
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="h-px flex-1 bg-gradient-to-r from-emerald-500/50 to-transparent"></div>
+                        <span class="text-xs font-bold text-emerald-400 uppercase tracking-widest">Skip Sources</span>
+                        <div class="h-px flex-1 bg-gradient-to-l from-emerald-500/50 to-transparent"></div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="glass-panel p-6 rounded-2xl space-y-4 md:col-span-2">
                     <div class="flex items-center gap-3"><i data-lucide="fast-forward" class="text-emerald-400 w-6 h-6"></i><h3 class="font-bold text-lg">Skip Sources</h3></div>
                     <p class="text-xs text-slate-400">Configure where to fetch intro skip data. Manual IDs override automatic detection.</p>
@@ -477,6 +533,17 @@
                     </div>
                 </div>
 
+                    </div>
+                </div>
+
+                <!-- Section: Tracking & Scrobbling -->
+                <div>
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="h-px flex-1 bg-gradient-to-r from-cyan-500/50 to-transparent"></div>
+                        <span class="text-xs font-bold text-cyan-400 uppercase tracking-widest">Tracking & Scrobbling</span>
+                        <div class="h-px flex-1 bg-gradient-to-l from-cyan-500/50 to-transparent"></div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <!-- AniList -->
                 <div class="glass-panel p-6 rounded-2xl space-y-4">
                     <div class="flex items-center justify-between">
@@ -516,9 +583,8 @@
                         </div>
                     </div>
                     <p class="text-xs text-slate-400">Connect to the Kitsu anime community and library</p>
-                    <input type="text" id="inp-kitsu-user" placeholder="Username" class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-orange-500 outline-none transition-colors">
-                    <input type="password" id="inp-kitsu-pass" placeholder="Password" class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-orange-500 outline-none transition-colors">
-                    <button onclick="saveNewIntegration('kitsu_username','inp-kitsu-user','kitsu_password','inp-kitsu-pass')" class="w-full py-2 bg-orange-600/20 text-orange-400 rounded-lg font-bold text-xs hover:bg-orange-600/30 transition-colors">SAVE</button>
+                    <input type="password" id="inp-kitsu-token" placeholder="Access Token" class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-orange-500 outline-none transition-colors">
+                    <button onclick="saveNewIntegration('kitsu_access_token','inp-kitsu-token')" class="w-full py-2 bg-orange-600/20 text-orange-400 rounded-lg font-bold text-xs hover:bg-orange-600/30 transition-colors">SAVE</button>
                 </div>
 
                 <!-- Letterboxd -->
@@ -586,6 +652,17 @@
                     <button onclick="saveNewIntegration('opensubtitles_api_key','inp-opensubtitles-key','opensubtitles_username','inp-opensubtitles-user')" class="w-full py-2 bg-violet-600/20 text-violet-400 rounded-lg font-bold text-xs hover:bg-violet-600/30 transition-colors">SAVE</button>
                 </div>
 
+                    </div>
+                </div>
+
+                <!-- Section: Media Servers & Journals -->
+                <div>
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="h-px flex-1 bg-gradient-to-r from-amber-500/50 to-transparent"></div>
+                        <span class="text-xs font-bold text-amber-400 uppercase tracking-widest">Media Servers & Journals</span>
+                        <div class="h-px flex-1 bg-gradient-to-l from-amber-500/50 to-transparent"></div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <!-- Media Servers (Plex, Jellyfin, Emby) -->
                 <div class="glass-panel p-6 rounded-2xl space-y-4 md:col-span-2">
                     <div class="flex items-center gap-3"><i data-lucide="server" class="text-amber-400 w-6 h-6"></i><h3 class="font-bold text-lg">Media Servers</h3></div>
@@ -643,8 +720,14 @@
                     <button onclick="saveJournals()" class="w-full py-2 bg-slate-600/20 text-slate-300 rounded-lg font-bold text-xs hover:bg-slate-600/30 transition-colors">SAVE JOURNALS</button>
                 </div>
 
+                    </div>
+                </div>
+
+                <!-- Section: Status -->
+                <div>
+                    <div class="grid grid-cols-1 gap-4">
                 <!-- Integration Status Overview -->
-                <div class="glass-panel p-6 rounded-2xl space-y-4 md:col-span-2">
+                <div class="glass-panel p-6 rounded-2xl space-y-4">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-3"><i data-lucide="activity" class="text-emerald-400 w-6 h-6"></i><h3 class="font-bold text-lg">Integration Status</h3></div>
                         <button onclick="loadIntegrationStatus()" class="px-3 py-1 bg-white/5 hover:bg-white/10 text-slate-400 rounded-lg text-[10px] font-bold uppercase transition-colors">Refresh</button>
@@ -653,6 +736,8 @@
                             <div class="text-center py-6 col-span-full"><i data-lucide="activity" class="w-8 h-8 text-slate-700 mx-auto mb-2"></i><p class="text-sm text-slate-500">Click Refresh to check integration status</p></div>
                         </div>
                 </div>
+                    </div>
+                </div>
 
             </div>
 
@@ -660,7 +745,7 @@
             <div id="view-settings" class="view-section hidden max-w-2xl mx-auto space-y-6">
                 <!-- Appearance & Behavior -->
                 <div class="glass-panel p-6 rounded-2xl">
-                    <h3 class="text-lg font-bold mb-4 border-b border-white/10 pb-2">Appearance & Behavior</h3>
+                    <h3 class="text-lg font-bold mb-4 border-b border-white/10 pb-3 flex items-center gap-2"><i data-lucide="palette" class="w-5 h-5 text-indigo-400"></i> Appearance & Behavior</h3>
                     <div class="space-y-4">
                         <div class="flex items-center justify-between py-2">
                             <span>Show Device Name</span>
@@ -1786,6 +1871,26 @@
                     safeSet('inp-top-posters-key', data.config.top_posters_api_key);
                     safeSet('inp-erdb-token', data.config.erdb_token);
                     safeSet('inp-erdb-base-url', data.config.erdb_base_url);
+                    // New integration text inputs
+                    safeSet('inp-anilist-token', data.config.anilist_access_token);
+                    safeSet('inp-simkl-id', data.config.simkl_client_id);
+                    safeSet('inp-simkl-token', data.config.simkl_access_token);
+                    safeSet('inp-kitsu-token', data.config.kitsu_access_token);
+                    safeSet('inp-letterboxd-key', data.config.letterboxd_api_key);
+                    safeSet('inp-letterboxd-secret', data.config.letterboxd_api_secret);
+                    safeSet('inp-lastfm-key', data.config.lastfm_api_key);
+                    safeSet('inp-lastfm-secret', data.config.lastfm_api_secret);
+                    safeSet('inp-opensubtitles-key', data.config.opensubtitles_api_key);
+                    safeSet('inp-opensubtitles-user', data.config.opensubtitles_username);
+                    safeSet('inp-plex-url', data.config.plex_url);
+                    safeSet('inp-plex-token', data.config.plex_token);
+                    safeSet('inp-jellyfin-url', data.config.jellyfin_url);
+                    safeSet('inp-jellyfin-key', data.config.jellyfin_api_key);
+                    safeSet('inp-emby-url', data.config.emby_url);
+                    safeSet('inp-emby-key', data.config.emby_api_key);
+                    safeSet('inp-notion-key', data.config.notion_api_key);
+                    safeSet('inp-notion-db', data.config.notion_database_id);
+                    safeSet('inp-obsidian-vault', data.config.obsidian_vault_path);
                      
                     // Expose Keys globally for Frontend API calls
                     window.tmdbKey = data.config.tmdb_key;
@@ -2273,17 +2378,14 @@ async function toggleSeason(btn, tmdbId, seasonNum, showImdb) {
              lucide.createIcons();
         }
 
-        function renderHistory() {
-            if (!window.historyData) return;
+        function toggleManualInput() {
             const input = document.getElementById('adb-ip');
             const dropdown = document.getElementById('adb-dropdown');
             const arrow = document.getElementById('adb-dropdown-arrow');
-            
-            // Switch to INPUT
             input.classList.remove('hidden');
             dropdown.classList.add('hidden');
             arrow.classList.add('hidden');
-            input.dataset.manualOverride = "true"; // Prevent auto-hiding again immediately
+            input.dataset.manualOverride = "true";
             input.focus();
         }
 
@@ -2577,87 +2679,6 @@ async function toggleSeason(btn, tmdbId, seasonNum, showImdb) {
              sendCmd('toggle_skip');
         }
         
-        // Festive Snow Effect
-        let snowEnabled = false;
-        let snowInterval = null;
-        
-        function toggleSnow() {
-            const container = document.getElementById('snow-container');
-            const btn = document.getElementById('btn-snow');
-            snowEnabled = !snowEnabled;
-            
-            if (snowEnabled) {
-                container.classList.remove('hidden');
-                btn.classList.add('bg-cyan-500/30', 'text-white');
-                btn.classList.remove('bg-cyan-500/10', 'text-cyan-400');
-                
-                // Create initial batch of snowflakes
-                for (let i = 0; i < 30; i++) {
-                    setTimeout(() => createSnowflake(), i * 100);
-                }
-                
-                // Keep generating snowflakes
-                snowInterval = setInterval(createSnowflake, 300);
-            } else {
-                container.classList.add('hidden');
-                btn.classList.remove('bg-cyan-500/30', 'text-white');
-                btn.classList.add('bg-cyan-500/10', 'text-cyan-400');
-                
-                // Clear interval and remove existing snowflakes
-                if (snowInterval) clearInterval(snowInterval);
-                container.innerHTML = '';
-            }
-        }
-        
-        function createSnowflake() {
-            const container = document.getElementById('snow-container');
-            if (!container || container.classList.contains('hidden')) return;
-            
-            const snowflake = document.createElement('div');
-            const size = Math.random() * 8 + 4; // 4-12px
-            const startX = Math.random() * 100;
-            const duration = Math.random() * 5 + 5; // 5-10 seconds
-            const drift = Math.random() * 100 - 50; // -50 to 50px horizontal drift
-            
-            // Use various Unicode snowflake/star characters for variety
-            const snowChars = ['❄', '❅', '❆', '✻', '✼', '❋', '✺', '*', '•'];
-            snowflake.innerHTML = snowChars[Math.floor(Math.random() * snowChars.length)];
-            snowflake.style.cssText = `
-                position: absolute;
-                top: -20px;
-                left: ${startX}%;
-                font-size: ${size}px;
-                color: white;
-                opacity: ${Math.random() * 0.5 + 0.5};
-                text-shadow: 0 0 5px rgba(255,255,255,0.8);
-                animation: snowfall ${duration}s linear forwards;
-                pointer-events: none;
-            `;
-            
-            // Create unique animation for this snowflake
-            const animId = 'snow_' + Math.random().toString(36).substr(2, 9);
-            const keyframes = `
-                @keyframes ${animId} {
-                    0% { transform: translateY(0) translateX(0) rotate(0deg); }
-                    100% { transform: translateY(100vh) translateX(${drift}px) rotate(360deg); }
-                }
-            `;
-            
-            // Inject keyframes
-            const style = document.createElement('style');
-            style.textContent = keyframes;
-            document.head.appendChild(style);
-            snowflake.style.animation = `${animId} ${duration}s linear forwards`;
-            
-            container.appendChild(snowflake);
-            
-            // Remove after animation completes
-            setTimeout(() => {
-                snowflake.remove();
-                style.remove();
-            }, duration * 1000 + 100);
-        }
-
         // Loop
         setInterval(updateState, 1000);
         
@@ -3043,9 +3064,6 @@ async function toggleSeason(btn, tmdbId, seasonNum, showImdb) {
                 status.innerText = 'Step ' + (data.current_step || 1) + '/' + (data.total_steps || 5) + ' — ' + (data.current_step_name || 'Getting Started') + (data.completed ? ' (Completed!)' : '');
             } catch (e) { status.innerText = 'Setup wizard not available'; status.className = 'text-xs font-mono text-rose-400'; }
         }
-
-        // --- WATCH PARTY ---
-
 
     </script>
     <!-- Remote Control Overlay -->
