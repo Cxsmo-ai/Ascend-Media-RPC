@@ -237,6 +237,7 @@ class App:
 
         # Initialize API integrations lazily
         self._integrations = {}
+        self._last_integration_scrobble = 0
         self._current_session_id = -1
         self.last_full_details = None
         self.last_image_url = None
@@ -2606,6 +2607,11 @@ class App:
                                 else:
                                     # AUTO MODE - Perform immediate skip
                                     print(f"INFO: Auto-Skipping {skip_type} -> Seeking to {target_ms}ms")
+                                    try:
+                                        from src.web.server import _broadcast_sse
+                                        _broadcast_sse("skip", {"type": skip_type, "target_ms": target_ms, "position": position})
+                                    except Exception:
+                                        pass
                                     landed_ms = self.controller.seek_to(target_ms, current_ms=position)
                                     if landed_ms is None:
                                         landed_ms = target_ms
@@ -2663,12 +2669,27 @@ class App:
                 # Update Discord
                 if title:
                     self._update_rpc(clean_title, status, app_pkg, is_wako)
+                    # Auto-scrobble to integrations
+                    if self._integrations:
+                        self._scrobble_integrations(clean_title, meta if 'meta' in dir() else None, status, state)
                 else:
                     self._update_api_status()
                     time.sleep(2)
                     continue
 
                 self._update_api_status()
+                # SSE broadcast playback state
+                try:
+                    from src.web.server import _broadcast_sse
+                    _broadcast_sse("playback", {
+                        "title": self.shared_state.get("title", ""),
+                        "is_playing": self.shared_state.get("is_playing", False),
+                        "progress": self.shared_state.get("progress", 0),
+                        "position": self.shared_state.get("position", 0),
+                        "duration": self.shared_state.get("duration", 0),
+                    })
+                except Exception:
+                    pass
                 time.sleep(self._monitor_sleep_time(state))
             except Exception as e:
                 print(f"Monitor Loop Error: {e}")
@@ -2715,6 +2736,96 @@ class App:
             if self.audit_log:
                 self.audit_log.log("config", {"action": "hot_reload", "changed_keys": changed_keys})
 
+
+    def _scrobble_integrations(self, title, meta, status, state):
+        """Auto-scrobble to all enabled integrations during playback."""
+        if not title or state != "playing":
+            return
+        now = time.time()
+        if now - getattr(self, '_last_integration_scrobble', 0) < 300:
+            return
+        self._last_integration_scrobble = now
+
+        media_type = meta.get("type", "movie") if meta else "movie"
+        season = status.get("season", 0)
+        episode = status.get("episode", 0)
+        position = int(status.get("position", 0))
+        duration = int(status.get("duration", 0))
+        progress = (position / duration * 100) if duration > 0 else 0
+        image_url = self.shared_state.get("image_url", "")
+
+        for name, client in self._integrations.items():
+            try:
+                if name == "anilist" and hasattr(client, 'update_progress'):
+                    anime = client.search_anime(title)
+                    if anime and anime.get("id"):
+                        ep = int(episode) if episode else 1
+                        client.update_progress(anime["id"], ep)
+                        logger.debug(f"Integration: AniList progress updated for {title}")
+
+                elif name == "simkl" and hasattr(client, 'scrobble'):
+                    media_data = {}
+                    if media_type == "movie":
+                        media_data["movie"] = {"title": title}
+                    else:
+                        media_data["show"] = {"title": title}
+                        if season and episode:
+                            media_data["episode"] = {"season": int(season), "number": int(episode)}
+                    client.scrobble(media_data, progress)
+                    logger.debug(f"Integration: Simkl scrobbled {title}")
+
+                elif name == "kitsu" and hasattr(client, 'search_anime'):
+                    anime = client.search_anime(title)
+                    if anime and anime.get("id"):
+                        ep = int(episode) if episode else 1
+                        client.update_progress(str(anime["id"]), ep)
+                        logger.debug(f"Integration: Kitsu progress updated for {title}")
+
+                elif name == "lastfm" and hasattr(client, 'update_now_playing'):
+                    client.update_now_playing(artist="Soundtrack", track=title)
+                    if progress > 50:
+                        client.scrobble(artist="Soundtrack", track=title)
+                    logger.debug(f"Integration: Last.fm now playing {title}")
+
+                elif name == "letterboxd" and hasattr(client, 'search_film'):
+                    if media_type == "movie" and progress > 80:
+                        client.search_film(title)
+                        logger.debug(f"Integration: Letterboxd searched {title}")
+
+                elif name == "notion" and hasattr(client, 'create_entry'):
+                    if progress > 80:
+                        client.create_entry(
+                            title=title, media_type=media_type,
+                            season=int(season) if season else 0,
+                            episode=int(episode) if episode else 0,
+                            image_url=image_url
+                        )
+                        logger.debug(f"Integration: Notion entry for {title}")
+
+                elif name == "obsidian" and hasattr(client, 'create_entry'):
+                    if progress > 80:
+                        client.create_entry(
+                            title=title, media_type=media_type,
+                            season=int(season) if season else 0,
+                            episode=int(episode) if episode else 0,
+                            image_url=image_url
+                        )
+                        logger.debug(f"Integration: Obsidian entry for {title}")
+
+            except Exception as e:
+                logger.error(f"Integration {name} scrobble error: {e}")
+
+        # Trakt collection sync
+        if self.config.get("trakt_collection_sync") and self.last_imdb_id and progress > 80:
+            try:
+                m_type = meta.get("type") if meta else "movie"
+                trakt_type = "episode" if m_type == "tv" else "movie"
+                media_data = {trakt_type: {"ids": {"imdb": self.last_imdb_id}}}
+                self.trakt.add_to_collection(media_data)
+                logger.debug(f"Trakt: Added {title} to collection")
+            except Exception as e:
+                logger.error(f"Trakt collection sync error: {e}")
+
     def _init_integrations(self):
         """Initialize enabled API integrations in background."""
         try:
@@ -2752,7 +2863,7 @@ class App:
             if self.config.get("plex_enabled") and self.config.get("plex_url"):
                 from src.core.integrations.media_server import PlexClient
                 self._integrations["plex"] = PlexClient(
-                    base_url=self.config["plex_url"],
+                    url=self.config["plex_url"],
                     token=self.config.get("plex_token", ""),
                 )
                 logger.info("Integration: Plex initialized")
@@ -2760,7 +2871,7 @@ class App:
             if self.config.get("jellyfin_enabled") and self.config.get("jellyfin_url"):
                 from src.core.integrations.media_server import JellyfinClient
                 self._integrations["jellyfin"] = JellyfinClient(
-                    base_url=self.config["jellyfin_url"],
+                    url=self.config["jellyfin_url"],
                     api_key=self.config.get("jellyfin_api_key", ""),
                 )
                 logger.info("Integration: Jellyfin initialized")
@@ -2779,6 +2890,46 @@ class App:
                     vault_path=self.config["obsidian_vault_path"]
                 )
                 logger.info("Integration: Obsidian initialized")
+
+            if self.config.get("emby_enabled") and self.config.get("emby_url"):
+                from src.core.integrations.media_server import JellyfinClient
+                self._integrations["emby"] = JellyfinClient(
+                    url=self.config["emby_url"],
+                    api_key=self.config.get("emby_api_key", ""),
+                    server_type="emby",
+                )
+                logger.info("Integration: Emby initialized")
+
+            if self.config.get("fanart_enabled") and self.config.get("fanart_api_key"):
+                from src.core.integrations.fanart import FanArtClient
+                self._integrations["fanart"] = FanArtClient(
+                    api_key=self.config["fanart_api_key"]
+                )
+                logger.info("Integration: FanArt.tv initialized")
+
+            if self.config.get("opensubtitles_enabled") and self.config.get("opensubtitles_api_key"):
+                from src.core.integrations.opensubtitles import OpenSubtitlesClient
+                self._integrations["opensubtitles"] = OpenSubtitlesClient(
+                    api_key=self.config["opensubtitles_api_key"],
+                    username=self.config.get("opensubtitles_username", ""),
+                    password=self.config.get("opensubtitles_password", ""),
+                )
+                logger.info("Integration: OpenSubtitles initialized")
+
+            if self.config.get("justwatch_enabled"):
+                from src.core.integrations.justwatch import JustWatchClient
+                self._integrations["justwatch"] = JustWatchClient(
+                    country=self.config.get("justwatch_country", "US")
+                )
+                logger.info("Integration: JustWatch initialized")
+
+            if self.config.get("letterboxd_enabled") and self.config.get("letterboxd_api_key"):
+                from src.core.integrations.letterboxd import LetterboxdClient
+                self._integrations["letterboxd"] = LetterboxdClient(
+                    api_key=self.config["letterboxd_api_key"],
+                    api_secret=self.config.get("letterboxd_api_secret", ""),
+                )
+                logger.info("Integration: Letterboxd initialized")
 
         except Exception as e:
             logger.error(f"Integration init error: {e}")

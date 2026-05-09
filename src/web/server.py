@@ -570,6 +570,7 @@ def update_settings():
                 # App logic determines which ID to use in the update loop, but we can force clear it or just let the app handle it.
                 pass
                 
+        _broadcast_sse("config_update", {"keys": list(data.keys())})
         return jsonify({"status": "ok"})
     except Exception as e:
          return jsonify({"error": str(e)}), 500
@@ -1018,5 +1019,440 @@ def onboarding_status():
 def onboarding_complete():
     if not gui_app: return jsonify({"error": "No App"}), 500
     gui_app.update_config("onboarding_completed", True)
+    return jsonify({"status": "ok"})
+
+
+# --- Trakt Social & Collection ---
+@app.route("/api/trakt/collection")
+@require_auth
+def get_trakt_collection():
+    if not gui_app: return jsonify({"error": "No App"}), 500
+    media_type = request.args.get("type", "movies")
+    return jsonify(gui_app.trakt.get_collection(media_type))
+
+@app.route("/api/trakt/collection/add", methods=["POST"])
+@require_auth
+def add_to_trakt_collection():
+    if not gui_app: return jsonify({"error": "No App"}), 500
+    data = request.json or {}
+    success = gui_app.trakt.add_to_collection(data)
+    return jsonify({"status": "ok" if success else "failed"})
+
+@app.route("/api/trakt/checkin", methods=["POST"])
+@require_auth
+def trakt_checkin():
+    if not gui_app: return jsonify({"error": "No App"}), 500
+    data = request.json or {}
+    message = data.pop("message", "")
+    success = gui_app.trakt.check_in(data, message)
+    return jsonify({"status": "ok" if success else "failed"})
+
+@app.route("/api/trakt/friends")
+@require_auth
+def trakt_friends_watching():
+    if not gui_app: return jsonify({"error": "No App"}), 500
+    return jsonify(gui_app.trakt.get_friends_watching())
+
+@app.route("/api/trakt/calendar")
+@require_auth
+def trakt_calendar():
+    if not gui_app: return jsonify({"error": "No App"}), 500
+    days = request.args.get("days", 14, type=int)
+    return jsonify(gui_app.trakt.get_calendar(days))
+
+@app.route("/api/trakt/recommendations")
+@require_auth
+def trakt_recommendations():
+    if not gui_app: return jsonify({"error": "No App"}), 500
+    media_type = request.args.get("type", "movies")
+    return jsonify(gui_app.trakt.get_recommendations(media_type))
+
+@app.route("/api/trakt/rate", methods=["POST"])
+@require_auth
+def trakt_rate():
+    if not gui_app: return jsonify({"error": "No App"}), 500
+    data = request.json or {}
+    rating = data.pop("rating", 0)
+    success = gui_app.trakt.rate_media(data, rating)
+    return jsonify({"status": "ok" if success else "failed"})
+
+@app.route("/api/trakt/stats")
+@require_auth
+def trakt_stats():
+    if not gui_app: return jsonify({"error": "No App"}), 500
+    return jsonify(gui_app.trakt.get_stats())
+
+
+# --- Skip Analytics ---
+@app.route("/api/analytics/skip/providers")
+@require_auth
+def skip_provider_stats():
+    if not gui_app: return jsonify({"error": "No App"}), 500
+    return jsonify(gui_app.analytics.get_skip_provider_stats())
+
+@app.route("/api/analytics/skip/categories")
+@require_auth
+def skip_category_stats():
+    if not gui_app: return jsonify({"error": "No App"}), 500
+    return jsonify(gui_app.analytics.get_skip_category_stats())
+
+@app.route("/api/analytics/weekly")
+@require_auth
+def weekly_report():
+    if not gui_app: return jsonify({"error": "No App"}), 500
+    return jsonify(gui_app.analytics.get_weekly_report())
+
+@app.route("/api/analytics/monthly")
+@require_auth
+def monthly_report():
+    if not gui_app: return jsonify({"error": "No App"}), 500
+    return jsonify(gui_app.analytics.get_monthly_report())
+
+
+# --- Watch History Filters ---
+@app.route("/api/analytics/history/filtered")
+@require_auth
+def filtered_history():
+    if not gui_app: return jsonify({"error": "No App"}), 500
+    status = request.args.get("status", "all")
+    limit = request.args.get("limit", 50, type=int)
+    return jsonify(gui_app.analytics.get_filtered_history(status, limit))
+
+@app.route("/api/analytics/history/grouped")
+@require_auth
+def grouped_history():
+    if not gui_app: return jsonify({"error": "No App"}), 500
+    limit = request.args.get("limit", 20, type=int)
+    return jsonify(gui_app.analytics.get_grouped_by_show(limit))
+
+
+# --- Stats Card ---
+@app.route("/api/stats/card")
+@require_auth
+def generate_stats_card():
+    if not gui_app: return jsonify({"error": "No App"}), 500
+    from src.core.stats_card_generator import StatsCardGenerator
+    stats = gui_app.analytics.get_advanced_stats()
+    gen = StatsCardGenerator()
+    png_bytes = gen.generate(stats)
+    if not png_bytes:
+        return jsonify({"error": "Pillow not installed"}), 500
+    return Response(png_bytes, mimetype="image/png",
+                    headers={"Content-Disposition": "attachment; filename=ascend-stats.png"})
+
+
+# --- Device Health ---
+@app.route("/api/device/health")
+@require_auth
+def device_health():
+    if not gui_app: return jsonify({"error": "No App"}), 500
+    if not gui_app.controller.connected:
+        return jsonify({"connected": False})
+    try:
+        device = gui_app.controller.device
+        battery_raw = device.shell("dumpsys battery")
+        battery = {}
+        for line in battery_raw.split("\n"):
+            if "level" in line.lower():
+                try: battery["level"] = int(line.split(":")[1].strip())
+                except: pass
+            if "status" in line.lower():
+                try: battery["status"] = line.split(":")[1].strip()
+                except: pass
+            if "temperature" in line.lower():
+                try: battery["temperature"] = int(line.split(":")[1].strip()) / 10.0
+                except: pass
+
+        cpu_raw = device.shell("cat /proc/loadavg")
+        cpu_parts = cpu_raw.strip().split()
+        cpu = {"load_1m": cpu_parts[0], "load_5m": cpu_parts[1], "load_15m": cpu_parts[2]} if len(cpu_parts) >= 3 else {}
+
+        mem_raw = device.shell("cat /proc/meminfo")
+        mem = {}
+        for line in mem_raw.split("\n"):
+            if "MemTotal" in line:
+                try: mem["total_kb"] = int(line.split(":")[1].strip().split()[0])
+                except: pass
+            if "MemAvailable" in line:
+                try: mem["available_kb"] = int(line.split(":")[1].strip().split()[0])
+                except: pass
+
+        storage_raw = device.shell("df /data")
+        storage = {}
+        lines = storage_raw.strip().split("\n")
+        if len(lines) >= 2:
+            parts = lines[1].split()
+            if len(parts) >= 4:
+                storage = {"total": parts[1], "used": parts[2], "available": parts[3]}
+
+        uptime_raw = device.shell("cat /proc/uptime")
+        uptime_secs = float(uptime_raw.strip().split()[0]) if uptime_raw.strip() else 0
+
+        return jsonify({
+            "connected": True,
+            "battery": battery,
+            "cpu": cpu,
+            "memory": mem,
+            "storage": storage,
+            "uptime_seconds": int(uptime_secs),
+        })
+    except Exception as e:
+        return jsonify({"connected": True, "error": str(e)})
+
+
+# --- ADB Wi-Fi Pairing ---
+@app.route("/api/adb/pair", methods=["POST"])
+@require_auth
+def adb_wifi_pair():
+    if not gui_app: return jsonify({"error": "No App"}), 500
+    data = request.json or {}
+    host = data.get("host", "")
+    port = data.get("port", 5555)
+    pairing_code = data.get("code", "")
+    if not host:
+        return jsonify({"error": "No host specified"}), 400
+    try:
+        import subprocess
+        if pairing_code:
+            result = subprocess.run(
+                ["adb", "pair", f"{host}:{port}", pairing_code],
+                capture_output=True, text=True, timeout=15
+            )
+        else:
+            result = subprocess.run(
+                ["adb", "connect", f"{host}:{port}"],
+                capture_output=True, text=True, timeout=15
+            )
+        output = result.stdout + result.stderr
+        success = "connected" in output.lower() or "paired" in output.lower()
+        if success:
+            _broadcast_sse("device_paired", {"host": host, "port": port})
+        return jsonify({"status": "ok" if success else "failed", "output": output.strip()})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# --- Remote Control Extended ---
+@app.route("/api/remote/text", methods=["POST"])
+@require_auth
+def remote_text_input():
+    """Send text input to device (keyboard relay)."""
+    if not gui_app: return jsonify({"error": "No App"}), 500
+    data = request.json or {}
+    text = data.get("text", "")
+    if not text:
+        return jsonify({"error": "No text"}), 400
+    try:
+        escaped = text.replace(" ", "%s").replace("'", "\'")
+        gui_app.controller.device.shell(f"input text '{escaped}'")
+        return jsonify({"status": "ok"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/remote/launch", methods=["POST"])
+@require_auth
+def remote_launch_app():
+    """Launch an app on the device."""
+    if not gui_app: return jsonify({"error": "No App"}), 500
+    data = request.json or {}
+    package = data.get("package", "")
+    if not package:
+        return jsonify({"error": "No package"}), 400
+    try:
+        gui_app.controller.device.shell(f"monkey -p {package} -c android.intent.category.LAUNCHER 1")
+        return jsonify({"status": "ok"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/remote/apps")
+@require_auth
+def remote_list_apps():
+    """List installed apps on the device."""
+    if not gui_app: return jsonify({"error": "No App"}), 500
+    if not gui_app.controller.connected:
+        return jsonify([])
+    try:
+        raw = gui_app.controller.device.shell("pm list packages -3")
+        apps = [line.replace("package:", "").strip() for line in raw.split("\n") if line.strip()]
+        return jsonify(sorted(apps))
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# --- Structured Logging ---
+@app.route("/api/logs")
+@require_auth
+def get_logs():
+    """Get application logs."""
+    if not gui_app: return jsonify({"error": "No App"}), 500
+    limit = request.args.get("limit", 200, type=int)
+    if hasattr(gui_app, '_memory_log_handler'):
+        logs = list(gui_app._memory_log_handler.buffer)[-limit:]
+        return jsonify([{
+            "timestamp": getattr(r, 'created', 0),
+            "level": getattr(r, 'levelname', 'INFO'),
+            "message": getattr(r, 'getMessage', lambda: str(r))(),
+            "module": getattr(r, 'module', ''),
+        } for r in logs])
+    return jsonify([])
+
+@app.route("/api/logs/export")
+@require_auth
+def export_logs():
+    """Export logs as JSON file."""
+    if not gui_app: return jsonify({"error": "No App"}), 500
+    if hasattr(gui_app, '_memory_log_handler'):
+        logs = list(gui_app._memory_log_handler.buffer)
+        log_data = [{
+            "timestamp": getattr(r, 'created', 0),
+            "level": getattr(r, 'levelname', 'INFO'),
+            "message": getattr(r, 'getMessage', lambda: str(r))(),
+            "module": getattr(r, 'module', ''),
+        } for r in logs]
+        return jsonify(log_data)
+    return jsonify([])
+
+
+# --- Onboarding Wizard (multi-step) ---
+@app.route("/api/onboarding/steps")
+def onboarding_steps():
+    if not gui_app: return jsonify({"error": "No App"}), 500
+    return jsonify({
+        "completed": gui_app.config.get("onboarding_completed", False),
+        "steps": [
+            {
+                "id": "device",
+                "title": "Connect Your Device",
+                "description": "Find and connect to your Android device via ADB",
+                "completed": bool(gui_app.config.get("adb_host", "")),
+                "fields": [
+                    {"key": "adb_host", "label": "Device IP", "type": "text", "value": gui_app.config.get("adb_host", "")},
+                    {"key": "adb_port", "label": "ADB Port", "type": "number", "value": gui_app.config.get("adb_port", 5555)},
+                ]
+            },
+            {
+                "id": "discord",
+                "title": "Discord Rich Presence",
+                "description": "Set up your Discord Client ID for RPC",
+                "completed": bool(gui_app.config.get("discord_client_id", "")),
+                "fields": [
+                    {"key": "discord_client_id", "label": "Discord Client ID", "type": "text", "value": gui_app.config.get("discord_client_id", "")},
+                ]
+            },
+            {
+                "id": "tmdb",
+                "title": "TMDB Metadata",
+                "description": "Add your TMDB API key for movie/show metadata and artwork",
+                "completed": bool(gui_app.config.get("tmdb_api_key", "")),
+                "fields": [
+                    {"key": "tmdb_api_key", "label": "TMDB API Key", "type": "text", "value": gui_app.config.get("tmdb_api_key", "")},
+                ]
+            },
+            {
+                "id": "artwork",
+                "title": "Artwork Provider",
+                "description": "Choose your preferred artwork source",
+                "completed": True,
+                "fields": [
+                    {"key": "artwork_provider", "label": "Provider", "type": "select",
+                     "options": ["top_posters", "erdb", "tmdb", "nuvio"],
+                     "value": gui_app.config.get("artwork_provider", "top_posters")},
+                ]
+            },
+            {
+                "id": "skip",
+                "title": "Skip Providers",
+                "description": "Choose which skip segment providers to enable",
+                "completed": gui_app.config.get("skip_mode", "off") != "off",
+                "fields": [
+                    {"key": "skip_mode", "label": "Skip Mode", "type": "select",
+                     "options": ["off", "auto", "manual"],
+                     "value": gui_app.config.get("skip_mode", "auto")},
+                ]
+            },
+            {
+                "id": "trakt",
+                "title": "Trakt Integration",
+                "description": "Connect Trakt for scrobbling and watch history",
+                "completed": bool(gui_app.config.get("trakt_client_id", "")),
+                "optional": True,
+                "fields": [
+                    {"key": "trakt_client_id", "label": "Trakt Client ID", "type": "text", "value": gui_app.config.get("trakt_client_id", "")},
+                    {"key": "trakt_client_secret", "label": "Trakt Client Secret", "type": "password", "value": gui_app.config.get("trakt_client_secret", "")},
+                ]
+            },
+        ]
+    })
+
+@app.route("/api/onboarding/save-step", methods=["POST"])
+def onboarding_save_step():
+    if not gui_app: return jsonify({"error": "No App"}), 500
+    data = request.json or {}
+    step_id = data.get("step_id", "")
+    fields = data.get("fields", {})
+    for key, value in fields.items():
+        gui_app.update_config(key, value)
+    _broadcast_sse("onboarding_step", {"step": step_id, "status": "saved"})
+    return jsonify({"status": "ok", "step": step_id})
+
+
+# --- FanArt.tv ---
+@app.route("/api/fanart/<media_type>/<tmdb_id>")
+@require_auth
+def fanart_images(media_type, tmdb_id):
+    if not gui_app: return jsonify({"error": "No App"}), 500
+    if not gui_app.config.get("fanart_api_key"):
+        return jsonify({"error": "FanArt API key not configured"}), 400
+    from src.core.integrations.fanart import FanArtClient
+    client = FanArtClient(api_key=gui_app.config["fanart_api_key"])
+    if media_type == "movie":
+        data = client.get_movie_images(tmdb_id)
+    else:
+        data = client.get_show_images(tmdb_id)
+    return jsonify(data or {})
+
+
+# --- Artwork Fallback Chain ---
+@app.route("/api/artwork/chain", methods=["GET"])
+@require_auth
+def get_artwork_chain():
+    if not gui_app: return jsonify({"error": "No App"}), 500
+    return jsonify({
+        "chain": gui_app.config.get("artwork_fallback_chain", ["top_posters", "erdb", "tmdb", "nuvio"]),
+        "available": ["top_posters", "erdb", "tmdb", "nuvio", "fanart"]
+    })
+
+@app.route("/api/artwork/chain", methods=["POST"])
+@require_auth
+def set_artwork_chain():
+    if not gui_app: return jsonify({"error": "No App"}), 500
+    data = request.json or {}
+    chain = data.get("chain", [])
+    gui_app.update_config("artwork_fallback_chain", chain)
+    _broadcast_sse("config_update", {"keys": ["artwork_fallback_chain"]})
+    return jsonify({"status": "ok"})
+
+
+# --- Theme ---
+@app.route("/api/theme", methods=["GET"])
+def get_theme():
+    if not gui_app: return jsonify({"mode": "dark", "accent": "#8a2be2", "oled": False})
+    return jsonify({
+        "mode": gui_app.config.get("theme_mode", "dark"),
+        "accent": gui_app.config.get("theme_accent_color", "#8a2be2"),
+        "oled": gui_app.config.get("theme_oled_black", False),
+    })
+
+@app.route("/api/theme", methods=["POST"])
+def set_theme():
+    if not gui_app: return jsonify({"error": "No App"}), 500
+    data = request.json or {}
+    if "mode" in data:
+        gui_app.update_config("theme_mode", data["mode"])
+    if "accent" in data:
+        gui_app.update_config("theme_accent_color", data["accent"])
+    if "oled" in data:
+        gui_app.update_config("theme_oled_black", data["oled"])
+    _broadcast_sse("theme_change", data)
     return jsonify({"status": "ok"})
 

@@ -73,6 +73,16 @@ class SkipManager:
 
         self.manual_tmdb_id = config.get("skip_tmdb_id", "")
         self.manual_mal_id = config.get("skip_mal_id", "")
+        
+        # Per-category toggles
+        self.cat_intro = config.get("skip_cat_intro", True)
+        self.cat_outro = config.get("skip_cat_outro", True)
+        self.cat_recap = config.get("skip_cat_recap", True)
+        self.cat_preview = config.get("skip_cat_preview", True)
+        self.cat_credits = config.get("skip_cat_credits", True)
+        self.cat_filler = config.get("skip_cat_filler", True)
+        self.cat_mature = config.get("skip_cat_mature", True)
+        self.cat_scare = config.get("skip_cat_scare", True)
 
     @staticmethod
     def _html_text(value: str) -> str:
@@ -235,9 +245,26 @@ class SkipManager:
                 resolved_segments.append(seg)
 
         resolved_segments.sort(key=lambda x: x["start"])
+        # Apply per-category toggles
+        cat_map = {
+            "intro": self.cat_intro, "outro": self.cat_outro,
+            "recap": self.cat_recap, "preview": self.cat_preview,
+            "credits": self.cat_credits, "filler": self.cat_filler,
+        }
+        filtered = []
         for s in resolved_segments:
+            s_type = s.get("type", "").lower()
+            cat = s.get("_cat", "")
+            if cat == "structure" and not cat_map.get(s_type, True):
+                continue
+            if cat == "mature" and not self.cat_mature:
+                continue
+            if cat == "scare" and not self.cat_scare:
+                continue
             s.pop("_priority", None)
             s.pop("_cat", None)
+            filtered.append(s)
+        resolved_segments = filtered
             
         self.cache[key] = resolved_segments
         # Store in TTL cache for persistence across in-memory cache clears

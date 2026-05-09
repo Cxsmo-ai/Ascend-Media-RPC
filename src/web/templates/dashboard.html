@@ -183,7 +183,11 @@
                         <span class="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-black/90 text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">Meta</span>
                     </div>
                 </div>
-                 <!-- Connection Wizard Button -->
+                 <!-- Theme Toggle -->
+                <button onclick="toggleTheme()" id="btn-theme-toggle" title="Toggle Theme" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/20 transition-all text-xs font-bold uppercase tracking-wider group">
+                    <i data-lucide="sun" class="w-3 h-3 group-hover:scale-110 transition-transform duration-300" id="theme-icon"></i>
+                </button>
+                <!-- Connection Wizard Button -->
                  <button onclick="openConnectionWizard()" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 transition-all text-xs font-bold uppercase tracking-wider group">
                     <i data-lucide="wifi" class="w-3 h-3 group-hover:scale-110 transition-transform duration-300"></i>
                     Connect
@@ -1103,7 +1107,46 @@
                                 <option value="off">Off (Disable)</option>
                             </select>
                         </div>
-                         
+
+                        <!-- Skip Category Toggles -->
+                        <div class="border-t border-white/5 pt-4 mt-2">
+                            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2"><i data-lucide="filter" class="w-3.5 h-3.5"></i> Skip Categories</h4>
+                            <p class="text-[10px] text-slate-500 mb-3">Enable or disable specific skip segment categories</p>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="flex items-center justify-between p-2 bg-black/20 rounded-lg">
+                                    <span class="text-xs text-white">Intros</span>
+                                    <div class="relative"><input type="checkbox" id="chk-skip-cat-intro" onchange="updateConfig('skip_cat_intro', this.checked)" class="peer sr-only"><div class="w-9 h-5 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600 cursor-pointer" onclick="document.getElementById('chk-skip-cat-intro').click()"></div></div>
+                                </div>
+                                <div class="flex items-center justify-between p-2 bg-black/20 rounded-lg">
+                                    <span class="text-xs text-white">Outros</span>
+                                    <div class="relative"><input type="checkbox" id="chk-skip-cat-outro" onchange="updateConfig('skip_cat_outro', this.checked)" class="peer sr-only"><div class="w-9 h-5 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600 cursor-pointer" onclick="document.getElementById('chk-skip-cat-outro').click()"></div></div>
+                                </div>
+                                <div class="flex items-center justify-between p-2 bg-black/20 rounded-lg">
+                                    <span class="text-xs text-white">Recaps</span>
+                                    <div class="relative"><input type="checkbox" id="chk-skip-cat-recap" onchange="updateConfig('skip_cat_recap', this.checked)" class="peer sr-only"><div class="w-9 h-5 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600 cursor-pointer" onclick="document.getElementById('chk-skip-cat-recap').click()"></div></div>
+                                </div>
+                                <div class="flex items-center justify-between p-2 bg-black/20 rounded-lg">
+                                    <span class="text-xs text-white">Previews</span>
+                                    <div class="relative"><input type="checkbox" id="chk-skip-cat-preview" onchange="updateConfig('skip_cat_preview', this.checked)" class="peer sr-only"><div class="w-9 h-5 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600 cursor-pointer" onclick="document.getElementById('chk-skip-cat-preview').click()"></div></div>
+                                </div>
+                                <div class="flex items-center justify-between p-2 bg-black/20 rounded-lg">
+                                    <span class="text-xs text-white">Credits</span>
+                                    <div class="relative"><input type="checkbox" id="chk-skip-cat-credits" onchange="updateConfig('skip_cat_credits', this.checked)" class="peer sr-only"><div class="w-9 h-5 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600 cursor-pointer" onclick="document.getElementById('chk-skip-cat-credits').click()"></div></div>
+                                </div>
+                                <div class="flex items-center justify-between p-2 bg-black/20 rounded-lg">
+                                    <span class="text-xs text-white">Filler</span>
+                                    <div class="relative"><input type="checkbox" id="chk-skip-cat-filler" onchange="updateConfig('skip_cat_filler', this.checked)" class="peer sr-only"><div class="w-9 h-5 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600 cursor-pointer" onclick="document.getElementById('chk-skip-cat-filler').click()"></div></div>
+                                </div>
+                                <div class="flex items-center justify-between p-2 bg-black/20 rounded-lg">
+                                    <span class="text-xs text-white">Mature</span>
+                                    <div class="relative"><input type="checkbox" id="chk-skip-cat-mature" onchange="updateConfig('skip_cat_mature', this.checked)" class="peer sr-only"><div class="w-9 h-5 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600 cursor-pointer" onclick="document.getElementById('chk-skip-cat-mature').click()"></div></div>
+                                </div>
+                                <div class="flex items-center justify-between p-2 bg-black/20 rounded-lg">
+                                    <span class="text-xs text-white">Jump Scares</span>
+                                    <div class="relative"><input type="checkbox" id="chk-skip-cat-scare" onchange="updateConfig('skip_cat_scare', this.checked)" class="peer sr-only"><div class="w-9 h-5 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600 cursor-pointer" onclick="document.getElementById('chk-skip-cat-scare').click()"></div></div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                  </div>
 
@@ -1159,13 +1202,120 @@
                     </div>
                 </div>
 
+                <!-- Theme Settings -->
+                <div class="glass-panel p-6 rounded-2xl">
+                    <h3 class="text-lg font-bold mb-4 border-b border-white/10 pb-2 flex items-center gap-2"><i data-lucide="palette" class="w-5 h-5 text-amber-400"></i> Theme</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between py-2">
+                            <div><span class="text-white">Dark / Light Mode</span><p class="text-[10px] text-slate-500 mt-1">Toggle between dark and light themes</p></div>
+                            <select id="sel-theme-mode" onchange="updateConfig('theme_mode', this.value); applyTheme(this.value)" class="bg-black/40 border border-white/10 rounded-lg px-3 py-1.5 text-xs outline-none focus:border-amber-500 transition-colors">
+                                <option value="dark">Dark</option>
+                                <option value="light">Light</option>
+                                <option value="oled">OLED Black</option>
+                            </select>
+                        </div>
+                        <div class="flex items-center justify-between py-2 border-t border-white/5">
+                            <div><span class="text-white">Accent Color</span><p class="text-[10px] text-slate-500 mt-1">Custom accent color for UI elements</p></div>
+                            <input type="color" id="inp-accent-color" value="#6366f1" onchange="updateConfig('theme_accent_color', this.value); applyAccentColor(this.value)" class="w-10 h-8 rounded-lg border border-white/10 cursor-pointer bg-transparent">
+                        </div>
+                        <div class="flex items-center justify-between py-2 border-t border-white/5">
+                            <div><span class="text-white">OLED Black</span><p class="text-[10px] text-slate-500 mt-1">True black backgrounds for OLED displays</p></div>
+                            <div class="relative"><input type="checkbox" id="chk-oled-black" onchange="updateConfig('theme_oled_black', this.checked)" class="peer sr-only"><div class="w-11 h-6 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600 cursor-pointer" onclick="document.getElementById('chk-oled-black').click()"></div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Artwork Fallback Chain -->
+                <div class="glass-panel p-6 rounded-2xl">
+                    <h3 class="text-lg font-bold mb-4 border-b border-white/10 pb-2 flex items-center gap-2"><i data-lucide="image" class="w-5 h-5 text-purple-400"></i> Artwork Fallback Chain</h3>
+                    <div class="space-y-4">
+                        <p class="text-xs text-slate-400">Configure the order in which artwork providers are tried. Drag to reorder.</p>
+                        <div id="artwork-chain-list" class="space-y-2">
+                            <div class="text-xs text-slate-500 text-center py-3">Loading artwork chain...</div>
+                        </div>
+                        <button onclick="loadArtworkChain()" class="w-full py-2 bg-purple-600/20 text-purple-400 rounded-lg font-bold text-xs hover:bg-purple-600/30 transition-colors flex items-center justify-center gap-2"><i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> REFRESH CHAIN</button>
+                    </div>
+                </div>
+
+                <!-- FanArt.tv Settings -->
+                <div class="glass-panel p-6 rounded-2xl">
+                    <h3 class="text-lg font-bold mb-4 border-b border-white/10 pb-2 flex items-center gap-2"><i data-lucide="sparkles" class="w-5 h-5 text-pink-400"></i> FanArt.tv</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between py-2">
+                            <div><span class="text-white">Enable FanArt.tv</span><p class="text-[10px] text-slate-500 mt-1">High-quality artwork from FanArt.tv</p></div>
+                            <div class="relative"><input type="checkbox" id="chk-fanart" onchange="updateConfig('fanart_enabled', this.checked)" class="peer sr-only"><div class="w-11 h-6 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-pink-600 cursor-pointer" onclick="document.getElementById('chk-fanart').click()"></div></div>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-[10px] text-slate-500 uppercase font-bold">FanArt.tv API Key</label>
+                            <input type="password" id="inp-fanart-key" placeholder="Personal API key from fanart.tv" class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-2 text-sm focus:border-pink-500 outline-none transition-colors">
+                        </div>
+                        <button onclick="saveNewIntegration('fanart_api_key','inp-fanart-key')" class="w-full py-2 bg-pink-600/20 text-pink-400 rounded-lg font-bold text-xs hover:bg-pink-600/30 transition-colors">SAVE</button>
+                    </div>
+                </div>
+
+                <!-- Device Health Monitoring -->
+                <div class="glass-panel p-6 rounded-2xl">
+                    <h3 class="text-lg font-bold mb-4 border-b border-white/10 pb-2 flex items-center gap-2"><i data-lucide="activity" class="w-5 h-5 text-cyan-400"></i> Device Health</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between py-2">
+                            <div><span class="text-white">Health Monitoring</span><p class="text-[10px] text-slate-500 mt-1">Track battery, CPU, memory of connected device</p></div>
+                            <div class="relative"><input type="checkbox" id="chk-device-health" onchange="updateConfig('device_health_enabled', this.checked)" class="peer sr-only"><div class="w-11 h-6 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-600 cursor-pointer" onclick="document.getElementById('chk-device-health').click()"></div></div>
+                        </div>
+                        <div id="device-health-stats" class="grid grid-cols-2 gap-2">
+                            <div class="bg-black/30 rounded-lg p-3 text-center"><span id="dh-battery" class="text-lg font-bold text-emerald-400 font-mono">--</span><p class="text-[10px] text-slate-500">Battery</p></div>
+                            <div class="bg-black/30 rounded-lg p-3 text-center"><span id="dh-cpu" class="text-lg font-bold text-amber-400 font-mono">--</span><p class="text-[10px] text-slate-500">CPU</p></div>
+                            <div class="bg-black/30 rounded-lg p-3 text-center"><span id="dh-memory" class="text-lg font-bold text-blue-400 font-mono">--</span><p class="text-[10px] text-slate-500">Memory</p></div>
+                            <div class="bg-black/30 rounded-lg p-3 text-center"><span id="dh-storage" class="text-lg font-bold text-purple-400 font-mono">--</span><p class="text-[10px] text-slate-500">Storage</p></div>
+                        </div>
+                        <button onclick="loadDeviceHealth()" class="w-full py-2 bg-cyan-600/20 text-cyan-400 rounded-lg font-bold text-xs hover:bg-cyan-600/30 transition-colors flex items-center justify-center gap-2"><i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> REFRESH HEALTH</button>
+                    </div>
+                </div>
+
+                <!-- ADB Wi-Fi Pairing -->
+                <div class="glass-panel p-6 rounded-2xl">
+                    <h3 class="text-lg font-bold mb-4 border-b border-white/10 pb-2 flex items-center gap-2"><i data-lucide="wifi" class="w-5 h-5 text-emerald-400"></i> ADB Wi-Fi Pairing</h3>
+                    <div class="space-y-4">
+                        <p class="text-xs text-slate-400">Pair a new device using Android 11+ wireless debugging.</p>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="space-y-1">
+                                <label class="text-[10px] text-slate-500 uppercase font-bold">Device IP:Port</label>
+                                <input type="text" id="inp-pair-ip" placeholder="192.168.1.100:5555" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm focus:border-emerald-500 outline-none transition-colors font-mono">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[10px] text-slate-500 uppercase font-bold">Pairing Code</label>
+                                <input type="text" id="inp-pair-code" placeholder="123456" maxlength="6" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm focus:border-emerald-500 outline-none transition-colors font-mono">
+                            </div>
+                        </div>
+                        <button onclick="pairAdbDevice()" class="w-full py-2 bg-emerald-600/20 text-emerald-400 rounded-lg font-bold text-xs hover:bg-emerald-600/30 transition-colors flex items-center justify-center gap-2"><i data-lucide="link" class="w-3.5 h-3.5"></i> PAIR DEVICE</button>
+                        <div id="pair-result" class="hidden text-xs font-mono p-3 rounded-lg"></div>
+                    </div>
+                </div>
+
+                <!-- Push Notifications -->
+                <div class="glass-panel p-6 rounded-2xl">
+                    <h3 class="text-lg font-bold mb-4 border-b border-white/10 pb-2 flex items-center gap-2"><i data-lucide="bell" class="w-5 h-5 text-indigo-400"></i> Notifications</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between py-2">
+                            <div><span class="text-white">Browser Push Notifications</span><p class="text-[10px] text-slate-500 mt-1">Get notified when content starts playing or skips happen</p></div>
+                            <div class="relative"><input type="checkbox" id="chk-push-notifications" onchange="updateConfig('push_notifications_enabled', this.checked)" class="peer sr-only"><div class="w-11 h-6 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600 cursor-pointer" onclick="document.getElementById('chk-push-notifications').click()"></div></div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Onboarding -->
                 <div class="glass-panel p-6 rounded-2xl">
                     <h3 class="text-lg font-bold mb-4 border-b border-white/10 pb-2 flex items-center gap-2"><i data-lucide="rocket" class="w-5 h-5 text-cyan-400"></i> Setup Wizard</h3>
                     <div class="space-y-4">
                         <p class="text-xs text-slate-400">Run the guided setup to configure integrations and preferences step by step.</p>
+                        <div id="onboarding-progress" class="hidden">
+                            <div class="flex items-center gap-2 mb-2">
+                                <span id="onboarding-step-label" class="text-xs text-cyan-400 font-bold">Step 1/5</span>
+                                <div class="flex-1 h-1.5 bg-black/30 rounded-full overflow-hidden"><div id="onboarding-bar" class="h-full bg-cyan-500 rounded-full transition-all" style="width:20%"></div></div>
+                            </div>
+                            <div id="onboarding-step-content" class="p-4 bg-black/20 rounded-xl space-y-3"></div>
+                        </div>
                         <div id="onboarding-status" class="text-xs font-mono text-slate-500"></div>
-                        <button onclick="startOnboarding()" class="w-full py-3 bg-cyan-600/20 text-cyan-400 rounded-lg font-bold text-xs hover:bg-cyan-600/30 transition-colors flex items-center justify-center gap-2"><i data-lucide="play" class="w-4 h-4"></i> LAUNCH SETUP WIZARD</button>
+                        <button onclick="startOnboarding()" id="btn-onboarding" class="w-full py-3 bg-cyan-600/20 text-cyan-400 rounded-lg font-bold text-xs hover:bg-cyan-600/30 transition-colors flex items-center justify-center gap-2"><i data-lucide="play" class="w-4 h-4"></i> LAUNCH SETUP WIZARD</button>
                     </div>
                 </div>
 
@@ -1325,6 +1475,74 @@
                     </div>
                 </div>
 
+                <!-- Skip Provider Analytics -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="glass-panel p-6 rounded-2xl">
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2"><i data-lucide="fast-forward" class="w-4 h-4"></i> Skip Provider Stats</h3>
+                        <div id="analytics-skip-providers" class="space-y-2">
+                            <div class="text-center py-4 text-slate-500 text-xs">Click Refresh to load</div>
+                        </div>
+                        <button onclick="loadSkipProviderStats()" class="w-full mt-3 py-2 bg-emerald-600/20 text-emerald-400 rounded-lg font-bold text-xs hover:bg-emerald-600/30 transition-colors">REFRESH</button>
+                    </div>
+                    <div class="glass-panel p-6 rounded-2xl">
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2"><i data-lucide="tags" class="w-4 h-4"></i> Skip Category Breakdown</h3>
+                        <div id="analytics-skip-categories" class="space-y-2">
+                            <div class="text-center py-4 text-slate-500 text-xs">Click Refresh to load</div>
+                        </div>
+                        <button onclick="loadSkipCategoryStats()" class="w-full mt-3 py-2 bg-purple-600/20 text-purple-400 rounded-lg font-bold text-xs hover:bg-purple-600/30 transition-colors">REFRESH</button>
+                    </div>
+                </div>
+
+                <!-- Weekly/Monthly Reports + Stats Card -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="glass-panel p-6 rounded-2xl">
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2"><i data-lucide="calendar" class="w-4 h-4"></i> Weekly Report</h3>
+                        <div id="analytics-weekly" class="space-y-2">
+                            <div class="text-center py-3 text-slate-500 text-xs">No data</div>
+                        </div>
+                        <button onclick="loadWeeklyReport()" class="w-full mt-3 py-2 bg-blue-600/20 text-blue-400 rounded-lg font-bold text-xs hover:bg-blue-600/30 transition-colors">LOAD</button>
+                    </div>
+                    <div class="glass-panel p-6 rounded-2xl">
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2"><i data-lucide="calendar-range" class="w-4 h-4"></i> Monthly Report</h3>
+                        <div id="analytics-monthly" class="space-y-2">
+                            <div class="text-center py-3 text-slate-500 text-xs">No data</div>
+                        </div>
+                        <button onclick="loadMonthlyReport()" class="w-full mt-3 py-2 bg-indigo-600/20 text-indigo-400 rounded-lg font-bold text-xs hover:bg-indigo-600/30 transition-colors">LOAD</button>
+                    </div>
+                    <div class="glass-panel p-6 rounded-2xl">
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2"><i data-lucide="share-2" class="w-4 h-4"></i> Shareable Stats Card</h3>
+                        <p class="text-[10px] text-slate-500 mb-3">Generate a shareable PNG of your watch stats</p>
+                        <button onclick="generateStatsCard()" class="w-full py-3 bg-gradient-to-r from-indigo-600/30 to-purple-600/30 text-white rounded-lg font-bold text-xs hover:from-indigo-600/40 hover:to-purple-600/40 transition-all flex items-center justify-center gap-2"><i data-lucide="download" class="w-4 h-4"></i> GENERATE CARD</button>
+                    </div>
+                </div>
+
+                <!-- Watch History Filter -->
+                <div class="glass-panel p-6 rounded-2xl">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2"><i data-lucide="filter" class="w-4 h-4"></i> Watch History</h3>
+                        <div class="flex gap-2">
+                            <button onclick="loadFilteredHistory('all')" class="px-3 py-1 bg-white/5 hover:bg-white/10 text-slate-400 rounded-lg text-[10px] font-bold uppercase transition-colors">All</button>
+                            <button onclick="loadFilteredHistory('completed')" class="px-3 py-1 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 rounded-lg text-[10px] font-bold uppercase transition-colors">Completed</button>
+                            <button onclick="loadFilteredHistory('in_progress')" class="px-3 py-1 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 rounded-lg text-[10px] font-bold uppercase transition-colors">In Progress</button>
+                            <button onclick="loadFilteredHistory('abandoned')" class="px-3 py-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 rounded-lg text-[10px] font-bold uppercase transition-colors">Abandoned</button>
+                        </div>
+                    </div>
+                    <div id="analytics-filtered-history" class="space-y-2 max-h-64 overflow-y-auto">
+                        <div class="text-center py-4 text-slate-500 text-xs">Select a filter above</div>
+                    </div>
+                </div>
+
+                <!-- Grouped by Show -->
+                <div class="glass-panel p-6 rounded-2xl">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2"><i data-lucide="layers" class="w-4 h-4"></i> Grouped by Show</h3>
+                        <button onclick="loadGroupedHistory()" class="px-3 py-1 bg-white/5 hover:bg-white/10 text-slate-400 rounded-lg text-[10px] font-bold uppercase transition-colors">Load</button>
+                    </div>
+                    <div id="analytics-grouped-history" class="space-y-2 max-h-64 overflow-y-auto">
+                        <div class="text-center py-4 text-slate-500 text-xs">Click Load to group by show</div>
+                    </div>
+                </div>
+
                 <!-- Analytics Search -->
                 <div class="glass-panel p-4 rounded-2xl">
                     <div class="flex items-center gap-3">
@@ -1383,6 +1601,19 @@
                                 <span id="health-status" class="text-lg font-bold text-emerald-400 font-mono">OK</span>
                                 <p class="text-[10px] text-slate-500">Status</p>
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Log Export -->
+                <div class="glass-panel p-6 rounded-2xl">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2"><i data-lucide="file-text" class="w-4 h-4"></i> Log Export</h3>
+                    <div class="space-y-3">
+                        <p class="text-[10px] text-slate-500">Export application logs as JSON for debugging or analysis.</p>
+                        <div class="flex gap-3">
+                            <button onclick="exportLogs(50)" class="flex-1 py-2 bg-cyan-600/20 text-cyan-400 rounded-lg font-bold text-xs hover:bg-cyan-600/30 transition-colors">LAST 50</button>
+                            <button onclick="exportLogs(200)" class="flex-1 py-2 bg-indigo-600/20 text-indigo-400 rounded-lg font-bold text-xs hover:bg-indigo-600/30 transition-colors">LAST 200</button>
+                            <button onclick="exportLogs(0)" class="flex-1 py-2 bg-purple-600/20 text-purple-400 rounded-lg font-bold text-xs hover:bg-purple-600/30 transition-colors">ALL</button>
                         </div>
                     </div>
                 </div>
@@ -1888,6 +2119,27 @@
                     if(document.getElementById('chk-mdns')) document.getElementById('chk-mdns').checked = data.config.mdns_discovery_enabled || false;
                     if(document.getElementById('sel-justwatch-country')) document.getElementById('sel-justwatch-country').value = data.config.justwatch_country || "US";
                     
+                    // New feature toggles sync
+                    if(document.getElementById('chk-trakt-collection')) document.getElementById('chk-trakt-collection').checked = data.config.trakt_collection_sync || false;
+                    if(document.getElementById('chk-trakt-social')) document.getElementById('chk-trakt-social').checked = data.config.trakt_social_enabled || false;
+                    if(document.getElementById('chk-trakt-calendar')) document.getElementById('chk-trakt-calendar').checked = data.config.trakt_calendar_enabled || false;
+                    if(document.getElementById('chk-trakt-checkin')) document.getElementById('chk-trakt-checkin').checked = data.config.trakt_check_in_enabled || false;
+                    if(document.getElementById('chk-fanart')) document.getElementById('chk-fanart').checked = data.config.fanart_enabled || false;
+                    if(document.getElementById('chk-device-health')) document.getElementById('chk-device-health').checked = data.config.device_health_enabled || false;
+                    if(document.getElementById('chk-push-notifications')) document.getElementById('chk-push-notifications').checked = data.config.push_notifications_enabled || false;
+                    if(document.getElementById('chk-oled-black')) document.getElementById('chk-oled-black').checked = data.config.theme_oled_black || false;
+                    if(document.getElementById('sel-theme-mode')) document.getElementById('sel-theme-mode').value = data.config.theme_mode || 'dark';
+                    if(document.getElementById('inp-accent-color') && data.config.theme_accent_color) document.getElementById('inp-accent-color').value = data.config.theme_accent_color;
+                    // Skip category toggles
+                    if(document.getElementById('chk-skip-cat-intro')) document.getElementById('chk-skip-cat-intro').checked = data.config.skip_cat_intro !== false;
+                    if(document.getElementById('chk-skip-cat-outro')) document.getElementById('chk-skip-cat-outro').checked = data.config.skip_cat_outro !== false;
+                    if(document.getElementById('chk-skip-cat-recap')) document.getElementById('chk-skip-cat-recap').checked = data.config.skip_cat_recap !== false;
+                    if(document.getElementById('chk-skip-cat-preview')) document.getElementById('chk-skip-cat-preview').checked = data.config.skip_cat_preview !== false;
+                    if(document.getElementById('chk-skip-cat-credits')) document.getElementById('chk-skip-cat-credits').checked = data.config.skip_cat_credits !== false;
+                    if(document.getElementById('chk-skip-cat-filler')) document.getElementById('chk-skip-cat-filler').checked = data.config.skip_cat_filler !== false;
+                    if(document.getElementById('chk-skip-cat-mature')) document.getElementById('chk-skip-cat-mature').checked = data.config.skip_cat_mature !== false;
+                    if(document.getElementById('chk-skip-cat-scare')) document.getElementById('chk-skip-cat-scare').checked = data.config.skip_cat_scare !== false;
+
                     // Render Skip Providers if available
                     if (data.config.skip_priority_order) {
                         renderSkipProviders(data.config);
@@ -1933,6 +2185,7 @@
                     safeSet('inp-notion-key', data.config.notion_api_key);
                     safeSet('inp-notion-db', data.config.notion_database_id);
                     safeSet('inp-obsidian-vault', data.config.obsidian_vault_path);
+                    safeSet('inp-fanart-key', data.config.fanart_api_key);
                      
                     // Expose Keys globally for Frontend API calls
                     window.tmdbKey = data.config.tmdb_key;
@@ -3198,6 +3451,360 @@ async function toggleSeason(btn, tmdbId, seasonNum, showImdb) {
                 el.className = 'text-[10px] font-mono uppercase tracking-wider text-slate-600';
             }
         }
+
+        // --- THEME ---
+        function toggleTheme() {
+            const current = document.documentElement.dataset.theme || 'dark';
+            const next = current === 'dark' ? 'light' : 'dark';
+            applyTheme(next);
+            updateConfig('theme_mode', next);
+            const sel = document.getElementById('sel-theme-mode');
+            if (sel) sel.value = next;
+        }
+
+        function applyTheme(mode) {
+            document.documentElement.dataset.theme = mode;
+            const icon = document.getElementById('theme-icon');
+            if (icon) icon.setAttribute('data-lucide', mode === 'light' ? 'moon' : 'sun');
+            if (mode === 'light') {
+                document.body.style.background = '#f0f0f5';
+                document.body.style.color = '#1e293b';
+            } else if (mode === 'oled') {
+                document.body.style.background = '#000000';
+                document.body.style.color = '#e2e8f0';
+            } else {
+                document.body.style.background = '';
+                document.body.style.color = '';
+            }
+            lucide.createIcons();
+        }
+
+        function applyAccentColor(hex) {
+            const r = parseInt(hex.slice(1,3), 16);
+            const g = parseInt(hex.slice(3,5), 16);
+            const b = parseInt(hex.slice(5,7), 16);
+            document.documentElement.style.setProperty('--accent-rgb', `${r}, ${g}, ${b}`);
+        }
+
+        // --- TRAKT SOCIAL ---
+        async function loadTraktCollection() {
+            const list = document.getElementById('trakt-collection-list');
+            list.classList.remove('hidden');
+            list.innerHTML = '<div class="text-xs text-slate-500 text-center py-2">Loading...</div>';
+            try {
+                const res = await fetch('/api/trakt/collection');
+                const data = await res.json();
+                if (!data || data.length === 0) { list.innerHTML = '<div class="text-xs text-slate-500 text-center py-2">Collection empty</div>'; return; }
+                list.innerHTML = data.slice(0, 20).map(i => `<div class="flex items-center gap-2 p-2 bg-black/20 rounded-lg text-xs"><span class="text-white flex-1 truncate">${i.movie ? i.movie.title : (i.show ? i.show.title : 'Unknown')}</span><span class="text-slate-500 font-mono">${i.movie ? i.movie.year : ''}</span></div>`).join('');
+            } catch(e) { list.innerHTML = '<div class="text-xs text-rose-400 text-center py-2">Failed to load</div>'; }
+        }
+
+        async function loadTraktFriends() {
+            const list = document.getElementById('trakt-friends-list');
+            list.classList.remove('hidden');
+            list.innerHTML = '<div class="text-xs text-slate-500 text-center py-2">Loading...</div>';
+            try {
+                const res = await fetch('/api/trakt/friends');
+                const data = await res.json();
+                if (!data || data.length === 0) { list.innerHTML = '<div class="text-xs text-slate-500 text-center py-2">No friends watching</div>'; return; }
+                list.innerHTML = data.map(f => `<div class="flex items-center gap-2 p-2 bg-black/20 rounded-lg text-xs"><i data-lucide="user" class="w-3 h-3 text-pink-400"></i><span class="text-white flex-1">${f.username || 'Friend'}</span><span class="text-slate-500 font-mono truncate">${f.watching ? f.watching.title : 'Idle'}</span></div>`).join('');
+                lucide.createIcons();
+            } catch(e) { list.innerHTML = '<div class="text-xs text-rose-400 text-center py-2">Failed to load</div>'; }
+        }
+
+        async function loadTraktCalendar() {
+            const list = document.getElementById('trakt-calendar-list');
+            list.classList.remove('hidden');
+            list.innerHTML = '<div class="text-xs text-slate-500 text-center py-2">Loading...</div>';
+            try {
+                const res = await fetch('/api/trakt/calendar');
+                const data = await res.json();
+                if (!data || data.length === 0) { list.innerHTML = '<div class="text-xs text-slate-500 text-center py-2">No upcoming episodes</div>'; return; }
+                list.innerHTML = data.slice(0, 15).map(e => `<div class="flex items-center gap-2 p-2 bg-black/20 rounded-lg text-xs"><i data-lucide="calendar" class="w-3 h-3 text-amber-400"></i><span class="text-white flex-1 truncate">${e.show ? e.show.title : 'Unknown'} ${e.episode ? 'S'+e.episode.season+'E'+e.episode.number : ''}</span><span class="text-slate-500 font-mono">${e.first_aired ? new Date(e.first_aired).toLocaleDateString() : ''}</span></div>`).join('');
+                lucide.createIcons();
+            } catch(e) { list.innerHTML = '<div class="text-xs text-rose-400 text-center py-2">Failed to load</div>'; }
+        }
+
+        // --- SKIP ANALYTICS ---
+        async function loadSkipProviderStats() {
+            const el = document.getElementById('analytics-skip-providers');
+            try {
+                const res = await fetch('/api/analytics/skip/providers');
+                const data = await res.json();
+                if (!data || Object.keys(data).length === 0) { el.innerHTML = '<div class="text-xs text-slate-500 text-center py-3">No skip data yet</div>'; return; }
+                const providers = data.providers || data;
+                el.innerHTML = Object.entries(providers).map(([name, stats]) => {
+                    const count = stats.count || stats;
+                    return `<div class="flex items-center justify-between p-2 bg-black/20 rounded-lg"><span class="text-xs text-white font-medium">${name}</span><span class="text-xs font-mono text-emerald-400">${count} skips</span></div>`;
+                }).join('');
+            } catch(e) { el.innerHTML = '<div class="text-xs text-rose-400 text-center py-3">Error loading</div>'; }
+        }
+
+        async function loadSkipCategoryStats() {
+            const el = document.getElementById('analytics-skip-categories');
+            try {
+                const res = await fetch('/api/analytics/skip/categories');
+                const data = await res.json();
+                if (!data || Object.keys(data).length === 0) { el.innerHTML = '<div class="text-xs text-slate-500 text-center py-3">No category data yet</div>'; return; }
+                const cats = data.categories || data;
+                const colors = {intro:'emerald',outro:'purple',recap:'blue',credits:'amber',mature:'rose',scare:'orange',filler:'cyan',preview:'indigo'};
+                el.innerHTML = Object.entries(cats).map(([cat, count]) => {
+                    const c = colors[cat] || 'slate';
+                    return `<div class="flex items-center justify-between p-2 bg-black/20 rounded-lg"><span class="text-xs text-${c}-400 font-medium capitalize">${cat}</span><span class="text-xs font-mono text-white">${count}</span></div>`;
+                }).join('');
+            } catch(e) { el.innerHTML = '<div class="text-xs text-rose-400 text-center py-3">Error loading</div>'; }
+        }
+
+        async function loadWeeklyReport() {
+            const el = document.getElementById('analytics-weekly');
+            try {
+                const res = await fetch('/api/analytics/weekly');
+                const data = await res.json();
+                el.innerHTML = `<div class="space-y-1"><div class="flex justify-between text-xs"><span class="text-slate-400">Sessions</span><span class="text-white font-mono">${data.total_sessions || 0}</span></div><div class="flex justify-between text-xs"><span class="text-slate-400">Hours</span><span class="text-emerald-400 font-mono">${(data.total_hours || 0).toFixed(1)}h</span></div><div class="flex justify-between text-xs"><span class="text-slate-400">Skips</span><span class="text-cyan-400 font-mono">${data.total_skips || 0}</span></div><div class="flex justify-between text-xs"><span class="text-slate-400">Top Title</span><span class="text-white font-mono truncate ml-2">${data.top_title || '-'}</span></div></div>`;
+            } catch(e) { el.innerHTML = '<div class="text-xs text-rose-400 text-center">Error</div>'; }
+        }
+
+        async function loadMonthlyReport() {
+            const el = document.getElementById('analytics-monthly');
+            try {
+                const res = await fetch('/api/analytics/monthly');
+                const data = await res.json();
+                el.innerHTML = `<div class="space-y-1"><div class="flex justify-between text-xs"><span class="text-slate-400">Sessions</span><span class="text-white font-mono">${data.total_sessions || 0}</span></div><div class="flex justify-between text-xs"><span class="text-slate-400">Hours</span><span class="text-indigo-400 font-mono">${(data.total_hours || 0).toFixed(1)}h</span></div><div class="flex justify-between text-xs"><span class="text-slate-400">Skips</span><span class="text-cyan-400 font-mono">${data.total_skips || 0}</span></div><div class="flex justify-between text-xs"><span class="text-slate-400">Top Title</span><span class="text-white font-mono truncate ml-2">${data.top_title || '-'}</span></div></div>`;
+            } catch(e) { el.innerHTML = '<div class="text-xs text-rose-400 text-center">Error</div>'; }
+        }
+
+        async function generateStatsCard() {
+            showToast('Generating stats card...', 'info', 2000);
+            try {
+                const res = await fetch('/api/stats/card');
+                if (!res.ok) { showToast('Failed to generate card', 'error'); return; }
+                const blob = await res.blob();
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url; a.download = 'ascend-stats-card.png'; a.click();
+                URL.revokeObjectURL(url);
+                showToast('Stats card downloaded!', 'success');
+            } catch(e) { showToast('Error generating card: ' + e, 'error'); }
+        }
+
+        async function loadFilteredHistory(status) {
+            const el = document.getElementById('analytics-filtered-history');
+            el.innerHTML = '<div class="text-xs text-slate-500 text-center py-3 animate-pulse">Loading...</div>';
+            try {
+                const url = status === 'all' ? '/api/analytics/sessions?limit=50' : `/api/analytics/history/filtered?status=${status}&limit=50`;
+                const res = await fetch(url);
+                const data = await res.json();
+                if (!data || data.length === 0) { el.innerHTML = '<div class="text-xs text-slate-500 text-center py-4">No items found</div>'; return; }
+                el.innerHTML = data.map(s => {
+                    const dur = Math.round((s.duration_watched_ms || 0) / 60000);
+                    const statusColor = (s.status === 'completed') ? 'text-emerald-400' : (s.status === 'in_progress' ? 'text-blue-400' : 'text-rose-400');
+                    return `<div class="flex items-center gap-3 p-2 bg-black/20 rounded-lg"><span class="text-sm text-white flex-1 truncate">${s.title || 'Unknown'}</span><span class="text-[10px] ${statusColor} font-mono uppercase">${s.status || ''}</span><span class="text-[10px] text-slate-500 font-mono">${dur}m</span></div>`;
+                }).join('');
+            } catch(e) { el.innerHTML = '<div class="text-xs text-rose-400 text-center py-3">Error loading</div>'; }
+        }
+
+        async function loadGroupedHistory() {
+            const el = document.getElementById('analytics-grouped-history');
+            el.innerHTML = '<div class="text-xs text-slate-500 text-center py-3 animate-pulse">Loading...</div>';
+            try {
+                const res = await fetch('/api/analytics/history/grouped');
+                const data = await res.json();
+                if (!data || data.length === 0) { el.innerHTML = '<div class="text-xs text-slate-500 text-center py-4">No grouped data</div>'; return; }
+                el.innerHTML = data.map(g => `<div class="flex items-center justify-between p-2 bg-black/20 rounded-lg"><span class="text-sm text-white flex-1 truncate">${g.title || g.show || 'Unknown'}</span><span class="text-xs font-mono text-cyan-400">${g.count || g.episodes || 0} eps</span><span class="text-[10px] text-slate-500 font-mono">${Math.round((g.total_minutes || 0))}m</span></div>`).join('');
+            } catch(e) { el.innerHTML = '<div class="text-xs text-rose-400 text-center py-3">Error loading</div>'; }
+        }
+
+        // --- DEVICE HEALTH ---
+        async function loadDeviceHealth() {
+            try {
+                const res = await fetch('/api/device/health');
+                const data = await res.json();
+                document.getElementById('dh-battery').innerText = (data.battery_level !== undefined ? data.battery_level + '%' : '--');
+                document.getElementById('dh-cpu').innerText = (data.cpu_usage !== undefined ? data.cpu_usage + '%' : '--');
+                document.getElementById('dh-memory').innerText = (data.memory_used !== undefined ? data.memory_used + '%' : '--');
+                document.getElementById('dh-storage').innerText = (data.storage_used !== undefined ? data.storage_used + '%' : '--');
+                showToast('Device health refreshed', 'success');
+            } catch(e) { showToast('Failed to load device health', 'error'); }
+        }
+
+        // --- ADB PAIRING ---
+        async function pairAdbDevice() {
+            const ip = document.getElementById('inp-pair-ip').value.trim();
+            const code = document.getElementById('inp-pair-code').value.trim();
+            if (!ip || !code) { showToast('Enter both IP:Port and pairing code', 'warning'); return; }
+            const result = document.getElementById('pair-result');
+            result.classList.remove('hidden');
+            result.className = 'text-xs font-mono p-3 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/20';
+            result.innerText = 'Pairing...';
+            try {
+                const res = await fetch('/api/adb/pair', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ip, code}) });
+                const data = await res.json();
+                if (data.success) {
+                    result.className = 'text-xs font-mono p-3 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
+                    result.innerText = 'Paired successfully!';
+                    showToast('Device paired!', 'success');
+                } else {
+                    result.className = 'text-xs font-mono p-3 rounded-lg bg-rose-500/10 text-rose-400 border border-rose-500/20';
+                    result.innerText = 'Pairing failed: ' + (data.error || 'Unknown error');
+                    showToast('Pairing failed', 'error');
+                }
+            } catch(e) { result.className = 'text-xs font-mono p-3 rounded-lg bg-rose-500/10 text-rose-400 border border-rose-500/20'; result.innerText = 'Error: ' + e; }
+        }
+
+        // --- REMOTE ENHANCEMENTS ---
+        async function sendRemoteText() {
+            const input = document.getElementById('remote-text-input');
+            const text = input.value.trim();
+            if (!text) return;
+            try {
+                await fetch('/api/remote/text', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({text}) });
+                input.value = '';
+                showToast('Text sent to device', 'success');
+            } catch(e) { showToast('Failed to send text', 'error'); }
+        }
+
+        async function loadRemoteApps() {
+            const list = document.getElementById('remote-apps-list');
+            list.classList.toggle('hidden');
+            if (list.classList.contains('hidden')) return;
+            list.innerHTML = '<div class="text-xs text-slate-500 text-center py-2 animate-pulse">Loading apps...</div>';
+            try {
+                const res = await fetch('/api/remote/apps');
+                const data = await res.json();
+                const apps = data.apps || data;
+                if (!apps || apps.length === 0) { list.innerHTML = '<div class="text-xs text-slate-500 text-center py-2">No apps found</div>'; return; }
+                list.innerHTML = apps.slice(0, 20).map(app => {
+                    const pkg = typeof app === 'string' ? app : app.package;
+                    const name = typeof app === 'string' ? app.split('.').pop() : (app.name || app.package);
+                    return `<div onclick="launchRemoteApp('${pkg}')" class="flex items-center gap-2 p-1.5 bg-black/20 rounded-lg cursor-pointer hover:bg-white/5 transition-colors"><i data-lucide="app-window" class="w-3 h-3 text-cyan-400"></i><span class="text-[10px] text-white truncate">${name}</span></div>`;
+                }).join('');
+                lucide.createIcons();
+            } catch(e) { list.innerHTML = '<div class="text-xs text-rose-400 text-center py-2">Error loading apps</div>'; }
+        }
+
+        async function launchRemoteApp(pkg) {
+            try {
+                await fetch('/api/remote/launch', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({package: pkg}) });
+                showToast('Launching ' + pkg.split('.').pop(), 'success');
+            } catch(e) { showToast('Failed to launch app', 'error'); }
+        }
+
+        // --- ARTWORK CHAIN ---
+        async function loadArtworkChain() {
+            const el = document.getElementById('artwork-chain-list');
+            try {
+                const res = await fetch('/api/artwork/chain');
+                const data = await res.json();
+                const chain = data.chain || data;
+                if (!chain || chain.length === 0) { el.innerHTML = '<div class="text-xs text-slate-500 text-center py-3">No providers configured</div>'; return; }
+                el.innerHTML = chain.map((p, i) => `<div class="flex items-center justify-between p-2 bg-black/20 rounded-lg"><div class="flex items-center gap-2"><span class="w-5 h-5 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center text-[10px] font-bold">${i+1}</span><span class="text-xs text-white">${p}</span></div><div class="flex gap-1"><button onclick="moveArtworkProvider(${i},-1)" class="p-1 hover:bg-white/10 rounded text-slate-500 hover:text-white transition-colors"><i data-lucide="chevron-up" class="w-3 h-3"></i></button><button onclick="moveArtworkProvider(${i},1)" class="p-1 hover:bg-white/10 rounded text-slate-500 hover:text-white transition-colors"><i data-lucide="chevron-down" class="w-3 h-3"></i></button></div></div>`).join('');
+                lucide.createIcons();
+            } catch(e) { el.innerHTML = '<div class="text-xs text-rose-400 text-center py-3">Error loading</div>'; }
+        }
+
+        async function moveArtworkProvider(index, dir) {
+            try {
+                const res = await fetch('/api/artwork/chain');
+                const data = await res.json();
+                const chain = data.chain || data;
+                const newIndex = index + dir;
+                if (newIndex < 0 || newIndex >= chain.length) return;
+                [chain[index], chain[newIndex]] = [chain[newIndex], chain[index]];
+                await fetch('/api/artwork/chain', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({chain}) });
+                loadArtworkChain();
+                showToast('Artwork chain updated', 'success');
+            } catch(e) { showToast('Failed to update chain', 'error'); }
+        }
+
+        // --- LOG EXPORT ---
+        async function exportLogs(limit) {
+            showToast('Exporting logs...', 'info', 2000);
+            try {
+                const url = limit > 0 ? `/api/logs/export?limit=${limit}` : '/api/logs/export';
+                const res = await fetch(url);
+                const data = await res.json();
+                const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+                const u = URL.createObjectURL(blob);
+                const a = document.createElement('a'); a.href = u;
+                a.download = 'ascend-logs-' + new Date().toISOString().slice(0,10) + '.json';
+                a.click(); URL.revokeObjectURL(u);
+                showToast('Logs exported', 'success');
+            } catch(e) { showToast('Export failed: ' + e, 'error'); }
+        }
+
+        // --- SSE LISTENER ---
+        function initSSE() {
+            try {
+                const evtSource = new EventSource('/api/events');
+                evtSource.onmessage = function(event) {
+                    try {
+                        const data = JSON.parse(event.data);
+                        if (data.type === 'config_change') showToast('Config updated: ' + (data.key || ''), 'info', 2000);
+                        if (data.type === 'playback_update') updateState();
+                        if (data.type === 'skip_event') showToast('Skipped: ' + (data.label || 'segment'), 'success', 2000);
+                    } catch(e) {}
+                };
+                evtSource.onerror = function() { setTimeout(initSSE, 5000); evtSource.close(); };
+            } catch(e) {}
+        }
+        initSSE();
+
+        // --- ONBOARDING WIZARD (Multi-Step) ---
+        let onboardingStep = 0;
+        const onboardingSteps = [
+            { title: 'Welcome', desc: 'Welcome to Ascend Media RPC! Let\'s get you set up.', field: null },
+            { title: 'ADB Connection', desc: 'Connect your Android TV device.', field: 'connection' },
+            { title: 'Discord App ID', desc: 'Enter your Discord application ID for Rich Presence.', field: 'discord' },
+            { title: 'TMDB API Key', desc: 'Required for metadata and artwork.', field: 'tmdb' },
+            { title: 'Artwork Provider', desc: 'Choose your preferred artwork source.', field: 'artwork' },
+            { title: 'Skip Sources', desc: 'Enable skip segment providers.', field: 'skip' }
+        ];
+
+        async function startOnboarding() {
+            onboardingStep = 0;
+            const progress = document.getElementById('onboarding-progress');
+            const btn = document.getElementById('btn-onboarding');
+            progress.classList.remove('hidden');
+            btn.innerHTML = '<i data-lucide="skip-forward" class="w-4 h-4"></i> NEXT STEP';
+            btn.onclick = nextOnboardingStep;
+            renderOnboardingStep();
+            lucide.createIcons();
+            try {
+                await fetch('/api/onboarding/save-step', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({step: 0, data: {}}) });
+            } catch(e) {}
+        }
+
+        function renderOnboardingStep() {
+            const step = onboardingSteps[onboardingStep];
+            const pct = ((onboardingStep + 1) / onboardingSteps.length) * 100;
+            document.getElementById('onboarding-step-label').innerText = `Step ${onboardingStep + 1}/${onboardingSteps.length}: ${step.title}`;
+            document.getElementById('onboarding-bar').style.width = pct + '%';
+            const content = document.getElementById('onboarding-step-content');
+            let fieldHtml = '';
+            if (step.field === 'connection') fieldHtml = '<button onclick="openConnectionWizard()" class="w-full py-2 bg-emerald-600/20 text-emerald-400 rounded-lg text-xs font-bold">OPEN CONNECTION WIZARD</button>';
+            else if (step.field === 'discord') fieldHtml = '<input type="password" id="onb-discord" placeholder="Discord App ID" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm focus:border-indigo-500 outline-none"><button onclick="updateConfig(\'discord_id\', document.getElementById(\'onb-discord\').value)" class="w-full mt-2 py-2 bg-indigo-600/20 text-indigo-400 rounded-lg text-xs font-bold">SAVE</button>';
+            else if (step.field === 'tmdb') fieldHtml = '<input type="password" id="onb-tmdb" placeholder="TMDB API Key" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm focus:border-blue-500 outline-none"><button onclick="updateConfig(\'tmdb_api_key\', document.getElementById(\'onb-tmdb\').value)" class="w-full mt-2 py-2 bg-blue-600/20 text-blue-400 rounded-lg text-xs font-bold">SAVE</button>';
+            else if (step.field === 'artwork') fieldHtml = '<select onchange="updateConfig(\'artwork_provider\', this.value)" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm outline-none"><option value="legacy">Legacy (TMDB)</option><option value="top_posters">Top Posters</option><option value="erdb">ERDB</option></select>';
+            else if (step.field === 'skip') fieldHtml = '<p class="text-[10px] text-slate-400">Go to Integrations > Skip Sources to configure providers.</p>';
+            content.innerHTML = `<h4 class="text-sm font-bold text-white">${step.title}</h4><p class="text-xs text-slate-400">${step.desc}</p>${fieldHtml}`;
+        }
+
+        async function nextOnboardingStep() {
+            onboardingStep++;
+            if (onboardingStep >= onboardingSteps.length) {
+                document.getElementById('onboarding-progress').classList.add('hidden');
+                const btn = document.getElementById('btn-onboarding');
+                btn.innerHTML = '<i data-lucide="check" class="w-4 h-4"></i> SETUP COMPLETE';
+                btn.onclick = startOnboarding;
+                showToast('Setup wizard completed!', 'success');
+                document.getElementById('onboarding-status').innerText = 'Setup completed!';
+                try { await fetch('/api/onboarding/save-step', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({step: onboardingStep, data: {completed: true}}) }); } catch(e) {}
+                lucide.createIcons();
+                return;
+            }
+            renderOnboardingStep();
+            try { await fetch('/api/onboarding/save-step', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({step: onboardingStep, data: {}}) }); } catch(e) {}
+        }
     </script>
     <!-- Remote Control Overlay -->
     <div id="remote-overlay" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] hidden flex items-center justify-center transition-all duration-300 opacity-0" onclick="toggleRemote()">
@@ -3250,6 +3857,18 @@ async function toggleSeason(btn, tmdbId, seasonNum, showImdb) {
                 <button onclick="sendRemote('home')" aria-label="Home" class="flex-1 py-3 px-4 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 active:bg-emerald-500/30 text-emerald-400 border border-emerald-500/20 font-bold uppercase tracking-wider text-xs flex items-center justify-center gap-2 transition-all active:scale-95">
                     <i data-lucide="home" class="w-4 h-4"></i> Home
                 </button>
+            </div>
+            
+            <!-- Keyboard Input -->
+            <div class="mt-4 flex gap-2">
+                <input type="text" id="remote-text-input" placeholder="Type text..." class="flex-1 bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-sm text-white outline-none focus:border-indigo-500 font-mono" onkeydown="if(event.key==='Enter')sendRemoteText()">
+                <button onclick="sendRemoteText()" class="px-4 py-2 rounded-xl bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-400 border border-indigo-500/20 text-xs font-bold transition-all">SEND</button>
+            </div>
+            
+            <!-- App Launcher -->
+            <div class="mt-3">
+                <button onclick="loadRemoteApps()" class="w-full py-2 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/20 text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2"><i data-lucide="grid-2x2" class="w-3.5 h-3.5"></i> App Launcher</button>
+                <div id="remote-apps-list" class="hidden mt-2 max-h-32 overflow-y-auto space-y-1"></div>
             </div>
         </div>
     </div>

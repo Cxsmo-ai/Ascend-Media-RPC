@@ -440,3 +440,209 @@ class AnalyticsDB:
             except Exception as e:
                 logger.error(f"Analytics advanced stats error: {e}")
         return base
+
+    def add_skip_with_provider(self, saved_ms: int, provider: str = "", category: str = ""):
+        """Track skip with provider and category info."""
+        self.add_skip(saved_ms)
+        if self._use_sqlite and (provider or category):
+            with self._lock:
+                try:
+                    conn = self._get_conn()
+                    conn.execute(
+                        "CREATE TABLE IF NOT EXISTS skip_provider_stats ("
+                        "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+                        "provider TEXT, category TEXT, saved_ms INTEGER, "
+                        "timestamp INTEGER)"
+                    )
+                    conn.execute(
+                        "INSERT INTO skip_provider_stats (provider, category, saved_ms, timestamp) "
+                        "VALUES (?, ?, ?, ?)",
+                        (provider, category, saved_ms, int(time.time()))
+                    )
+                    conn.commit()
+                    conn.close()
+                except Exception as e:
+                    logger.error(f"Analytics skip provider stats error: {e}")
+
+    def get_skip_provider_stats(self) -> List[Dict]:
+        """Get per-provider skip statistics."""
+        if not self._use_sqlite:
+            return []
+        try:
+            conn = self._get_conn()
+            conn.execute(
+                "CREATE TABLE IF NOT EXISTS skip_provider_stats ("
+                "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+                "provider TEXT, category TEXT, saved_ms INTEGER, "
+                "timestamp INTEGER)"
+            )
+            rows = conn.execute(
+                "SELECT provider, COUNT(*) as cnt, SUM(saved_ms) as total_ms "
+                "FROM skip_provider_stats WHERE provider != '' "
+                "GROUP BY provider ORDER BY cnt DESC"
+            ).fetchall()
+            conn.close()
+            return [{"provider": r["provider"], "count": r["cnt"],
+                     "saved_minutes": round((r["total_ms"] or 0) / 60000, 1)} for r in rows]
+        except Exception as e:
+            logger.error(f"Analytics skip provider stats error: {e}")
+        return []
+
+    def get_skip_category_stats(self) -> List[Dict]:
+        """Get per-category skip statistics."""
+        if not self._use_sqlite:
+            return []
+        try:
+            conn = self._get_conn()
+            conn.execute(
+                "CREATE TABLE IF NOT EXISTS skip_provider_stats ("
+                "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+                "provider TEXT, category TEXT, saved_ms INTEGER, "
+                "timestamp INTEGER)"
+            )
+            rows = conn.execute(
+                "SELECT category, COUNT(*) as cnt, SUM(saved_ms) as total_ms "
+                "FROM skip_provider_stats WHERE category != '' "
+                "GROUP BY category ORDER BY cnt DESC"
+            ).fetchall()
+            conn.close()
+            return [{"category": r["category"], "count": r["cnt"],
+                     "saved_minutes": round((r["total_ms"] or 0) / 60000, 1)} for r in rows]
+        except Exception as e:
+            logger.error(f"Analytics skip category stats error: {e}")
+        return []
+
+    def get_weekly_report(self) -> Dict:
+        """Generate weekly watch report."""
+        if not self._use_sqlite:
+            return {}
+        try:
+            conn = self._get_conn()
+            week_ago = int(time.time()) - 604800
+            row = conn.execute(
+                "SELECT COUNT(*) as cnt, COALESCE(SUM(watch_time), 0) as total_ms "
+                "FROM sessions WHERE start_time >= ?", (week_ago,)
+            ).fetchone()
+            top = conn.execute(
+                "SELECT title, COUNT(*) as cnt FROM sessions "
+                "WHERE start_time >= ? GROUP BY title ORDER BY cnt DESC LIMIT 3",
+                (week_ago,)
+            ).fetchall()
+            conn.close()
+            return {
+                "sessions": row["cnt"],
+                "hours": round(row["total_ms"] / 3600000, 1),
+                "top_titles": [{"title": r["title"], "count": r["cnt"]} for r in top]
+            }
+        except Exception as e:
+            logger.error(f"Analytics weekly report error: {e}")
+        return {}
+
+    def get_monthly_report(self) -> Dict:
+        """Generate monthly watch report."""
+        if not self._use_sqlite:
+            return {}
+        try:
+            conn = self._get_conn()
+            month_ago = int(time.time()) - 2592000
+            row = conn.execute(
+                "SELECT COUNT(*) as cnt, COALESCE(SUM(watch_time), 0) as total_ms "
+                "FROM sessions WHERE start_time >= ?", (month_ago,)
+            ).fetchone()
+            top = conn.execute(
+                "SELECT title, COUNT(*) as cnt FROM sessions "
+                "WHERE start_time >= ? GROUP BY title ORDER BY cnt DESC LIMIT 5",
+                (month_ago,)
+            ).fetchall()
+            genres = conn.execute(
+                "SELECT genre, COUNT(*) as cnt FROM sessions "
+                "WHERE start_time >= ? AND genre != '' GROUP BY genre ORDER BY cnt DESC LIMIT 5",
+                (month_ago,)
+            ).fetchall()
+            conn.close()
+            return {
+                "sessions": row["cnt"],
+                "hours": round(row["total_ms"] / 3600000, 1),
+                "top_titles": [{"title": r["title"], "count": r["cnt"]} for r in top],
+                "top_genres": [{"genre": r["genre"], "count": r["cnt"]} for r in genres]
+            }
+        except Exception as e:
+            logger.error(f"Analytics monthly report error: {e}")
+        return {}
+
+    def get_filtered_history(self, status: str = "all", limit: int = 50) -> List[Dict]:
+        """Get watch history filtered by completion status.
+        status: all, completed, in_progress, abandoned
+        """
+        if not self._use_sqlite:
+            return self.get_recent_sessions(limit)
+        try:
+            conn = self._get_conn()
+            if status == "completed":
+                rows = conn.execute(
+                    "SELECT title, subtitle, image_url, start_time, watch_time, duration "
+                    "FROM sessions WHERE duration > 0 AND CAST(watch_time AS REAL) / duration > 0.9 "
+                    "ORDER BY start_time DESC LIMIT ?", (limit,)
+                ).fetchall()
+            elif status == "in_progress":
+                rows = conn.execute(
+                    "SELECT title, subtitle, image_url, start_time, watch_time, duration "
+                    "FROM sessions WHERE duration > 0 AND CAST(watch_time AS REAL) / duration BETWEEN 0.1 AND 0.9 "
+                    "ORDER BY start_time DESC LIMIT ?", (limit,)
+                ).fetchall()
+            elif status == "abandoned":
+                rows = conn.execute(
+                    "SELECT title, subtitle, image_url, start_time, watch_time, duration "
+                    "FROM sessions WHERE duration > 0 AND CAST(watch_time AS REAL) / duration < 0.1 "
+                    "ORDER BY start_time DESC LIMIT ?", (limit,)
+                ).fetchall()
+            else:
+                rows = conn.execute(
+                    "SELECT title, subtitle, image_url, start_time, watch_time, duration "
+                    "FROM sessions ORDER BY start_time DESC LIMIT ?", (limit,)
+                ).fetchall()
+            conn.close()
+            result = []
+            for r in rows:
+                progress = 0
+                if r["duration"] and r["duration"] > 0:
+                    progress = round(r["watch_time"] / r["duration"] * 100, 1)
+                result.append({
+                    "title": r["title"] or "Unknown",
+                    "subtitle": r["subtitle"] or "",
+                    "image_url": r["image_url"] or "",
+                    "started_at": r["start_time"] or 0,
+                    "duration_watched_ms": r["watch_time"] or 0,
+                    "progress_pct": progress,
+                })
+            return result
+        except Exception as e:
+            logger.error(f"Analytics filtered history error: {e}")
+        return []
+
+    def get_grouped_by_show(self, limit: int = 20) -> List[Dict]:
+        """Get watch history grouped by show title."""
+        if not self._use_sqlite:
+            return []
+        try:
+            conn = self._get_conn()
+            rows = conn.execute(
+                "SELECT title, COUNT(*) as episode_count, "
+                "SUM(watch_time) as total_ms, MAX(start_time) as last_watched, "
+                "MIN(image_url) as image_url "
+                "FROM sessions WHERE title != '' "
+                "GROUP BY title ORDER BY last_watched DESC LIMIT ?",
+                (limit,)
+            ).fetchall()
+            conn.close()
+            return [{
+                "title": r["title"],
+                "episode_count": r["episode_count"],
+                "total_hours": round((r["total_ms"] or 0) / 3600000, 1),
+                "last_watched": r["last_watched"],
+                "image_url": r["image_url"] or "",
+            } for r in rows]
+        except Exception as e:
+            logger.error(f"Analytics grouped history error: {e}")
+        return []
+

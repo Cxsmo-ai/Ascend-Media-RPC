@@ -216,7 +216,58 @@ DEFAULT_CONFIG = {
     "audit_log_max_entries": 1000,
     "log_json_enabled": False,
     "log_level_overrides": {},
+
+    # ──────────────────────────────────────────────
+    # Theme & UI
+    # ──────────────────────────────────────────────
+    "theme_mode": "dark",
+    "theme_accent_color": "#8a2be2",
+    "theme_oled_black": False,
+
+    # ──────────────────────────────────────────────
+    # FanArt.tv
+    # ──────────────────────────────────────────────
+    "fanart_enabled": False,
+    "fanart_api_key": "",
+
+    # ──────────────────────────────────────────────
+    # Trakt Social & Collection
+    # ──────────────────────────────────────────────
+    "trakt_collection_sync": False,
+    "trakt_check_in_enabled": False,
+    "trakt_social_enabled": False,
+    "trakt_calendar_enabled": False,
+
+    # ──────────────────────────────────────────────
+    # Browser Push Notifications
+    # ──────────────────────────────────────────────
+    "push_notifications_enabled": False,
+
+    # ──────────────────────────────────────────────
+    # Skip Category Toggles
+    # ──────────────────────────────────────────────
+    "skip_cat_intro": True,
+    "skip_cat_outro": True,
+    "skip_cat_recap": True,
+    "skip_cat_preview": True,
+    "skip_cat_credits": True,
+    "skip_cat_filler": True,
+    "skip_cat_mature": True,
+    "skip_cat_scare": True,
+
+    # ──────────────────────────────────────────────
+    # Device Health Monitoring
+    # ──────────────────────────────────────────────
+    "device_health_enabled": False,
+    "device_health_interval": 30,
+
+    # ──────────────────────────────────────────────
+    # Artwork Quality
+    # ──────────────────────────────────────────────
+    "artwork_quality": "high",
+    "artwork_max_width": 1000,
 }
+
 
 def load_config() -> Dict:
     if not os.path.exists(CONFIG_FILE):

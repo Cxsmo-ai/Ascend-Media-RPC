@@ -290,3 +290,162 @@ class TraktClient:
         except Exception as e:
             logger.error(f"Fetch List Items Error: {e}")
             return []
+
+    def add_to_collection(self, media_data: dict) -> bool:
+        """Add media to user's Trakt collection."""
+        if not self.access_token:
+            return False
+        self.ensure_valid_token()
+        try:
+            payload = {}
+            if "movie" in media_data:
+                payload["movies"] = [media_data["movie"]]
+            elif "show" in media_data:
+                payload["shows"] = [media_data["show"]]
+            elif "episode" in media_data:
+                payload["episodes"] = [media_data["episode"]]
+            r = requests.post(f"{self.BASE_URL}/sync/collection",
+                              json=payload, headers=self.headers, timeout=10)
+            if r.status_code in (200, 201):
+                logger.info("Trakt: Added to collection")
+                return True
+            logger.warning(f"Trakt collection add failed: {r.status_code}")
+        except Exception as e:
+            logger.error(f"Trakt collection error: {e}")
+        return False
+
+    def get_collection(self, media_type: str = "movies") -> list:
+        """Get user's Trakt collection."""
+        if not self.access_token:
+            return []
+        self.ensure_valid_token()
+        try:
+            r = requests.get(f"{self.BASE_URL}/sync/collection/{media_type}",
+                             headers=self.headers, timeout=10)
+            if r.status_code == 200:
+                return r.json()
+        except Exception as e:
+            logger.error(f"Trakt get collection error: {e}")
+        return []
+
+    def rate_media(self, media_data: dict, rating: int) -> bool:
+        """Rate media on Trakt (1-10)."""
+        if not self.access_token:
+            return False
+        self.ensure_valid_token()
+        try:
+            payload = {}
+            for key in ("movies", "shows", "episodes"):
+                if key in media_data:
+                    items = media_data[key] if isinstance(media_data[key], list) else [media_data[key]]
+                    for item in items:
+                        item["rating"] = rating
+                    payload[key] = items
+            r = requests.post(f"{self.BASE_URL}/sync/ratings",
+                              json=payload, headers=self.headers, timeout=10)
+            return r.status_code in (200, 201)
+        except Exception as e:
+            logger.error(f"Trakt rate error: {e}")
+        return False
+
+    def check_in(self, media_data: dict, message: str = "") -> bool:
+        """Check in to media on Trakt (social feature)."""
+        if not self.access_token:
+            return False
+        self.ensure_valid_token()
+        try:
+            payload = {"sharing": {"twitter": False, "tumblr": False}}
+            if message:
+                payload["message"] = message
+            if "movie" in media_data:
+                payload["movie"] = media_data["movie"]
+            elif "episode" in media_data:
+                payload["episode"] = media_data["episode"]
+                if "show" in media_data:
+                    payload["show"] = media_data["show"]
+            r = requests.post(f"{self.BASE_URL}/checkin",
+                              json=payload, headers=self.headers, timeout=10)
+            if r.status_code in (200, 201):
+                logger.info("Trakt: Checked in")
+                return True
+            elif r.status_code == 409:
+                logger.info("Trakt: Already checked in")
+                return True
+        except Exception as e:
+            logger.error(f"Trakt check-in error: {e}")
+        return False
+
+    def get_friends_watching(self) -> list:
+        """Get what friends are currently watching."""
+        if not self.access_token:
+            return []
+        self.ensure_valid_token()
+        try:
+            r = requests.get(f"{self.BASE_URL}/users/me/watching",
+                             headers=self.headers, timeout=10)
+            friends = []
+            friends_r = requests.get(f"{self.BASE_URL}/users/me/friends",
+                                     headers=self.headers, timeout=10)
+            if friends_r.status_code == 200:
+                for friend in friends_r.json():
+                    username = friend.get("user", {}).get("username", "")
+                    if username:
+                        wr = requests.get(f"{self.BASE_URL}/users/{username}/watching",
+                                          headers=self.headers, timeout=5)
+                        if wr.status_code == 200 and wr.text.strip():
+                            watching = wr.json()
+                            watching["friend"] = username
+                            friends.append(watching)
+            return friends
+        except Exception as e:
+            logger.error(f"Trakt friends watching error: {e}")
+        return []
+
+    def get_calendar(self, days: int = 14) -> list:
+        """Get upcoming shows from user's calendar."""
+        if not self.access_token:
+            return []
+        self.ensure_valid_token()
+        try:
+            start_date = time.strftime("%Y-%m-%d")
+            r = requests.get(
+                f"{self.BASE_URL}/calendars/my/shows/{start_date}/{days}",
+                headers=self.headers, timeout=10
+            )
+            if r.status_code == 200:
+                return r.json()
+        except Exception as e:
+            logger.error(f"Trakt calendar error: {e}")
+        return []
+
+    def get_recommendations(self, media_type: str = "movies", limit: int = 10) -> list:
+        """Get personalized recommendations."""
+        if not self.access_token:
+            return []
+        self.ensure_valid_token()
+        try:
+            r = requests.get(
+                f"{self.BASE_URL}/recommendations/{media_type}",
+                params={"limit": limit},
+                headers=self.headers, timeout=10
+            )
+            if r.status_code == 200:
+                return r.json()
+        except Exception as e:
+            logger.error(f"Trakt recommendations error: {e}")
+        return []
+
+    def get_stats(self) -> dict:
+        """Get user's Trakt stats."""
+        if not self.access_token:
+            return {}
+        self.ensure_valid_token()
+        try:
+            r = requests.get(f"{self.BASE_URL}/users/me/stats",
+                             headers=self.headers, timeout=10)
+            if r.status_code == 200:
+                return r.json()
+        except Exception as e:
+            logger.error(f"Trakt stats error: {e}")
+        return {}
+
