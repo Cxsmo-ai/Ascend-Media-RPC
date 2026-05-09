@@ -6,6 +6,12 @@ import urllib.parse
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import re
 
+try:
+    import cloudscraper
+    _cloudscraper_available = True
+except ImportError:
+    _cloudscraper_available = False
+
 logger = logging.getLogger("stremio-rpc")
 
 class SkipManager:
@@ -36,6 +42,10 @@ class SkipManager:
         
         self.cache = {}
         self.mal_cache = {}
+
+        # Cloudscraper is available for Cloudflare-protected sites (TIDB, NotScare)
+        # Note: create_scraper() per-request for thread safety
+        self._cf_available = _cloudscraper_available
 
         # TTL-based persistent cache
         from src.core.skip_cache import SkipSegmentCache
@@ -71,6 +81,7 @@ class SkipManager:
         return re.sub(r'\s+', ' ', value).strip()
 
     def _slice_notscare_episode_block(self, content: str, episode: int) -> str:
+        # Strategy 1: HTML heading tags (<h1-6>)
         headings = []
         for match in re.finditer(r'<h[1-6][^>]*>.*?</h[1-6]>', content or '', re.I | re.S):
             text = self._html_text(match.group(0))
@@ -88,6 +99,24 @@ class SkipManager:
                     block_end = next_start
                     break
             return content[start:block_end]
+
+        # Strategy 2: Text-based episode markers (e.g. "2. Chapter Two" in flat text)
+        # NotScare often puts all episodes in one block as plain text
+        plain = self._html_text(content)
+        markers = []
+        for m in re.finditer(r'(\d+)\.\s+(?:Chapter|Episode)\s+\w+', plain, re.I):
+            markers.append((int(m.group(1)), m.start()))
+
+        if markers:
+            target_idx = None
+            for i, (ep_num, pos) in enumerate(markers):
+                if ep_num == episode:
+                    target_idx = i
+                    break
+            if target_idx is not None:
+                start_pos = markers[target_idx][1]
+                end_pos = markers[target_idx + 1][1] if target_idx + 1 < len(markers) else len(plain)
+                return plain[start_pos:end_pos]
 
         return content
 
@@ -230,8 +259,17 @@ class SkipManager:
         try:
             url = f"https://api.theintrodb.org/v2/media?tmdb_id={tmdb_id or ''}&imdb_id={imdb_id or ''}&season={season}&episode={episode}"
             print(f"PIPELINE: Fetching TIDB -> {url}")
-            response = requests.get(url, headers=self.HEADERS, timeout=5)
+            if self._cf_available:
+                http = cloudscraper.create_scraper()
+                response = http.get(url, timeout=10)
+            else:
+                response = requests.get(url, headers=self.HEADERS, timeout=10)
             if response.status_code == 200:
+                # Detect Cloudflare challenge pages masquerading as 200
+                ct = response.headers.get("content-type", "")
+                if "text/html" in ct and "Just a moment" in response.text[:500]:
+                    print("PIPELINE: TIDB blocked by Cloudflare challenge.")
+                    return None
                 data = response.json()
                 res = []
                 for k in ["intro", "recap", "credits", "preview", "filler", "transition", "part"]:
@@ -262,6 +300,8 @@ class SkipManager:
                         })
                 print(f"PIPELINE: TIDB found {len(res)} segments.")
                 return res
+            elif response.status_code == 403:
+                print("PIPELINE: TIDB returned 403 (Cloudflare block). May work from a different network.")
         except Exception as e: 
             print(f"PIPELINE: TIDB Error -> {e}")
         return None
@@ -272,6 +312,13 @@ class SkipManager:
             base = "https://notscare.me"
             content = None
             target_url = None
+            if self._cf_available:
+                http = cloudscraper.create_scraper()
+                def _get(url):
+                    return http.get(url, timeout=15)
+            else:
+                def _get(url):
+                    return requests.get(url, headers=self.HEADERS, timeout=10)
             
             # Try Direct Slug Probe (Bypasses dynamic search issues)
             clean_name = title.lower().replace(':','').replace('&','and').strip()
@@ -285,7 +332,7 @@ class SkipManager:
                 probe_url = f"{base}/{category}/{probe}/"
                 if not is_movie: probe_url += f"season/{season}/"
                 print(f"PIPELINE: NotScare Probing -> {probe_url}")
-                r = requests.get(probe_url, headers=self.HEADERS, timeout=5)
+                r = _get(probe_url)
                 if r.status_code == 200:
                     target_url = probe_url
                     content = r.text
@@ -295,14 +342,17 @@ class SkipManager:
                 # FALLBACK TO SEARCH 
                 print(f"PIPELINE: NotScare Probe Failed. Trying Search Fallback.")
                 search_url = f"{base}/{category}/?s={urllib.parse.quote(title)}"
-                resp = requests.get(search_url, headers=self.HEADERS, timeout=5)
+                resp = _get(search_url)
+                if resp.status_code == 403:
+                    print("PIPELINE: NotScare search blocked by Cloudflare (403).")
+                    return None
                 pattern = rf'href="(?P<url>(?:https://notscare.me)?/{category}/(?P<slug>[^/"]+))'
                 matches = list(re.finditer(pattern, resp.text))
                 if matches:
                     target_url = matches[0].group("url")
                     if not target_url.startswith("http"): target_url = base + target_url
                     if not is_movie: target_url = target_url.split("/season/")[0].rstrip("/") + f"/season/{season}/"
-                    resp = requests.get(target_url, headers=self.HEADERS, timeout=5)
+                    resp = _get(target_url)
                     content = resp.text
             
             if not content: return None
