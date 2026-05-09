@@ -53,6 +53,9 @@
     <!-- Festive Snow Container (Hidden by default) -->
     <div id="snow-container" class="fixed inset-0 pointer-events-none z-[100] overflow-hidden hidden"></div>
 
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed top-4 right-4 z-[200] flex flex-col gap-2 pointer-events-none" style="max-width:380px"></div>
+
     <!-- Desktop Sidebar / Mobile Bottom Nav -->
     <nav id="navbar" class="glass-panel z-50 md:w-20 md:h-full md:flex-col flex-row w-full h-16 fixed md:relative bottom-0 md:bottom-auto flex items-center justify-around md:justify-start md:pt-8 md:gap-8 border-t md:border-t-0 md:border-r border-white/5 order-2 md:order-1 app-drag">
         
@@ -62,45 +65,52 @@
         </div>
 
         <!-- Nav Items -->
-        <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-item group relative p-3 rounded-xl transition-all no-drag">
+        <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-item group relative p-3 rounded-xl transition-all no-drag" title="Dashboard">
             <i data-lucide="layout-grid" class="w-6 h-6 text-slate-400 group-hover:text-indigo-400 transition-colors"></i>
             <span class="md:hidden text-[10px] mt-1 block text-center text-slate-500">Dash</span>
+            <span class="hidden md:block absolute left-full ml-2 px-2 py-1 bg-slate-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap border border-white/10 shadow-lg">Dashboard</span>
             <div class="active-indicator hidden absolute md:left-0 md:top-1/2 md:-translate-y-1/2 md:w-1 md:h-6 md:rounded-r-full top-0 left-1/2 -translate-x-1/2 w-8 h-1 rounded-b-full bg-indigo-500 shadow-[0_0_10px_#6366f1]"></div>
         </button>
 
-        <button onclick="switchTab('integrations')" id="nav-integrations" class="nav-item group relative p-3 rounded-xl transition-all no-drag">
+        <button onclick="switchTab('integrations')" id="nav-integrations" class="nav-item group relative p-3 rounded-xl transition-all no-drag" title="Integrations">
             <i data-lucide="link" class="w-6 h-6 text-slate-400 group-hover:text-emerald-400 transition-colors"></i>
             <span class="md:hidden text-[10px] mt-1 block text-center text-slate-500">Link</span>
+            <span class="hidden md:block absolute left-full ml-2 px-2 py-1 bg-slate-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap border border-white/10 shadow-lg">Integrations</span>
             <div class="active-indicator hidden absolute md:left-0 md:top-1/2 md:-translate-y-1/2 md:w-1 md:h-6 md:rounded-r-full top-0 left-1/2 -translate-x-1/2 w-8 h-1 rounded-b-full bg-emerald-500 shadow-[0_0_10px_#10b981]"></div>
         </button>
 
-        <button onclick="switchTab('settings')" id="nav-settings" class="nav-item group relative p-3 rounded-xl transition-all no-drag">
+        <button onclick="switchTab('settings')" id="nav-settings" class="nav-item group relative p-3 rounded-xl transition-all no-drag" title="Settings">
             <i data-lucide="settings-2" class="w-6 h-6 text-slate-400 group-hover:text-amber-400 transition-colors"></i>
             <span class="md:hidden text-[10px] mt-1 block text-center text-slate-500">Set</span>
+            <span class="hidden md:block absolute left-full ml-2 px-2 py-1 bg-slate-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap border border-white/10 shadow-lg">Settings</span>
             <div class="active-indicator hidden absolute md:left-0 md:top-1/2 md:-translate-y-1/2 md:w-1 md:h-6 md:rounded-r-full top-0 left-1/2 -translate-x-1/2 w-8 h-1 rounded-b-full bg-amber-500 shadow-[0_0_10px_#f59e0b]"></div>
         </button>
 
-        <button onclick="switchTab('history')" id="nav-history" class="nav-item group relative p-3 rounded-xl transition-all no-drag">
+        <button onclick="switchTab('history')" id="nav-history" class="nav-item group relative p-3 rounded-xl transition-all no-drag" title="Skip History">
             <i data-lucide="history" class="w-6 h-6 text-slate-400 group-hover:text-blue-400 transition-colors"></i>
             <span class="md:hidden text-[10px] mt-1 block text-center text-slate-500">Hist</span>
+            <span class="hidden md:block absolute left-full ml-2 px-2 py-1 bg-slate-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap border border-white/10 shadow-lg">Skip History</span>
             <div class="active-indicator hidden absolute md:left-0 md:top-1/2 md:-translate-y-1/2 md:w-1 md:h-6 md:rounded-r-full top-0 left-1/2 -translate-x-1/2 w-8 h-1 rounded-b-full bg-blue-500 shadow-[0_0_10px_#3b82f6]"></div>
         </button>
 
-        <button onclick="switchTab('lists')" id="nav-lists" class="nav-item group relative p-3 rounded-xl transition-all no-drag">
+        <button onclick="switchTab('lists')" id="nav-lists" class="nav-item group relative p-3 rounded-xl transition-all no-drag" title="My Lists">
             <i data-lucide="library" class="w-6 h-6 text-slate-400 group-hover:text-purple-400 transition-colors"></i>
             <span class="md:hidden text-[10px] mt-1 block text-center text-slate-500">List</span>
+            <span class="hidden md:block absolute left-full ml-2 px-2 py-1 bg-slate-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap border border-white/10 shadow-lg">My Lists</span>
             <div class="active-indicator hidden absolute md:left-0 md:top-1/2 md:-translate-y-1/2 md:w-1 md:h-6 md:rounded-r-full top-0 left-1/2 -translate-x-1/2 w-8 h-1 rounded-b-full bg-purple-500 shadow-[0_0_10px_#a855f7]"></div>
         </button>
 
-        <button onclick="switchTab('analytics')" id="nav-analytics" class="nav-item group relative p-3 rounded-xl transition-all no-drag">
+        <button onclick="switchTab('analytics')" id="nav-analytics" class="nav-item group relative p-3 rounded-xl transition-all no-drag" title="Analytics">
             <i data-lucide="bar-chart-3" class="w-6 h-6 text-slate-400 group-hover:text-cyan-400 transition-colors"></i>
             <span class="md:hidden text-[10px] mt-1 block text-center text-slate-500">Stats</span>
+            <span class="hidden md:block absolute left-full ml-2 px-2 py-1 bg-slate-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap border border-white/10 shadow-lg">Analytics</span>
             <div class="active-indicator hidden absolute md:left-0 md:top-1/2 md:-translate-y-1/2 md:w-1 md:h-6 md:rounded-r-full top-0 left-1/2 -translate-x-1/2 w-8 h-1 rounded-b-full bg-cyan-500 shadow-[0_0_10px_#06b6d4]"></div>
         </button>
 
-        <button onclick="switchTab('debug')" id="nav-debug" class="nav-item group relative p-3 rounded-xl transition-all no-drag md:mt-auto md:mb-4">
+        <button onclick="switchTab('debug')" id="nav-debug" class="nav-item group relative p-3 rounded-xl transition-all no-drag md:mt-auto md:mb-4" title="Debug">
             <i data-lucide="terminal-square" class="w-6 h-6 text-slate-400 group-hover:text-rose-400 transition-colors"></i>
             <span class="md:hidden text-[10px] mt-1 block text-center text-slate-500">Log</span>
+            <span class="hidden md:block absolute left-full ml-2 px-2 py-1 bg-slate-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap border border-white/10 shadow-lg">Debug Console</span>
             <div class="active-indicator hidden absolute md:left-0 md:top-1/2 md:-translate-y-1/2 md:w-1 md:h-6 md:rounded-r-full top-0 left-1/2 -translate-x-1/2 w-8 h-1 rounded-b-full bg-rose-500 shadow-[0_0_10px_#f43f5e]"></div>
         </button>
     </nav>
@@ -476,7 +486,7 @@
                             <div class="w-11 h-6 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600 cursor-pointer" onclick="document.getElementById('chk-anilist').click()"></div>
                         </div>
                     </div>
-                    <p class="text-[10px] text-slate-500">Anime list tracking &amp; scrobbling</p>
+                    <p class="text-xs text-slate-400">Track anime progress and sync your watchlist automatically</p>
                     <input type="password" id="inp-anilist-token" placeholder="Access Token" class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-blue-500 outline-none transition-colors">
                     <button onclick="saveNewIntegration('anilist_access_token','inp-anilist-token')" class="w-full py-2 bg-blue-600/20 text-blue-400 rounded-lg font-bold text-xs hover:bg-blue-600/30 transition-colors">SAVE</button>
                 </div>
@@ -490,7 +500,7 @@
                             <div class="w-11 h-6 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-600 cursor-pointer" onclick="document.getElementById('chk-simkl').click()"></div>
                         </div>
                     </div>
-                    <p class="text-[10px] text-slate-500">Multi-platform watch tracking</p>
+                    <p class="text-xs text-slate-400">Sync watch history across TV, movies, and anime platforms</p>
                     <input type="password" id="inp-simkl-id" placeholder="Client ID" class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-cyan-500 outline-none transition-colors">
                     <input type="password" id="inp-simkl-token" placeholder="Access Token" class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-cyan-500 outline-none transition-colors">
                     <button onclick="saveNewIntegration('simkl_client_id','inp-simkl-id','simkl_access_token','inp-simkl-token')" class="w-full py-2 bg-cyan-600/20 text-cyan-400 rounded-lg font-bold text-xs hover:bg-cyan-600/30 transition-colors">SAVE</button>
@@ -505,7 +515,7 @@
                             <div class="w-11 h-6 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-600 cursor-pointer" onclick="document.getElementById('chk-kitsu').click()"></div>
                         </div>
                     </div>
-                    <p class="text-[10px] text-slate-500">Anime community &amp; tracking</p>
+                    <p class="text-xs text-slate-400">Connect to the Kitsu anime community and library</p>
                     <input type="text" id="inp-kitsu-user" placeholder="Username" class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-orange-500 outline-none transition-colors">
                     <input type="password" id="inp-kitsu-pass" placeholder="Password" class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-orange-500 outline-none transition-colors">
                     <button onclick="saveNewIntegration('kitsu_username','inp-kitsu-user','kitsu_password','inp-kitsu-pass')" class="w-full py-2 bg-orange-600/20 text-orange-400 rounded-lg font-bold text-xs hover:bg-orange-600/30 transition-colors">SAVE</button>
@@ -520,7 +530,7 @@
                             <div class="w-11 h-6 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600 cursor-pointer" onclick="document.getElementById('chk-letterboxd').click()"></div>
                         </div>
                     </div>
-                    <p class="text-[10px] text-slate-500">Movie diary &amp; social reviews</p>
+                    <p class="text-xs text-slate-400">Log movies to your Letterboxd diary as you watch</p>
                     <input type="password" id="inp-letterboxd-key" placeholder="API Key" class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-emerald-500 outline-none transition-colors">
                     <input type="password" id="inp-letterboxd-secret" placeholder="API Secret" class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-emerald-500 outline-none transition-colors">
                     <button onclick="saveNewIntegration('letterboxd_api_key','inp-letterboxd-key','letterboxd_api_secret','inp-letterboxd-secret')" class="w-full py-2 bg-emerald-600/20 text-emerald-400 rounded-lg font-bold text-xs hover:bg-emerald-600/30 transition-colors">SAVE</button>
@@ -535,7 +545,7 @@
                             <div class="w-11 h-6 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600 cursor-pointer" onclick="document.getElementById('chk-lastfm').click()"></div>
                         </div>
                     </div>
-                    <p class="text-[10px] text-slate-500">Music scrobbling for soundtracks</p>
+                    <p class="text-xs text-slate-400">Scrobble soundtrack info from what you're watching</p>
                     <input type="password" id="inp-lastfm-key" placeholder="API Key" class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-red-500 outline-none transition-colors">
                     <input type="password" id="inp-lastfm-secret" placeholder="Shared Secret" class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-red-500 outline-none transition-colors">
                     <button onclick="saveNewIntegration('lastfm_api_key','inp-lastfm-key','lastfm_api_secret','inp-lastfm-secret')" class="w-full py-2 bg-red-600/20 text-red-400 rounded-lg font-bold text-xs hover:bg-red-600/30 transition-colors">SAVE</button>
@@ -550,7 +560,7 @@
                             <div class="w-11 h-6 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600 cursor-pointer" onclick="document.getElementById('chk-justwatch').click()"></div>
                         </div>
                     </div>
-                    <p class="text-[10px] text-slate-500">Streaming availability lookup</p>
+                    <p class="text-xs text-slate-400">Show where content is available to stream in your region</p>
                     <select id="sel-justwatch-country" onchange="updateConfig('justwatch_country', this.value)" class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-sm outline-none focus:border-amber-500 transition-colors">
                         <option value="US">United States</option>
                         <option value="GB">United Kingdom</option>
@@ -570,7 +580,7 @@
                             <div class="w-11 h-6 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-violet-600 cursor-pointer" onclick="document.getElementById('chk-opensubtitles').click()"></div>
                         </div>
                     </div>
-                    <p class="text-[10px] text-slate-500">Subtitle search &amp; download</p>
+                    <p class="text-xs text-slate-400">Search and download subtitles for your media</p>
                     <input type="password" id="inp-opensubtitles-key" placeholder="API Key" class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-violet-500 outline-none transition-colors">
                     <input type="text" id="inp-opensubtitles-user" placeholder="Username" class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-violet-500 outline-none transition-colors">
                     <button onclick="saveNewIntegration('opensubtitles_api_key','inp-opensubtitles-key','opensubtitles_username','inp-opensubtitles-user')" class="w-full py-2 bg-violet-600/20 text-violet-400 rounded-lg font-bold text-xs hover:bg-violet-600/30 transition-colors">SAVE</button>
@@ -579,7 +589,7 @@
                 <!-- Media Servers (Plex, Jellyfin, Emby) -->
                 <div class="glass-panel p-6 rounded-2xl space-y-4 md:col-span-2">
                     <div class="flex items-center gap-3"><i data-lucide="server" class="text-amber-400 w-6 h-6"></i><h3 class="font-bold text-lg">Media Servers</h3></div>
-                    <p class="text-xs text-slate-400">Connect Plex, Jellyfin, or Emby for library sync</p>
+                    <p class="text-xs text-slate-400">Sync your media library from Plex, Jellyfin, or Emby servers</p>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div class="border border-white/10 bg-black/20 rounded-xl p-4 space-y-3">
                             <div class="flex items-center justify-between">
@@ -612,7 +622,7 @@
                 <!-- Notion & Obsidian Journals -->
                 <div class="glass-panel p-6 rounded-2xl space-y-4 md:col-span-2">
                     <div class="flex items-center gap-3"><i data-lucide="notebook-pen" class="text-slate-300 w-6 h-6"></i><h3 class="font-bold text-lg">Watch Journals</h3></div>
-                    <p class="text-xs text-slate-400">Auto-log watched content to Notion or Obsidian</p>
+                    <p class="text-xs text-slate-400">Automatically create journal entries in Notion or Obsidian for each watch session</p>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="border border-white/10 bg-black/20 rounded-xl p-4 space-y-3">
                             <div class="flex items-center justify-between">
@@ -639,9 +649,9 @@
                         <div class="flex items-center gap-3"><i data-lucide="activity" class="text-emerald-400 w-6 h-6"></i><h3 class="font-bold text-lg">Integration Status</h3></div>
                         <button onclick="loadIntegrationStatus()" class="px-3 py-1 bg-white/5 hover:bg-white/10 text-slate-400 rounded-lg text-[10px] font-bold uppercase transition-colors">Refresh</button>
                     </div>
-                    <div id="integration-status-grid" class="grid grid-cols-2 md:grid-cols-4 gap-2">
-                        <div class="text-sm text-slate-500 font-mono text-center py-4 col-span-full">Click refresh to check status</div>
-                    </div>
+                        <div id="integration-status-grid" class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                            <div class="text-center py-6 col-span-full"><i data-lucide="activity" class="w-8 h-8 text-slate-700 mx-auto mb-2"></i><p class="text-sm text-slate-500">Click Refresh to check integration status</p></div>
+                        </div>
                 </div>
 
             </div>
@@ -1020,7 +1030,7 @@
                             </div>
                         </div>
                         <div id="device-list" class="space-y-2">
-                            <div class="text-xs text-slate-500 font-mono text-center py-2">No devices discovered</div>
+                            <div class="text-center py-4"><i data-lucide="wifi-off" class="w-6 h-6 text-slate-700 mx-auto mb-2"></i><p class="text-xs text-slate-500">No devices found on your network</p><p class="text-[10px] text-slate-600 mt-1">Enable mDNS and click Refresh to scan</p></div>
                         </div>
                         <button onclick="loadDevices()" class="w-full py-2 bg-emerald-600/20 text-emerald-400 rounded-lg font-bold text-xs hover:bg-emerald-600/30 transition-colors flex items-center justify-center gap-2"><i data-lucide="radar" class="w-4 h-4"></i> REFRESH DEVICES</button>
                     </div>
@@ -1153,7 +1163,7 @@
                         <i data-lucide="clock" class="w-4 h-4"></i> Recent Sessions
                     </h3>
                     <div id="analytics-sessions-list" class="space-y-2 max-h-[400px] overflow-y-auto">
-                        <div class="text-sm text-slate-500 font-mono text-center py-4">Loading...</div>
+                        <div class="text-center py-6"><svg class="animate-spin w-5 h-5 text-slate-600 mx-auto mb-2" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" class="opacity-25"></circle><path d="M4 12a8 8 0 018-8" stroke="currentColor" stroke-width="3" stroke-linecap="round" class="opacity-75"></path></svg><p class="text-sm text-slate-500">Loading sessions...</p></div>
                     </div>
                 </div>
 
@@ -1162,13 +1172,13 @@
                     <div class="glass-panel p-6 rounded-2xl">
                         <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2"><i data-lucide="pie-chart" class="w-4 h-4"></i> Top Genres</h3>
                         <div id="analytics-genres" class="space-y-2">
-                            <div class="text-sm text-slate-500 font-mono text-center py-4">Loading...</div>
+                            <div class="text-center py-6"><i data-lucide="pie-chart" class="w-8 h-8 text-slate-700 mx-auto mb-2"></i><p class="text-sm text-slate-500">No genre data yet</p><p class="text-[10px] text-slate-600 mt-1">Watch some content to see your top genres</p></div>
                         </div>
                     </div>
                     <div class="glass-panel p-6 rounded-2xl">
                         <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2"><i data-lucide="clock" class="w-4 h-4"></i> Peak Watch Hours</h3>
                         <div id="analytics-peak-hours" class="grid grid-cols-6 gap-1">
-                            <div class="text-sm text-slate-500 font-mono text-center py-4 col-span-6">Loading...</div>
+                            <div class="text-center py-6 col-span-6"><i data-lucide="clock" class="w-8 h-8 text-slate-700 mx-auto mb-2"></i><p class="text-sm text-slate-500">No watch data yet</p><p class="text-[10px] text-slate-600 mt-1">Start watching to build your heatmap</p></div>
                         </div>
                     </div>
                     <div class="glass-panel p-6 rounded-2xl">
@@ -1219,7 +1229,7 @@
                         <button onclick="loadAuditLog()" class="px-3 py-1 bg-white/5 hover:bg-white/10 text-slate-400 rounded-lg text-[10px] font-bold uppercase transition-colors">Refresh</button>
                     </div>
                     <div id="audit-log-list" class="space-y-2 max-h-64 overflow-y-auto">
-                        <div class="text-sm text-slate-500 font-mono text-center py-4">Click refresh to load audit log</div>
+                        <div class="text-center py-6"><svg class="animate-spin w-5 h-5 text-slate-600 mx-auto mb-2" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" class="opacity-25"></circle><path d="M4 12a8 8 0 018-8" stroke="currentColor" stroke-width="3" stroke-linecap="round" class="opacity-75"></path></svg><p class="text-sm text-slate-500">Loading audit log...</p></div>
                     </div>
                 </div>
 
@@ -1261,7 +1271,7 @@
                         <button onclick="loadPlugins()" class="px-3 py-1 bg-white/5 hover:bg-white/10 text-slate-400 rounded-lg text-[10px] font-bold uppercase transition-colors">Refresh</button>
                     </div>
                     <div id="plugins-list" class="space-y-2">
-                        <div class="text-sm text-slate-500 font-mono text-center py-4">Click refresh to load plugins</div>
+                        <div class="text-center py-6"><svg class="animate-spin w-5 h-5 text-slate-600 mx-auto mb-2" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" class="opacity-25"></circle><path d="M4 12a8 8 0 018-8" stroke="currentColor" stroke-width="3" stroke-linecap="round" class="opacity-75"></path></svg><p class="text-sm text-slate-500">Loading plugins...</p></div>
                     </div>
                 </div>
             </div>
@@ -1304,7 +1314,7 @@
                 const loader = document.getElementById('sandbox-loader');
                 const resultsCont = document.getElementById('sb-results');
                 
-                if(!query) return alert("Enter a title");
+                if(!query) return showToast('Please enter a title to search', 'warning');
                 
                 // Smart Parsing: Support "Title S01E01", "Title 1x01", "Title S1 E1", "Title 1.1"
                 let title = query;
@@ -1378,7 +1388,7 @@
                      });
                      const data = await res.json();
                      if (data.error) {
-                         alert("Error: " + data.error);
+                         showToast('Trakt auth error: ' + data.error, 'error');
                          return;
                      }
                      
@@ -1388,7 +1398,7 @@
                      
                      document.getElementById('auth-modal').classList.remove('hidden');
                  } catch (e) {
-                     alert("Request Failed: " + e);
+                     showToast('Trakt auth request failed', 'error');
                  }
             }
         </script>
@@ -1495,9 +1505,14 @@
                 loadAnalytics();
                 loadAdvancedAnalytics();
             }
+            if (tab === 'integrations') {
+                loadIntegrationStatus();
+            }
             if (tab === 'debug') {
                 loadSkipCacheStats();
                 loadHealthInfo();
+                loadAuditLog();
+                loadPlugins();
             }
         }
 
@@ -2187,7 +2202,7 @@ async function toggleSeason(btn, tmdbId, seasonNum, showImdb) {
                      if (data.status_message) {
                          const msg = `TMDB Error: ${data.status_message}`;
                          container.innerHTML = `<div class="text-red-400 text-xs p-2 text-center">${msg}</div>`;
-                         alert(msg); // FORCE USER TO SEE
+                         showToast(msg, 'error');
                          return;
                      }
                      
@@ -2213,12 +2228,12 @@ async function toggleSeason(btn, tmdbId, seasonNum, showImdb) {
                      } else {
                          const msg = `No episodes found (ID:${tmdbId} S:${seasonNum})`;
                          container.innerHTML = `<div class="text-slate-500 text-xs p-2 text-center">${msg}</div>`;
-                         alert(msg);
+                         showToast(msg, 'warning');
                      }
                  } catch(e) {
                      const msg = `JS Error: ${e.message}`;
                      container.innerHTML = `<div class="text-red-500 text-xs p-2 text-center">${msg}</div>`;
-                     alert(msg);
+                     showToast(msg, 'error');
                      console.error(e);
                  }
             }
@@ -2248,11 +2263,11 @@ async function toggleSeason(btn, tmdbId, seasonNum, showImdb) {
                      setTimeout(() => { btn.innerHTML = original; lucide.createIcons(); }, 2000);
                      // Close modal? No, maybe they want to play another.
                  } else {
-                     alert("Launch Failed");
+                     showToast('Launch failed', 'error');
                      btn.innerHTML = original;
                  }
              } catch(e) {
-                 alert("Error: " + e);
+                 showToast('Launch error: ' + e, 'error');
                  btn.innerHTML = original;
              }
              lucide.createIcons();
@@ -2348,7 +2363,14 @@ async function toggleSeason(btn, tmdbId, seasonNum, showImdb) {
              fetch('/api/settings', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({action: 'connect', adb_host: ip}) });
         }
         function updateConfig(key, val) {
-             fetch('/api/settings', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({action: 'update', [key]: val}) });
+             fetch('/api/settings', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({action: 'update', [key]: val}) })
+                 .then(function() {
+                     var label = key.replace(/_/g, ' ').replace(/enabled$/i, '').trim();
+                     if (typeof val === 'boolean') {
+                         showToast(label.charAt(0).toUpperCase() + label.slice(1) + (val ? ' enabled' : ' disabled'), val ? 'success' : 'info');
+                     }
+                 })
+                 .catch(function(e) { showToast('Failed to update setting', 'error'); });
         }
 
         function updateSecretConfig(key, input) {
@@ -2527,7 +2549,7 @@ async function toggleSeason(btn, tmdbId, seasonNum, showImdb) {
                      tidb_api_key: document.getElementById('inp-tidb-key').value.trim()
                  };
                  fetch('/api/settings', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) })
-                     .then(() => { alert('Skip config saved!'); });
+                     .then(() => { showToast('Skip config saved', 'success'); });
              } else if (type === 'trakt') {
                  // Trakt needs BOTH client_id and client_secret
                  const data = {
@@ -2536,7 +2558,7 @@ async function toggleSeason(btn, tmdbId, seasonNum, showImdb) {
                      trakt_secret: document.getElementById('inp-trakt-secret').value.trim()
                  };
                  fetch('/api/settings', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) })
-                     .then(() => { alert('Trakt credentials saved!'); });
+                     .then(() => { showToast('Trakt credentials saved', 'success'); });
              } else if (type === 'discord') {
                  const data = {
                      action: 'update',
@@ -2544,11 +2566,11 @@ async function toggleSeason(btn, tmdbId, seasonNum, showImdb) {
                      discord_wako: document.getElementById('inp-discord-wako').value.trim()
                  };
                  fetch('/api/settings', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) })
-                     .then(() => { alert('Discord credentials saved!'); });
+                     .then(() => { showToast('Discord credentials saved', 'success'); });
              } else {
                  const val = document.getElementById('inp-' + type).value;
                  fetch('/api/settings', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({action: 'update', [type]: val}) })
-                     .then(() => { alert(type.toUpperCase() + ' saved!'); });
+                     .then(() => { showToast(type.charAt(0).toUpperCase() + type.slice(1) + ' saved', 'success'); });
              }
         }
         function toggleSetting(type) {
@@ -2724,7 +2746,7 @@ async function toggleSeason(btn, tmdbId, seasonNum, showImdb) {
                 const list = document.getElementById('analytics-sessions-list');
                 
                 if (!sessions || sessions.length === 0) {
-                    list.innerHTML = '<div class="text-slate-500 font-mono text-sm text-center py-4">No watch sessions recorded yet.</div>';
+                    list.innerHTML = '<div class="text-center py-8"><i data-lucide="film" class="w-10 h-10 text-slate-700 mx-auto mb-3"></i><p class="text-sm text-slate-400">No watch sessions yet</p><p class="text-[10px] text-slate-600 mt-1">Sessions will appear here as you watch content</p></div>'; lucide.createIcons();
                     return;
                 }
 
@@ -2748,6 +2770,46 @@ async function toggleSeason(btn, tmdbId, seasonNum, showImdb) {
             }
         }
 
+        // --- TOAST NOTIFICATION SYSTEM ---
+        function showToast(message, type, duration) {
+            type = type || 'success';
+            duration = duration || 3500;
+            var container = document.getElementById('toast-container');
+            var toast = document.createElement('div');
+            var icons = { success: 'check-circle', error: 'x-circle', info: 'info', warning: 'alert-triangle' };
+            var colors = { success: 'emerald', error: 'rose', info: 'blue', warning: 'amber' };
+            var c = colors[type] || 'blue';
+            toast.className = 'pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-xl border shadow-2xl backdrop-blur-md transition-all duration-300 transform translate-x-full opacity-0 bg-' + c + '-500/10 border-' + c + '-500/20 text-' + c + '-400';
+            toast.innerHTML = '<i data-lucide="' + (icons[type] || 'info') + '" class="w-5 h-5 flex-shrink-0"></i><span class="text-sm font-medium flex-1">' + message + '</span><button onclick="dismissToast(this.parentElement)" class="p-0.5 hover:bg-white/10 rounded-lg transition-colors"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>';
+            container.appendChild(toast);
+            lucide.createIcons({ attrs: { class: '' }, nameAttr: 'data-lucide' });
+            requestAnimationFrame(function() {
+                toast.classList.remove('translate-x-full', 'opacity-0');
+                toast.classList.add('translate-x-0', 'opacity-100');
+            });
+            setTimeout(function() { dismissToast(toast); }, duration);
+        }
+        function dismissToast(el) {
+            if (!el || !el.parentElement) return;
+            el.classList.add('translate-x-full', 'opacity-0');
+            setTimeout(function() { if (el.parentElement) el.parentElement.removeChild(el); }, 300);
+        }
+
+        // --- BUTTON LOADING STATE ---
+        function btnLoading(btn, loading) {
+            if (!btn) return;
+            if (loading) {
+                btn.dataset.origText = btn.innerHTML;
+                btn.disabled = true;
+                btn.classList.add('opacity-60', 'cursor-wait');
+                btn.innerHTML = '<svg class="animate-spin w-4 h-4 mr-1 inline-block" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" class="opacity-25"></circle><path d="M4 12a8 8 0 018-8" stroke="currentColor" stroke-width="3" stroke-linecap="round" class="opacity-75"></path></svg> Saving...';
+            } else {
+                btn.disabled = false;
+                btn.classList.remove('opacity-60', 'cursor-wait');
+                if (btn.dataset.origText) btn.innerHTML = btn.dataset.origText;
+            }
+        }
+
         // --- NEW FEATURE FUNCTIONS ---
         function saveNewIntegration() {
             var args = Array.from(arguments);
@@ -2756,28 +2818,38 @@ async function toggleSeason(btn, tmdbId, seasonNum, showImdb) {
                 var el = document.getElementById(args[i + 1]);
                 if (el) data[args[i]] = el.value.trim();
             }
+            var btn = event && event.target;
+            btnLoading(btn, true);
             fetch('/api/settings', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) })
-                .then(function() { alert('Saved!'); });
+                .then(function() { showToast('Settings saved successfully', 'success'); btnLoading(btn, false); })
+                .catch(function(e) { showToast('Failed to save: ' + e, 'error'); btnLoading(btn, false); });
         }
 
         function saveMediaServers() {
             var data = { action: 'update' };
             var fields = [['plex_url','inp-plex-url'],['plex_token','inp-plex-token'],['jellyfin_url','inp-jellyfin-url'],['jellyfin_api_key','inp-jellyfin-key'],['emby_url','inp-emby-url'],['emby_api_key','inp-emby-key']];
             fields.forEach(function(f) { var el = document.getElementById(f[1]); if (el && el.value.trim()) data[f[0]] = el.value.trim(); });
+            var btn = event && event.target;
+            btnLoading(btn, true);
             fetch('/api/settings', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) })
-                .then(function() { alert('Media servers saved!'); });
+                .then(function() { showToast('Media servers saved', 'success'); btnLoading(btn, false); })
+                .catch(function(e) { showToast('Failed to save: ' + e, 'error'); btnLoading(btn, false); });
         }
 
         function saveJournals() {
             var data = { action: 'update' };
             var fields = [['notion_api_key','inp-notion-key'],['notion_database_id','inp-notion-db'],['obsidian_vault_path','inp-obsidian-vault']];
             fields.forEach(function(f) { var el = document.getElementById(f[1]); if (el && el.value.trim()) data[f[0]] = el.value.trim(); });
+            var btn = event && event.target;
+            btnLoading(btn, true);
             fetch('/api/settings', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) })
-                .then(function() { alert('Journals saved!'); });
+                .then(function() { showToast('Journals saved', 'success'); btnLoading(btn, false); })
+                .catch(function(e) { showToast('Failed to save: ' + e, 'error'); btnLoading(btn, false); });
         }
 
         async function exportConfig() {
             try {
+                showToast('Preparing export...', 'info', 2000);
                 var res = await fetch('/api/config/export');
                 var data = await res.json();
                 var blob = new Blob([JSON.stringify(data.config || data, null, 2)], { type: 'application/json' });
@@ -2785,7 +2857,8 @@ async function toggleSeason(btn, tmdbId, seasonNum, showImdb) {
                 var a = document.createElement('a'); a.href = url;
                 a.download = 'ascend-config-' + new Date().toISOString().slice(0,10) + '.json';
                 a.click(); URL.revokeObjectURL(url);
-            } catch (e) { alert('Export failed: ' + e); }
+                showToast('Config exported successfully', 'success');
+            } catch (e) { showToast('Export failed: ' + e, 'error'); }
         }
 
         function importConfigFile(input) {
@@ -2794,6 +2867,7 @@ async function toggleSeason(btn, tmdbId, seasonNum, showImdb) {
             reader.onload = async function(e) {
                 try {
                     var config = JSON.parse(e.target.result);
+                    showToast('Importing config...', 'info', 2000);
                     var res = await fetch('/api/config/import', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ config: config }) });
                     var data = await res.json();
                     var status = document.getElementById('config-import-status');
@@ -2801,11 +2875,13 @@ async function toggleSeason(btn, tmdbId, seasonNum, showImdb) {
                     if (data.status === 'ok') {
                         status.className = 'text-xs font-mono p-3 bg-emerald-500/10 text-emerald-400 rounded-lg border border-emerald-500/20';
                         status.innerText = 'Config imported! ' + (data.warnings && data.warnings.length ? 'Warnings: ' + data.warnings.join(', ') : '');
+                        showToast('Config imported successfully', 'success');
                     } else {
                         status.className = 'text-xs font-mono p-3 bg-rose-500/10 text-rose-400 rounded-lg border border-rose-500/20';
                         status.innerText = 'Error: ' + (data.error || 'Unknown');
+                        showToast('Import failed: ' + (data.error || 'Unknown error'), 'error');
                     }
-                } catch (err) { alert('Invalid JSON: ' + err); }
+                } catch (err) { showToast('Invalid JSON file: ' + err.message, 'error'); }
             };
             reader.readAsText(file); input.value = '';
         }
@@ -2837,6 +2913,7 @@ async function toggleSeason(btn, tmdbId, seasonNum, showImdb) {
         async function clearSkipCache() {
             await fetch('/api/skip/cache/clear', { method: 'POST' });
             loadSkipCacheStats();
+            showToast('Skip cache cleared', 'success');
         }
 
         async function loadHealthInfo() {
@@ -2871,8 +2948,10 @@ async function toggleSeason(btn, tmdbId, seasonNum, showImdb) {
         }
 
         async function switchDevice(ip) {
+            showToast('Connecting to ' + ip + '...', 'info', 2000);
             await fetch('/api/devices/switch', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ ip: ip }) });
             loadDevices();
+            showToast('Device switched to ' + ip, 'success');
         }
 
         async function loadIntegrationStatus() {
