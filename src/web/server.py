@@ -504,6 +504,8 @@ def update_settings():
                 if key == "trakt_secret": config_key = "trakt_client_secret"
                 if key == "discord": config_key = "discord_client_id"
                 if key == "discord_wako": config_key = "discord_wako_client_id"
+                if key == "skip_tmdb": config_key = "skip_tmdb_id"
+                if key == "skip_mal": config_key = "skip_mal_id"
                 # RPC config mappings
                 if key == "rpc_rating_badges": config_key = "rpc_rating_badges_enabled"
                 if key == "rpc_status_cycling": config_key = "rpc_status_cycling_enabled"

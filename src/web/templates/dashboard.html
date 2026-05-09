@@ -1074,22 +1074,6 @@
                     </div>
                  </div>
 
-                 <!-- Skip Providers & Sources -->
-                 <div class="glass-panel p-6 rounded-2xl col-span-1 lg:col-span-2 relative">
-                    <h3 class="text-lg font-bold mb-4 border-b border-white/10 pb-2 flex justify-between items-center">
-                        Skip Providers & Sources
-                        <div class="text-xs text-slate-400 font-normal py-1 px-3 bg-black/40 rounded-full">Drag to Reorder Priority</div>
-                    </h3>
-                    
-                    <div id="skip-providers-container" class="space-y-2">
-                        <!-- Provider items injected via JS -->
-                    </div>
-
-                    <div class="mt-6 border-t border-white/10 pt-4">
-                        <label class="text-xs text-slate-400 uppercase font-bold block mb-2">Remote JSON Source URL (Optional)</label>
-                        <input type="text" id="inp-remote-json" placeholder="https://example.com/skips.json" class="w-full bg-black/30 border border-white/5 rounded-lg px-4 py-2 text-sm text-white font-mono placeholder:text-slate-600 focus:outline-none focus:border-indigo-500 transition-colors" onblur="updateConfig('remote_json_url', this.value)">
-                    </div>
-                </div>
 
                 <!-- Privacy & Security -->
                 <div class="glass-panel p-6 rounded-2xl">
@@ -1913,6 +1897,8 @@
                     safeSet('inp-discord-wako', data.config.discord_wako_id);
                     safeSet('inp-remote-json', data.config.remote_json_url);
                     safeSet('inp-tidb-key', data.config.tidb_api_key);
+                    safeSet('inp-skip-tmdb', data.config.skip_tmdb_id);
+                    safeSet('inp-skip-mal', data.config.skip_mal_id);
                     safeSet('inp-rpc-status', data.config.rpc_status);
                     safeSet('inp-top-posters-key', data.config.top_posters_api_key);
                     safeSet('inp-erdb-token', data.config.erdb_token);
