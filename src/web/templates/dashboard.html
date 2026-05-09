@@ -68,6 +68,12 @@
         /* Section divider icon pulse */
         .section-icon { transition: transform 0.3s ease; }
         .section-icon:hover { transform: scale(1.1); }
+        /* Connection Wizard highlight */
+        .wiz-tab { cursor: pointer; }
+        .wiz-panel { transition: opacity 0.2s ease; }
+
+        /* Gradient text utility */
+        .text-gradient { background: linear-gradient(135deg, var(--accent-primary, #6366f1), #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
     </style>
 </head>
 
@@ -177,10 +183,10 @@
                         <span class="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-black/90 text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">Meta</span>
                     </div>
                 </div>
-                 <!-- Global Scan Button -->
-                 <button onclick="sendCmd('scan_network')" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 transition-all text-xs font-bold uppercase tracking-wider group">
-                    <i data-lucide="radar" class="w-3 h-3 group-hover:rotate-180 transition-transform duration-700"></i>
-                    Scan
+                 <!-- Connection Wizard Button -->
+                 <button onclick="openConnectionWizard()" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 transition-all text-xs font-bold uppercase tracking-wider group">
+                    <i data-lucide="wifi" class="w-3 h-3 group-hover:scale-110 transition-transform duration-300"></i>
+                    Connect
                 </button>
                  <!-- Remote Toggle -->
                  <button onclick="toggleRemote()" title="Open Remote 🎮" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/20 transition-all text-xs font-bold uppercase tracking-wider group">
@@ -194,177 +200,204 @@
         <div id="view-container" class="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 scroll-smooth">
             
             <!-- DASHBOARD VIEW -->
-            <div id="view-dashboard" class="view-section grid grid-cols-1 lg:grid-cols-12 gap-6 h-full">
-                
-                <!-- Main Stats & Graph (Span 8) -->
-                <div class="lg:col-span-8 space-y-6 flex flex-col">
-                    
-                    <!-- Stats Row -->
-                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                        <div class="glass-panel p-4 rounded-2xl flex flex-col justify-between h-24 relative overflow-hidden group">
-                                                        <div class="absolute right-2 top-2 opacity-20 group-hover:opacity-40 transition-opacity">
-                                <img src="/static/skip_stack.png" class="w-10 h-10 object-contain" alt="Skip Icon">
+            <div id="view-dashboard" class="view-section space-y-6">
+
+                <!-- ===== HERO: NOW PLAYING ===== -->
+                <div class="glass-panel rounded-3xl relative overflow-hidden group">
+                    <!-- Hero Background Image (Blurred) -->
+                    <div class="absolute inset-0">
+                        <img id="hero-backdrop" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="Backdrop" class="w-full h-full object-cover opacity-25 blur-2xl transition-all duration-1000 transform scale-110 group-hover:scale-105">
+                        <div class="absolute inset-0 bg-gradient-to-r from-black via-black/70 to-black/40"></div>
+                        <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/30"></div>
+                    </div>
+
+                    <div class="relative z-10 p-6 md:p-8 flex flex-col md:flex-row gap-8 items-center md:items-stretch min-h-[380px]">
+
+                        <!-- Poster -->
+                        <div class="shrink-0 relative flex flex-col items-center gap-4">
+                            <div id="poster-glow" class="absolute inset-4 rounded-full blur-[80px] opacity-50 z-[-1] transition-all duration-1000" style="background: var(--accent-primary);"></div>
+                            <div id="poster-container" class="w-52 md:w-64 rounded-2xl overflow-hidden shadow-2xl shadow-black/60 border border-white/10 relative group-hover:-translate-y-2 transition-all duration-700 ease-out bg-slate-900">
+                                <img id="main-poster" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="Poster" class="w-full h-auto block transition-opacity duration-500">
+                                <div id="play-overlay" class="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-white backdrop-blur-[2px]" onclick="sendCmd('play_pause')">
+                                    <i data-lucide="play-circle" class="w-14 h-14 drop-shadow-lg"></i>
+                                </div>
+                                <div id="skip-hud" class="absolute top-3 left-3 flex items-center gap-2 px-3 py-1 bg-emerald-500/15 border border-emerald-500/25 rounded-full backdrop-blur-md hidden">
+                                    <i data-lucide="zap" class="w-3 h-3 text-emerald-400"></i>
+                                    <span id="skip-status-msg" class="text-[10px] font-bold text-emerald-400 uppercase tracking-widest">Pipeline Active</span>
+                                </div>
                             </div>
 
+                            <!-- Manual Skip Button -->
+                            <button id="btn-manual-skip" onclick="triggerManualSkip()" class="hidden group/skip relative flex items-center justify-center gap-3 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl shadow-lg shadow-emerald-900/30 transition-all active:scale-95 w-full">
+                                <i data-lucide="skip-forward" class="w-4 h-4"></i>
+                                <span id="txt-manual-skip" class="text-xs font-black uppercase tracking-wider">Skip Intro</span>
+                            </button>
+                        </div>
+
+                        <!-- Info & Controls -->
+                        <div class="flex-1 flex flex-col justify-between text-center md:text-left w-full min-w-0">
+                            <!-- Top: Status + Title -->
+                            <div class="space-y-3">
+                                <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-md">
+                                    <span id="status-dot" class="w-2 h-2 rounded-full bg-accent-primary animate-pulse"></span>
+                                    <span id="status-text" class="text-[10px] font-bold uppercase tracking-widest text-accent-primary">Ready</span>
+                                </div>
+
+                                <h2 id="main-title" class="text-3xl md:text-5xl font-extrabold text-white leading-tight tracking-tight clamp-2 drop-shadow-lg">Waiting for Stremio...</h2>
+                                <p id="main-subtitle" class="text-sm md:text-base text-slate-400 font-mono tracking-wide">Idle</p>
+                            </div>
+
+                            <!-- Middle: Progress Bar -->
+                            <div class="mt-auto pt-6">
+                                <div class="h-1.5 bg-white/10 rounded-full overflow-hidden w-full backdrop-blur-sm">
+                                    <div id="progress-bar" class="h-full bg-gradient-to-r from-accent-primary to-indigo-400 w-0 transition-all duration-1000 ease-linear shadow-[0_0_20px_rgba(var(--accent-rgb),0.6)] rounded-full"></div>
+                                </div>
+                                <div class="flex justify-between text-[10px] text-slate-500 mt-2 font-mono">
+                                    <span id="time-current">00:00</span>
+                                    <span id="time-total">00:00</span>
+                                </div>
+                            </div>
+
+                            <!-- Bottom: Controls -->
+                            <div class="flex items-center justify-center md:justify-start gap-3 mt-4">
+                                <button onclick="sendCmd('prev')" aria-label="Previous Track" class="p-2.5 rounded-full bg-white/5 hover:bg-white/10 text-white transition-all hover:scale-110 border border-white/5"><i data-lucide="skip-back" class="w-5 h-5"></i></button>
+                                <button onclick="sendCmd('play_pause')" aria-label="Play Pause" class="p-4 rounded-full bg-white text-black hover:bg-accent-primary hover:text-white transition-all hover:scale-110 shadow-[0_0_30px_rgba(255,255,255,0.2)] hover:shadow-[0_0_30px_var(--accent-primary)]"><i data-lucide="play" class="w-7 h-7 fill-current"></i></button>
+                                <button onclick="sendCmd('next')" aria-label="Next Track" class="p-2.5 rounded-full bg-white/5 hover:bg-white/10 text-white transition-all hover:scale-110 border border-white/5"><i data-lucide="skip-forward" class="w-5 h-5"></i></button>
+
+                                <div class="w-px h-8 bg-white/10 mx-3"></div>
+
+                                <!-- Skip Persistent Button (Inline) -->
+                                <button id="btn-skip-persistent" onclick="skipTo(0)" disabled aria-label="Skip Content"
+                                    class="px-5 py-2.5 rounded-xl bg-rose-500/10 text-rose-500/50 border border-rose-500/20 font-bold tracking-widest text-[11px] flex items-center gap-2 transition-all duration-300
+                                    disabled:cursor-not-allowed disabled:opacity-40
+                                    enabled:bg-emerald-500 enabled:text-white enabled:shadow-[0_0_30px_#10b981] enabled:opacity-100 enabled:hover:scale-[1.02] enabled:animate-pulse">
+                                    <i data-lucide="fast-forward" class="w-4 h-4"></i>
+                                    <span id="skip-label">SKIP INTRO</span>
+                                </button>
+
+                                <div class="w-px h-8 bg-white/10 mx-3"></div>
+
+                                <!-- Auto Skip Toggle -->
+                                <div class="flex items-center gap-2 cursor-pointer" onclick="document.getElementById('chk-skip').click()">
+                                    <div class="relative">
+                                        <input type="checkbox" id="chk-skip" aria-label="Toggle Auto Skip" onchange="toggleSetting('skip')" class="peer sr-only">
+                                        <div class="w-9 h-5 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
+                                    </div>
+                                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Auto</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ===== BOTTOM ROW: Stats + Connection + Log ===== -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+
+                    <!-- Stats Cards -->
+                    <div class="lg:col-span-5 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-2 gap-3">
+                        <div class="glass-panel p-4 rounded-2xl flex flex-col justify-between h-24 relative overflow-hidden group hover:-translate-y-1 transition-all">
+                            <div class="absolute right-2 top-2 opacity-20 group-hover:opacity-40 transition-opacity">
+                                <img src="/static/skip_stack.png" class="w-10 h-10 object-contain" alt="Skip Icon">
+                            </div>
                             <span class="text-slate-500 text-[10px] uppercase font-bold tracking-wider">Total Skips</span>
                             <span id="stat-skips" class="text-2xl font-bold text-white font-mono">0</span>
                         </div>
-                        
-                        <div class="glass-panel p-4 rounded-2xl flex flex-col justify-between h-24 relative overflow-hidden group">
+                        <div class="glass-panel p-4 rounded-2xl flex flex-col justify-between h-24 relative overflow-hidden group hover:-translate-y-1 transition-all">
                             <div class="absolute right-2 top-2 opacity-10 group-hover:opacity-20 transition-opacity"><i data-lucide="clock" class="w-8 h-8 text-emerald-400"></i></div>
                             <span class="text-slate-500 text-[10px] uppercase font-bold tracking-wider">Time Saved</span>
                             <span id="stat-saved" class="text-2xl font-bold text-emerald-400 font-mono">0m</span>
                         </div>
-
-                        <div class="glass-panel p-4 rounded-2xl flex flex-col justify-between h-24 relative overflow-hidden group">
+                        <div class="glass-panel p-4 rounded-2xl flex flex-col justify-between h-24 relative overflow-hidden group hover:-translate-y-1 transition-all">
                             <div class="absolute right-2 top-2 opacity-10 group-hover:opacity-20 transition-opacity"><i data-lucide="layers" class="w-8 h-8 text-rose-400"></i></div>
                             <span class="text-slate-500 text-[10px] uppercase font-bold tracking-wider">Trakt Syncs</span>
                             <span id="stat-syncs" class="text-2xl font-bold text-white font-mono">0</span>
                         </div>
-
-                        <div class="glass-panel p-4 rounded-2xl flex flex-col justify-between h-24 relative overflow-hidden group">
-                             <!-- Mini Chart Container -->
-                             <div class="absolute inset-0 opacity-30">
-                                <canvas id="mini-chart"></canvas>
-                             </div>
-                             <span class="text-slate-500 text-[10px] uppercase font-bold tracking-wider relative z-10">Activity</span>
-                             <span class="text-xs text-slate-400 relative z-10">Live</span>
+                        <div class="glass-panel p-4 rounded-2xl flex flex-col justify-between h-24 relative overflow-hidden group hover:-translate-y-1 transition-all">
+                            <div class="absolute inset-0 opacity-30"><canvas id="mini-chart"></canvas></div>
+                            <span class="text-slate-500 text-[10px] uppercase font-bold tracking-wider relative z-10">Activity</span>
+                            <span class="text-xs text-slate-400 relative z-10">Live</span>
                         </div>
                     </div>
 
-                    <!-- Active Media (Hero) -->
-                    <div class="glass-panel rounded-3xl p-6 flex-1 flex flex-col relative overflow-hidden group">
-                         <!-- Hero Background Image (Blurred) -->
-                         <div class="absolute inset-0">
-                             <img id="hero-backdrop" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="Backdrop" class="w-full h-full object-cover opacity-20 blur-xl transition-all duration-1000 transform scale-110 group-hover:scale-100">
-                             <div class="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent"></div>
-                         </div>
-                         
-                         <div class="relative z-10 flex flex-col md:flex-row gap-6 h-full items-center md:items-end">
-                             <!-- Poster Container -->
-                             <div class="shrink-0 relative">
-                                 <!-- Dynamic Glow behind poster -->
-                                 <div id="poster-glow" class="absolute inset-4 rounded-full blur-[60px] opacity-60 z-[-1] transition-all duration-1000" style="background: var(--accent-primary);"></div>
-<div id="poster-container" class="w-64 md:w-80 rounded-2xl overflow-hidden shadow-2xl border border-white/10 relative group-hover:-translate-y-4 transition-all duration-700 ease-out bg-slate-900">
-                                     <img id="main-poster" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="Poster" class="w-full h-auto block transition-opacity duration-500">
-                                     <!-- Play Button Overlay -->
-                                      <div id="play-overlay" class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-white" onclick="sendCmd('play_pause')">
-                                          <i data-lucide="play-circle" class="w-12 h-12"></i>
-                                      </div>
-                                      
-                                      <div id="skip-hud" class="absolute top-4 left-4 flex items-center gap-2 px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full hidden">
-                                        <i data-lucide="zap" class="w-3 h-3 text-emerald-400"></i>
-                                        <span id="skip-status-msg" class="text-[10px] font-bold text-emerald-400 uppercase tracking-widest">Pipeline Active</span>
-                                      </div>
-                                 </div>
-                                 
-                                 <!-- DYNAMIC SKIP BUTTON (Manual Mode) -->
-                                 <button id="btn-manual-skip" onclick="triggerManualSkip()" class="hidden group relative flex items-center justify-center gap-3 px-8 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl shadow-lg shadow-emerald-900/20 transition-all active:scale-95 mt-4 w-full">
-                                     <div class="absolute -inset-1 bg-emerald-400/20 blur opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl"></div>
-                                     <i data-lucide="skip-forward" class="w-5 h-5"></i>
-                                     <span id="txt-manual-skip" class="text-sm font-black uppercase tracking-wider">Skip Intro</span>
-                                 </button>
+                    <!-- Unified Connection Wizard -->
+                    <div class="lg:col-span-4 glass-panel p-5 rounded-2xl space-y-4">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                                <div class="p-1.5 rounded-lg bg-gradient-to-br from-emerald-500/20 to-emerald-600/10 border border-emerald-500/20">
+                                    <i data-lucide="wifi" class="w-3.5 h-3.5 text-emerald-400"></i>
+                                </div>
+                                Connection
+                            </h3>
+                            <span id="wizard-connection-status" class="text-[10px] font-mono uppercase tracking-wider text-slate-600">Disconnected</span>
+                        </div>
 
-                             </div>
+                        <!-- Connection Method Tabs -->
+                        <div class="flex bg-black/30 rounded-xl p-0.5 gap-0.5">
+                            <button onclick="wizardTab('scan')" id="wiz-tab-scan" class="wiz-tab flex-1 py-2 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-all bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">
+                                <i data-lucide="radar" class="w-3 h-3 inline-block mr-1"></i>Scan
+                            </button>
+                            <button onclick="wizardTab('mdns')" id="wiz-tab-mdns" class="wiz-tab flex-1 py-2 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-all text-slate-500 hover:text-slate-300">
+                                <i data-lucide="wifi" class="w-3 h-3 inline-block mr-1"></i>mDNS
+                            </button>
+                            <button onclick="wizardTab('manual')" id="wiz-tab-manual" class="wiz-tab flex-1 py-2 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-all text-slate-500 hover:text-slate-300">
+                                <i data-lucide="edit-3" class="w-3 h-3 inline-block mr-1"></i>Manual
+                            </button>
+                        </div>
 
-                             <!-- Info -->
-                             <div class="flex-1 text-center md:text-left space-y-2 w-full">
-                                 <div class="inline-flex items-center gap-2 px-2 py-1 rounded-full bg-white/5 border border-white/10">
-                                     <span id="status-dot" class="w-1.5 h-1.5 rounded-full bg-accent-primary animate-pulse"></span>
-                                     <span id="status-text" class="text-[10px] font-bold uppercase tracking-wider text-accent-primary">Ready</span>
-                                 </div>
-                                 
-                                 <h2 id="main-title" class="text-2xl md:text-4xl font-bold text-white leading-tight font-sans clamp-2">Waiting for Stremio...</h2>
-                                 <p id="main-subtitle" class="text-sm text-slate-400 font-mono">Idle</p>
+                        <!-- Scan Panel -->
+                        <div id="wiz-panel-scan" class="wiz-panel space-y-3">
+                            <button onclick="wizardScan()" id="wiz-scan-btn" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-600/20 to-emerald-500/10 text-emerald-400 font-bold text-xs hover:from-emerald-600/30 hover:to-emerald-500/20 transition-all border border-emerald-500/15 flex items-center justify-center gap-2">
+                                <i data-lucide="radar" class="w-3.5 h-3.5"></i> Scan Network
+                            </button>
+                            <div id="wiz-scan-results" class="space-y-1.5 max-h-36 overflow-y-auto">
+                                <div class="text-center py-3 text-slate-600 text-[10px] font-mono">Click Scan to find devices</div>
+                            </div>
+                        </div>
 
-                                 <!-- Progress -->
-                                 <div class="mt-4 pt-4">
-                                     <div class="h-1 bg-white/10 rounded-full overflow-hidden w-full">
-                                         <div id="progress-bar" class="h-full bg-accent-primary w-0 transition-all duration-1000 ease-linear shadow-[0_0_15px_rgba(var(--accent-rgb),0.5)]"></div>
-                                     </div>
-                                     <div class="flex justify-between text-[10px] text-slate-500 mt-1 font-mono">
-                                         <span id="time-current">00:00</span>
-                                         <span id="time-total">00:00</span>
-                                     </div>
-                                 </div>
-                                 
-                                 <!-- Controls Row -->
-                                 <div class="flex items-center justify-center md:justify-start gap-4 mt-6">
-                                     <button onclick="sendCmd('prev')" aria-label="Previous Track" class="p-3 rounded-full bg-white/5 hover:bg-white/10 text-white transition-all hover:scale-110"><i data-lucide="skip-back" class="w-5 h-5"></i></button>
-                                     <button onclick="sendCmd('play_pause')" aria-label="Play Pause" class="p-4 rounded-full bg-white text-black hover:bg-accent-primary hover:text-white transition-all hover:scale-110 shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:shadow-[0_0_20px_var(--accent-primary)]"><i data-lucide="play" class="w-6 h-6 fill-current"></i></button>
-                                     <button onclick="sendCmd('next')" aria-label="Next Track" class="p-3 rounded-full bg-white/5 hover:bg-white/10 text-white transition-all hover:scale-110"><i data-lucide="skip-forward" class="w-5 h-5"></i></button>
-                                     
-                                     <div class="w-px h-8 bg-white/10 mx-2"></div>
-                                     
-                                     <!-- Toggle Auto Skip -->
-                                     <div class="flex items-center gap-2 cursor-pointer group/chk" onclick="document.getElementById('chk-skip').click()">
-                                        <div class="relative">
-                                            <input type="checkbox" id="chk-skip" aria-label="Toggle Auto Skip" onchange="toggleSetting('skip')" class="peer sr-only">
-                                            <div class="w-9 h-5 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
-                                        </div>
-                                        <span class="text-[10px] font-bold text-slate-500 peer-checked:text-indigo-400">AUTO</span>
-                                     </div>
-                                 </div>
-                             </div>
-                         </div>
-                    </div>
-                </div>
+                        <!-- mDNS Panel -->
+                        <div id="wiz-panel-mdns" class="wiz-panel hidden space-y-3">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs text-slate-300">Auto-Discovery</span>
+                                <div class="relative">
+                                    <input type="checkbox" id="chk-mdns" onchange="updateConfig('mdns_discovery_enabled', this.checked)" class="peer sr-only">
+                                    <div class="w-9 h-5 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600 cursor-pointer" onclick="document.getElementById('chk-mdns').click()"></div>
+                                </div>
+                            </div>
+                            <button onclick="wizardMdns()" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-indigo-600/20 to-indigo-500/10 text-indigo-400 font-bold text-xs hover:from-indigo-600/30 hover:to-indigo-500/20 transition-all border border-indigo-500/15 flex items-center justify-center gap-2">
+                                <i data-lucide="wifi" class="w-3.5 h-3.5"></i> Discover Devices
+                            </button>
+                            <div id="wiz-mdns-results" class="space-y-1.5 max-h-36 overflow-y-auto">
+                                <div class="text-center py-3 text-slate-600 text-[10px] font-mono">Enable mDNS and discover</div>
+                            </div>
+                        </div>
 
-                <!-- Right Sidebar (Controls & ADB) (Span 4) -->
-                <div class="lg:col-span-4 space-y-6 flex flex-col">
-                    
-                    <!-- Persistent Skip Button -->
-                    <div class="glass-panel p-1 rounded-2xl relative overflow-hidden">
-                        <button id="btn-skip-persistent" onclick="skipTo(0)" disabled aria-label="Skip Content"
-                            class="w-full h-16 rounded-xl bg-rose-500/10 text-rose-500/50 border border-rose-500/20 font-bold tracking-widest text-sm flex items-center justify-center gap-2 transition-all duration-300
-                            disabled:cursor-not-allowed disabled:opacity-50
-                            enabled:bg-emerald-500 enabled:text-white enabled:shadow-[0_0_30px_#10b981] enabled:opacity-100 enabled:hover:scale-[1.02] enabled:animate-pulse">
-                            <i data-lucide="fast-forward" class="w-5 h-5"></i>
-                            <span id="skip-label">SKIP INTRO</span>
-                        </button>
-                        <!-- Skip Status Message -->
-                        <div class="mt-2 text-center">
+                        <!-- Manual Panel -->
+                        <div id="wiz-panel-manual" class="wiz-panel hidden space-y-3">
+                            <input type="text" id="adb-ip" placeholder="192.168.1.x" aria-label="ADB Device IP"
+                                class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:border-emerald-500 focus:shadow-[0_0_15px_rgba(16,185,129,0.15)] outline-none font-mono transition-all hover:border-white/20">
+                            <button onclick="connectAdb()" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-bold text-xs transition-all shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-2 hover:scale-[1.01] active:scale-[0.99]">
+                                <i data-lucide="plug" class="w-3.5 h-3.5"></i> Connect
+                            </button>
+                        </div>
+
+                        <!-- Hidden elements for backward compatibility -->
+                        <select id="adb-dropdown" class="hidden"><option value="">Select</option></select>
+                        <div id="adb-dropdown-arrow" class="hidden"></div>
+                        <button id="btn-manual-toggle" class="hidden"></button>
+
+                        <!-- Skip Status -->
+                        <div class="pt-2 border-t border-white/5 text-center">
                             <span id="skip-status-text" class="text-[10px] font-mono tracking-wider text-slate-500 uppercase">System Ready</span>
                         </div>
                     </div>
 
-                    <!-- ADB Connection -->
-                    <div class="glass-panel p-6 rounded-2xl space-y-4">
-                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
-                            <i data-lucide="smartphone" class="w-4 h-4"></i> ADB Bridge
+                    <!-- Live Log -->
+                    <div class="lg:col-span-3 glass-panel p-4 rounded-2xl flex flex-col min-h-[200px]">
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-2">
+                            <div class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></div>
+                            Live Log
                         </h3>
-                        
-                        <div class="space-y-2">
-                             <div class="relative">
-                                 <!-- Manual Input -->
-                                 <input type="text" id="adb-ip" placeholder="192.168.1.x" aria-label="ADB Device IP"
-                                    class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:border-indigo-500 focus:shadow-[0_0_15px_rgba(99,102,241,0.2)] outline-none font-mono transition-all">
-                                 
-                                 <!-- Dropdown (Hidden by default) -->
-                                 <select id="adb-dropdown" aria-label="Select ADB Device" onchange="selectAdbDevice(this.value)" 
-                                    class="hidden w-full bg-black/90 border border-emerald-500 text-emerald-400 rounded-lg px-4 py-3 outline-none appearance-none font-mono">
-                                     <option value="" disabled selected>Select Device from Scan...</option>
-                                 </select>
-                                 <div id="adb-dropdown-arrow" class="hidden absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-emerald-400">
-                                     <i data-lucide="chevron-down" class="w-4 h-4"></i>
-                                 </div>
-                             </div>
-                             
-                             <div class="flex gap-2">
-                                 <button onclick="connectAdb()" class="flex-1 py-3 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs uppercase tracking-wider shadow-lg shadow-indigo-500/20 transition-all hover:scale-[1.02]">
-                                     Connect
-                                 </button>
-                                 <button id="btn-manual-toggle" onclick="toggleManualInput()" aria-label="Toggle Manual Input" class="hidden px-3 py-3 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 transition-all font-mono text-xs">
-                                     <i data-lucide="edit-3" class="w-4 h-4"></i>
-                                 </button>
-                             </div>
-                        </div>
-                    </div>
-
-                    <!-- Quick Log -->
-                    <div class="glass-panel p-4 rounded-2xl flex-1 flex flex-col min-h-[200px]">
-                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Live Log</h3>
-                        <div id="quick-log" class="flex-1 max-h-[300px] overflow-y-auto font-mono text-[10px] text-emerald-400/80 space-y-1 p-2 bg-black/40 rounded-lg">
+                        <div id="quick-log" class="flex-1 max-h-[240px] overflow-y-auto font-mono text-[10px] text-emerald-400/80 space-y-1 p-2 bg-black/40 rounded-lg">
                             <div>&gt; System Initialized</div>
                         </div>
                     </div>
@@ -1118,17 +1151,11 @@
                 <div class="glass-panel p-6 rounded-2xl">
                     <h3 class="text-lg font-bold mb-4 border-b border-white/10 pb-2 flex items-center gap-2"><i data-lucide="smartphone" class="w-5 h-5 text-emerald-400"></i> Device Management</h3>
                     <div class="space-y-4">
-                        <div class="flex items-center justify-between py-2">
-                            <div><span class="text-white">mDNS Auto-Discovery</span><p class="text-[10px] text-slate-500 mt-1">Find Android TV devices on your network</p></div>
-                            <div class="relative">
-                                <input type="checkbox" id="chk-mdns" onchange="updateConfig('mdns_discovery_enabled', this.checked)" class="peer sr-only">
-                                <div class="w-11 h-6 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600 cursor-pointer" onclick="document.getElementById('chk-mdns').click()"></div>
-                            </div>
-                        </div>
+                        <p class="text-xs text-slate-400">Manage device connections from the Dashboard using the unified Connection Wizard.</p>
                         <div id="device-list" class="space-y-2">
-                            <div class="text-center py-4"><i data-lucide="wifi-off" class="w-6 h-6 text-slate-700 mx-auto mb-2"></i><p class="text-xs text-slate-500">No devices found on your network</p><p class="text-[10px] text-slate-600 mt-1">Enable mDNS and click Refresh to scan</p></div>
+                            <div class="text-center py-4"><i data-lucide="wifi" class="w-6 h-6 text-slate-700 mx-auto mb-2"></i><p class="text-xs text-slate-500">Use the Connection Wizard on the Dashboard</p></div>
                         </div>
-                        <button onclick="loadDevices()" class="w-full py-2 bg-emerald-600/20 text-emerald-400 rounded-lg font-bold text-xs hover:bg-emerald-600/30 transition-colors flex items-center justify-center gap-2"><i data-lucide="radar" class="w-4 h-4"></i> REFRESH DEVICES</button>
+                        <button onclick="switchTab('dashboard'); setTimeout(openConnectionWizard, 300)" class="w-full py-2 bg-emerald-600/20 text-emerald-400 rounded-lg font-bold text-xs hover:bg-emerald-600/30 transition-colors flex items-center justify-center gap-2"><i data-lucide="wifi" class="w-4 h-4"></i> OPEN CONNECTION WIZARD</button>
                     </div>
                 </div>
 
@@ -1744,24 +1771,7 @@
                     skipBtn.className = "w-full h-16 rounded-xl bg-rose-500/10 text-rose-500/50 border border-rose-500/20 font-bold tracking-widest text-sm flex items-center justify-center gap-2 transition-all duration-300 cursor-not-allowed opacity-50";
                 }
                 
-                // ADB Scan Results
-                if (data.scan_results && data.scan_results.length > 0) {
-                     const apiInput = document.getElementById('adb-ip');
-                     // If dropdown doesn't exist, create/show it? Or simpler: replace input with datalist or just populate if empty
-                     // Let's check if we have a dropdown container
-                     const dropdown = document.getElementById('adb-dropdown');
-                     if(dropdown.classList.contains('hidden')) {
-                         dropdown.classList.remove('hidden');
-                         dropdown.innerHTML = '<option value="" disabled selected>Select Device</option>';
-                         data.scan_results.forEach(ip => {
-                             const opt = document.createElement('option');
-                             opt.value = ip;
-                             opt.innerText = ip;
-                             dropdown.appendChild(opt);
-                         });
-                         // Hide manual input or keep it? Let's keep manual input too but show dropdown below
-                     }
-                }
+
                 
                 // 5. Progress and Time Display
                 if(data.duration > 0) {
@@ -1932,37 +1942,13 @@
                     }
                 }
                 
-                // 8. ADB Scan Results - Toggle Dropdown vs Input
+                // 8. ADB Scan Results - Update Connection Wizard
                 if (data.scan_results && data.scan_results.length > 0) {
-                     const dropdown = document.getElementById('adb-dropdown');
-                     const input = document.getElementById('adb-ip');
-                     const arrow = document.getElementById('adb-dropdown-arrow');
-                     const manualBtn = document.getElementById('btn-manual-toggle');
-                     
-                     // Only initialize ONCE to avoid resetting user selection
-                     if (dropdown.classList.contains('hidden') && !input.dataset.manualOverride) {
-                         input.classList.add('hidden');
-                         dropdown.classList.remove('hidden');
-                         arrow.classList.remove('hidden');
-                         manualBtn.classList.remove('hidden');
-                         lucide.createIcons(); // Refresh icons for the new button
-                         
-                         // Populate
-                         dropdown.innerHTML = '<option value="" disabled selected>Select Device</option>';
-                         data.scan_results.forEach(ip => {
-                             const opt = document.createElement('option');
-                             opt.value = ip;
-                             opt.innerText = ip;
-                             dropdown.appendChild(opt);
-                         });
-                         
-                         // Add "Manual Entry" option at bottom
-                         const manualOpt = document.createElement('option');
-                         manualOpt.value = "manual";
-                         manualOpt.innerText = "-- Manual Entry --";
-                         dropdown.appendChild(manualOpt);
-                     }
+                     updateWizardScanResults(data.scan_results);
                 }
+
+                // Update wizard connection status
+                updateWizardConnectionStatus(data.connected, data.device);
 
                 // 9. API Status Updates
                 if (data.api_status) {
@@ -3098,6 +3084,120 @@ async function toggleSeason(btn, tmdbId, seasonNum, showImdb) {
             } catch (e) { status.innerText = 'Setup wizard not available'; status.className = 'text-xs font-mono text-rose-400'; }
         }
 
+
+        // --- UNIFIED CONNECTION WIZARD ---
+        function openConnectionWizard() {
+            switchTab('dashboard');
+            // Scroll to connection wizard and highlight it
+            setTimeout(() => {
+                const wizEl = document.querySelector('#wiz-tab-scan');
+                if (wizEl) {
+                    wizEl.closest('.glass-panel').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    wizEl.closest('.glass-panel').classList.add('ring-2', 'ring-emerald-500/40');
+                    setTimeout(() => wizEl.closest('.glass-panel').classList.remove('ring-2', 'ring-emerald-500/40'), 2000);
+                }
+            }, 200);
+        }
+
+        function wizardTab(tab) {
+            // Hide all panels
+            document.querySelectorAll('.wiz-panel').forEach(p => p.classList.add('hidden'));
+            // Reset all tabs
+            document.querySelectorAll('.wiz-tab').forEach(t => {
+                t.className = 'wiz-tab flex-1 py-2 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-all text-slate-500 hover:text-slate-300';
+            });
+            // Show selected panel
+            document.getElementById('wiz-panel-' + tab).classList.remove('hidden');
+            // Highlight selected tab
+            const colors = { scan: 'emerald', mdns: 'indigo', manual: 'amber' };
+            const c = colors[tab] || 'emerald';
+            const activeTab = document.getElementById('wiz-tab-' + tab);
+            activeTab.className = `wiz-tab flex-1 py-2 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-all bg-${c}-500/15 text-${c}-400 border border-${c}-500/20`;
+        }
+
+        function wizardScan() {
+            const btn = document.getElementById('wiz-scan-btn');
+            const results = document.getElementById('wiz-scan-results');
+            btn.innerHTML = '<svg class="animate-spin w-3.5 h-3.5" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" class="opacity-25"></circle><path d="M4 12a8 8 0 018-8" stroke="currentColor" stroke-width="3" stroke-linecap="round" class="opacity-75"></path></svg> Scanning...';
+            results.innerHTML = '<div class="text-center py-3 text-emerald-400/60 text-[10px] font-mono animate-pulse">Scanning network...</div>';
+            sendCmd('scan_network');
+            showToast('Network scan started', 'info', 2000);
+        }
+
+        async function wizardMdns() {
+            const results = document.getElementById('wiz-mdns-results');
+            results.innerHTML = '<div class="text-center py-3 text-indigo-400/60 text-[10px] font-mono animate-pulse">Discovering devices...</div>';
+            try {
+                const res = await fetch('/api/devices');
+                const data = await res.json();
+                let html = '';
+                if (data.current) {
+                    html += `<div class="flex items-center gap-2 p-2 bg-black/30 rounded-lg border border-emerald-500/20">
+                        <span class="w-2 h-2 rounded-full ${data.current.connected ? 'bg-emerald-400' : 'bg-rose-500'}"></span>
+                        <span class="text-xs text-white font-mono flex-1 truncate">${data.current.host || 'None'}</span>
+                        <span class="text-[9px] ${data.current.connected ? 'text-emerald-400' : 'text-rose-400'} uppercase font-bold">${data.current.connected ? 'Active' : 'Offline'}</span>
+                    </div>`;
+                }
+                if (data.discovered && data.discovered.length > 0) {
+                    data.discovered.forEach(d => {
+                        const ip = d.ip || d.host;
+                        html += `<div onclick="wizardConnect('${ip}')" class="flex items-center gap-2 p-2 bg-black/30 rounded-lg cursor-pointer hover:bg-white/5 transition-colors group">
+                            <i data-lucide="monitor" class="w-3.5 h-3.5 text-slate-500 group-hover:text-indigo-400 transition-colors"></i>
+                            <span class="text-xs text-white font-mono flex-1 truncate">${d.name || ip}</span>
+                            <span class="text-[9px] text-indigo-400 uppercase font-bold opacity-0 group-hover:opacity-100 transition-opacity">Connect</span>
+                        </div>`;
+                    });
+                }
+                results.innerHTML = html || '<div class="text-center py-3 text-slate-600 text-[10px] font-mono">No devices found. Enable mDNS above.</div>';
+                lucide.createIcons();
+            } catch(e) {
+                results.innerHTML = '<div class="text-center py-3 text-rose-400 text-[10px] font-mono">Discovery failed</div>';
+            }
+        }
+
+        function wizardConnect(ip) {
+            document.getElementById('adb-ip').value = ip;
+            connectAdb();
+            showToast('Connecting to ' + ip + '...', 'info', 2000);
+        }
+
+        // Update scan results rendering for the wizard
+        function updateWizardScanResults(scanResults) {
+            const results = document.getElementById('wiz-scan-results');
+            const btn = document.getElementById('wiz-scan-btn');
+            if (!results) return;
+
+            btn.innerHTML = '<i data-lucide="radar" class="w-3.5 h-3.5"></i> Scan Network';
+            lucide.createIcons();
+
+            if (!scanResults || scanResults.length === 0) {
+                results.innerHTML = '<div class="text-center py-3 text-slate-600 text-[10px] font-mono">No devices found. Try again.</div>';
+                return;
+            }
+
+            results.innerHTML = scanResults.map(ip => `
+                <div onclick="wizardConnect('${ip}')" class="flex items-center gap-2 p-2 bg-black/30 rounded-lg cursor-pointer hover:bg-white/5 transition-colors group">
+                    <i data-lucide="monitor" class="w-3.5 h-3.5 text-slate-500 group-hover:text-emerald-400 transition-colors"></i>
+                    <span class="text-xs text-white font-mono flex-1">${ip}</span>
+                    <span class="text-[9px] text-emerald-400 uppercase font-bold opacity-0 group-hover:opacity-100 transition-opacity">Connect</span>
+                </div>
+            `).join('');
+            lucide.createIcons();
+            showToast(scanResults.length + ' device(s) found', 'success');
+        }
+
+        // Update connection status in wizard header
+        function updateWizardConnectionStatus(connected, deviceName) {
+            const el = document.getElementById('wizard-connection-status');
+            if (!el) return;
+            if (connected) {
+                el.textContent = deviceName || 'Connected';
+                el.className = 'text-[10px] font-mono uppercase tracking-wider text-emerald-400';
+            } else {
+                el.textContent = 'Disconnected';
+                el.className = 'text-[10px] font-mono uppercase tracking-wider text-slate-600';
+            }
+        }
     </script>
     <!-- Remote Control Overlay -->
     <div id="remote-overlay" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] hidden flex items-center justify-center transition-all duration-300 opacity-0" onclick="toggleRemote()">
