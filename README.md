@@ -217,10 +217,12 @@ Dashboard features:
 - Toast notification system (replaces alert dialogs)
 - Sidebar navigation with icon tooltips
 - Config export and import (JSON)
-- Setup wizard / onboarding flow
+- Multi-step onboarding wizard (6 steps: Welcome, ADB, Discord, TMDB, Artwork, Skip)
+- Dark/light/OLED theme toggle with custom accent colors
 - Optional PIN-based authentication
 - Optional HTTPS support
-- Live SSE event stream
+- Live SSE event stream with real-time UI updates
+- Browser push notifications
 - Glassmorphism UI with gradient accents and staggered animations
 
 ---
@@ -241,12 +243,13 @@ Artwork providers:
 - **EasyRatingsDB** — rating overlays, generated posters
 - **Top Posters** — modern streaming-style posters
 - **TMDB** — fallback artwork
+- **FanArt.tv** — high-quality fan-made artwork (posters, backgrounds, logos)
 - **Nuvio** — animated network GIF icons
 
-Configurable fallback chain:
+Configurable fallback chain with drag-and-drop reordering in the dashboard:
 
 ```json
-"artwork_fallback_chain": ["top_posters", "erdb", "tmdb", "nuvio"]
+"artwork_fallback_chain": ["tmdb", "fanart", "tvdb"]
 ```
 
 ---
@@ -292,7 +295,7 @@ Jump scare detection for horror content via notscare.me.
 
 ### 9 API Integrations
 
-All manageable from the dashboard Connections tab:
+All manageable from the dashboard Connections tab. Integrations auto-scrobble and sync during active playback — toggling an integration ON actually calls its API methods in the main playback loop.
 
 | Integration | Description |
 | :--- | :--- |
@@ -308,6 +311,20 @@ All manageable from the dashboard Connections tab:
 
 ---
 
+### Trakt Social
+
+Extended Trakt features beyond basic scrobbling:
+
+- **Collection Sync** — auto-add watched content to your Trakt collection
+- **Friends Watching** — see what your Trakt friends are watching right now
+- **Calendar** — upcoming episodes from your watchlist
+- **Check-In** — auto check-in to Trakt when watching
+- **Recommendations** — get personalized recommendations
+- **Ratings** — rate content during or after watching
+- **Stats** — view your Trakt watch statistics
+
+---
+
 ### Analytics
 
 Local SQLite-backed watch analytics:
@@ -319,6 +336,13 @@ Local SQLite-backed watch analytics:
 - Total skips count
 - Session search
 - Auto-migration from legacy JSON format
+- **Skip provider analytics** — per-provider success rates and hit counts
+- **Skip category breakdown** — stats per category (intro, outro, recap, etc.)
+- **Weekly reports** — aggregated watch statistics for the past 7 days
+- **Monthly reports** — aggregated watch statistics for the past 30 days
+- **Shareable stats cards** — generate PNG images of your watch statistics (Spotify Wrapped style)
+- **Watch history filter** — filter by status (all, completed, in progress, abandoned)
+- **Per-show grouping** — group watch history entries by show title
 
 ---
 
@@ -332,6 +356,8 @@ Local SQLite-backed watch analytics:
 | api_validator.py | API key validation against provider endpoints |
 | config_watcher.py | File system watcher for config hot-reload |
 | plugin_system.py | Abstract base classes and registry for extending functionality |
+| stats_card_generator.py | Shareable PNG stats card generation (requires Pillow, optional) |
+| integrations/fanart.py | FanArt.tv high-quality artwork client |
 
 ---
 
@@ -923,6 +949,17 @@ Write watch notes to an Obsidian vault folder.
 "obsidian_vault_path": "/path/to/your/vault"
 ```
 
+### FanArt.tv
+
+High-quality fan-made artwork for movies and TV shows.
+
+```json
+"fanart_enabled": true,
+"fanart_api_key": "YOUR_FANART_API_KEY"
+```
+
+Get your key at: https://fanart.tv/get-an-api-key/
+
 All integrations can be enabled/disabled from the dashboard Connections tab. They initialize lazily in a background thread only when their enabled flag is true.
 
 ---
@@ -985,23 +1022,24 @@ Connection status, device scanner, playback info (app, title, state, progress), 
 - **Discovery & Utilities** — JustWatch, OpenSubtitles cards
 - **Media Servers** — Plex, Jellyfin, Emby cards
 - **Watch Journals** — Notion, Obsidian cards
+- **Trakt Social** — collection sync, friends watching, calendar, check-in cards with toggles
 - **Integration Status** — overview grid showing connected/disconnected status
 
 ### Settings Tab
 
-Appearance, RPC customization, privacy mode toggle, dashboard PIN authentication, config export/import (JSON), device management (mDNS toggle, device list), and setup wizard.
+Appearance and theme (dark/light/OLED mode, accent color picker), RPC customization, skip category per-category toggles (8 categories: intro, outro, recap, preview, credits, filler, mature content, jump scares), artwork fallback chain configuration with drag reordering, FanArt.tv settings (enable toggle, API key), device health monitoring (battery, CPU, memory, storage), ADB Wi-Fi pairing wizard, push notification toggle, privacy mode, dashboard PIN authentication, config export/import, and multi-step setup wizard.
 
 ### History Tab
 
-Watch history entries and session log.
+Watch history entries and session log with filter buttons (All, Completed, In Progress, Abandoned) and per-show grouping view.
 
 ### Analytics Tab
 
-Total watch time, top genres, peak watch hours heatmap, watch streak, total skips, average session duration, and session search.
+Total watch time, top genres, peak watch hours heatmap, watch streak, total skips, average session duration, session search, skip provider stats (per-provider success rates), skip category breakdown, weekly and monthly reports, and shareable stats card generator (PNG).
 
 ### Debug Tab
 
-Audit log viewer (searchable, filterable), skip cache statistics (hit rate, size, clear button), system health (uptime, status), and plugin list.
+Audit log viewer (searchable, filterable), skip cache statistics (hit rate, size, clear button), system health (uptime, status), plugin list, and log export (last 50, last 200, or all logs as JSON download).
 
 ### Trakt Tab
 
@@ -1307,6 +1345,68 @@ Ascend Media RPC exposes a REST API for the dashboard and external integrations.
 | POST | /api/onboarding/start | Start setup wizard |
 | POST | /api/onboarding/complete | Mark onboarding complete |
 
+### Trakt Social
+
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| GET | /api/trakt/collection | Get Trakt collection |
+| POST | /api/trakt/collection | Add to Trakt collection |
+| POST | /api/trakt/checkin | Check in to Trakt |
+| GET | /api/trakt/friends | Friends watching now |
+| GET | /api/trakt/calendar | Upcoming episodes |
+| GET | /api/trakt/recommendations | Personalized recommendations |
+| POST | /api/trakt/rate | Rate content |
+| GET | /api/trakt/stats | Trakt watch stats |
+
+### Skip Analytics
+
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| GET | /api/analytics/skip/providers | Per-provider skip stats |
+| GET | /api/analytics/skip/categories | Per-category skip breakdown |
+| GET | /api/analytics/report/weekly | Weekly watch report |
+| GET | /api/analytics/report/monthly | Monthly watch report |
+
+### Watch History
+
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| GET | /api/history/filter?status=STATUS | Filter history (completed/in_progress/abandoned) |
+| GET | /api/history/grouped | History grouped by show |
+
+### Device Management
+
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| GET | /api/device/health | Device health (battery, CPU, memory, storage) |
+| POST | /api/device/adb-pair | ADB Wi-Fi pairing (IP:port + code) |
+
+### Remote Control
+
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| POST | /api/remote/text | Send text input to device |
+| POST | /api/remote/launch | Launch app on device |
+| GET | /api/remote/apps | List installed apps |
+
+### Artwork & Theme
+
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| GET | /api/fanart/images | Fetch FanArt.tv images for a title |
+| GET | /api/artwork/chain | Get artwork fallback chain order |
+| POST | /api/artwork/chain | Set artwork fallback chain order |
+| GET | /api/theme | Get current theme settings |
+| POST | /api/theme | Update theme (mode, accent, OLED) |
+
+### Stats & Logs
+
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| POST | /api/stats-card | Generate shareable stats card (PNG) |
+| GET | /api/logs?limit=N | Get recent logs |
+| GET | /api/logs/export?limit=N | Export logs as JSON download |
+
 ---
 
 ## Built With
@@ -1319,10 +1419,14 @@ Ascend Media RPC exposes a REST API for the dashboard and external integrations.
 - anitopy
 - SQLite
 - Zeroconf
+- Pillow (optional, for stats card PNG generation)
 - Built-in ADB tooling
 - Discord Rich Presence
-- TMDB, EasyRatingsDB, Top Posters, Nuvio
+- TMDB, EasyRatingsDB, Top Posters, FanArt.tv, Nuvio
 - Trakt, MyAnimeList
+- AniList, Simkl, Kitsu, Letterboxd, Last.fm, JustWatch, OpenSubtitles
+- Plex, Jellyfin, Emby
+- Notion, Obsidian
 - IntroDB, TheIntroDB.org, VideoSkip, NotScare, AniSkip, SkipMe
 
 ---
@@ -1335,7 +1439,7 @@ Developed by **Cxsmo-ai**.
 
 ## Disclaimer
 
-This project is not affiliated with Discord, Stremio, Wako, TMDB, Trakt, MyAnimeList, EasyRatingsDB, Top Posters, Nuvio, AniSkip, IntroDB, TheIntroDB.org, SkipMe, VideoSkip, NotScare, AniList, Simkl, Kitsu, Letterboxd, Last.fm, JustWatch, OpenSubtitles, Plex, Jellyfin, Emby, Notion, or Obsidian.
+This project is not affiliated with Discord, Stremio, Wako, TMDB, Trakt, MyAnimeList, EasyRatingsDB, Top Posters, FanArt.tv, Nuvio, AniSkip, IntroDB, TheIntroDB.org, SkipMe, VideoSkip, NotScare, AniList, Simkl, Kitsu, Letterboxd, Last.fm, JustWatch, OpenSubtitles, Plex, Jellyfin, Emby, Notion, or Obsidian.
 
 All trademarks, names, logos, and brands belong to their respective owners.
 
