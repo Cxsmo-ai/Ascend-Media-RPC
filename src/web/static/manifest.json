@@ -1,0 +1,15 @@
+{
+    "name": "Stremio RPC Remote",
+    "short_name": "Stremio RPC",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#121212",
+    "theme_color": "#000000",
+    "icons": [
+        {
+            "src": "https://cdn.icon-icons.com/icons2/2699/PNG/512/stremio_logo_icon_170068.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}

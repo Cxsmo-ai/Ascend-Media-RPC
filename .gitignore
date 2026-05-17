@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+
+# Build artifacts
+build/
+dist/
+*.exe
+*.dist/
+*.build/
+
+# Config & Sensitive
+config.json
+security.key
+REDDIT_POST.md
+GITHUB_TOPICS.txt
+*.log
+*.mp4
+erdb_artwork_cache/
+top_posters_cache/
+rpc_artwork_cache/
+
+# Vencord installer downloads/build output
+vencord_installer/BetterVencordPatchset/
+vencord_installer/local_plugins/
+vencord_installer/**/node_modules/
+vencord_installer/**/.pnpm-store/
+vencord_installer/**/dist/
+vencord_installer/**/dist_production/
+vencord_installer/**/.turbo/
+vencord_installer/**/.cache/
+vencord_installer/**/*.tsbuildinfo
+vencord_installer/**/*.asar
+vencord_installer/**/*.asar.bak
+
+# AIOStreams Fork
+AIOStreams_Fork/
+
+# VS Code / IDE
+.vscode/
+.idea/
+.vs/
+
+# Ghost files
+**/nul
+nul
