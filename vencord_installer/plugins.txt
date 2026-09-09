@@ -1,0 +1,21 @@
+# Ascend Vencord/Equicord user plugins
+# One git URL per line. Blank lines and # comments are ignored.
+# Put local plugin folders in ./local_plugins/ if you want them copied in too.
+https://github.com/Juiceroyals/Vencord-Edit-Delete-Messages-Locally.git
+https://github.com/Syncxv/vc-message-logger-enhanced.git
+https://github.com/D3SOX/vc-voiceChatUtilities.git
+https://github.com/D3SOX/vc-silentTypingEnhanced.git
+https://github.com/itzinject/OpSec-Vencord.git
+https://github.com/eightcon/FakeVoiceOptions.git
+https://github.com/zaher-neon/vc-questComplete.git
+https://github.com/ScattrdBlade/bigFileUpload.git
+https://github.com/Sqaaakoi/vc-junkCleanup.git
+https://github.com/TetraSsky/CleanCord.git
+https://github.com/Talya1412/completeDiscordQuest.git
+https://github.com/D3SOX/vc-followUser.git
+https://github.com/isamain/Auto-voice-disconnecter.git
+https://github.com/ih8js-git/messageScheduler.git
+https://github.com/0x6d6179/vencord-antirickroll.git
+https://github.com/D3SOX/vc-ignoreTerms.git
+https://github.com/ScattrdBlade/customSounds.git
+https://github.com/D3SOX/vc-betterActivities.git

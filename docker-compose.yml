@@ -1,0 +1,27 @@
+services:
+  ascend-rpc:
+    image: ${ASCEND_IMAGE:-ghcr.io/cxsmo-ai/ascend-media-rpc:latest}
+    build:
+      context: .
+    container_name: ascend-media-rpc
+    restart: unless-stopped
+    volumes:
+      - ./config.json:/app/config.json
+      - ./data:/app/data
+      - ./rpc_artwork_cache:/app/rpc_artwork_cache
+    environment:
+      - HEADLESS=1
+      - GUI_MODE=browser
+      - ASCEND_PORT=${DASHBOARD_PORT:-5466}
+      - ADB_HOST=${ADB_HOST:-}
+      - ADB_PORT=${ADB_PORT:-5555}
+      - TMDB_API_KEY=${TMDB_API_KEY:-}
+      - DISCORD_CLIENT_ID=${DISCORD_CLIENT_ID:-1499706737186570250}
+      - DASHBOARD_PUBLIC_BASE_URL=${DASHBOARD_PUBLIC_BASE_URL:-http://localhost:5466}
+    network_mode: host  # Required for ADB and Discord IPC on Linux hosts.
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import os, requests; port = os.environ.get('ASCEND_PORT') or os.environ.get('DASHBOARD_PORT') or '5466'; r = requests.get(f'http://127.0.0.1:{port}/api/health', timeout=3); exit(0 if r.status_code == 200 else 1)\""]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
